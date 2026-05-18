@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>DADGAD Guitar Tuner</title>
+  <meta name="description" content="Use this free DADGAD guitar tuner to tune your guitar to D A D G A D." />
+  
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-tuning="dadgad">
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="logo" href="index.html">Simple Guitar Tuner</a>
+      <div class="nav-links">
+        <a href="index.html">Tuner</a>
+        <a href="beginner-guitar-tuning-guide.html">Guide</a>
+        <a href="about.html">About</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+    </nav>
+  </header>
+
+  
+  <main class="page">
+    <section class="hero">
+      <h1>DADGAD Guitar Tuner</h1>
+      <p class="lede">Use this free DADGAD guitar tuner to tune your guitar to D A D G A D.</p>
+    </section>
+
+    <section class="app-layout">
+      
+<section class="tuner-card" aria-label="Guitar tuner app">
+  
+<div class="tuning-control">
+  <label for="tuningSelect">Tuning</label>
+  <select id="tuningSelect" aria-label="Choose guitar tuning">
+    <option value="standard">Standard — E A D G B E</option>
+    <option value="halfStepDown">Half Step Down — Eb Ab Db Gb Bb Eb</option>
+    <option value="wholeStepDown">Whole Step Down — D G C F A D</option>
+    <option value="dropD">Drop D — D A D G B E</option>
+    <option value="doubleDropD">Double Drop D — D A D G B D</option>
+    <option value="dadgad">DADGAD — D A D G A D</option>
+    <option value="openG">Open G — D G D G B D</option>
+    <option value="openD">Open D — D A D F# A D</option>
+    <option value="openE">Open E — E B E G# B E</option>
+  </select>
+</div>
+
+  <div id="statusPill" class="status-pill" aria-live="polite">
+    <span class="dot" aria-hidden="true"></span>
+    <span id="statusText">Microphone off</span>
+  </div>
+
+  <section class="readout" aria-live="polite">
+    <div id="noteReadout" class="note note-idle">—</div>
+    <div id="helperText" class="helper">Tap Start and pluck a string</div>
+    <div id="detailsText" class="details">Waiting for microphone</div>
+  </section>
+
+  <section class="meter-wrap" aria-label="Tuning meter">
+    <div class="meter-labels">
+      <span>Flat</span>
+      <span>In tune</span>
+      <span>Sharp</span>
+    </div>
+    <div class="meter">
+      <div class="ticks" aria-hidden="true">
+        <span class="tick" style="--x: 10%"></span>
+        <span class="tick" style="--x: 20%"></span>
+        <span class="tick" style="--x: 30%"></span>
+        <span class="tick" style="--x: 40%"></span>
+        <span class="tick" style="--x: 50%"></span>
+        <span class="tick" style="--x: 60%"></span>
+        <span class="tick" style="--x: 70%"></span>
+        <span class="tick" style="--x: 80%"></span>
+        <span class="tick" style="--x: 90%"></span>
+      </div>
+      <div id="needle" class="needle"></div>
+    </div>
+  </section>
+
+  <section id="strings" class="strings" aria-label="Selected guitar tuning"></section>
+
+  <div class="level" aria-hidden="true">
+    <div id="levelBar" class="level-bar"></div>
+  </div>
+
+  <button id="toggleButton" type="button">Start listening</button>
+  <div class="small-note">
+    Pluck one string at a time. Left means tune up. Right means tune down.
+  </div>
+</section>
+
+
+      <article class="content-card">
+        <h2>How to use this tuner</h2>
+        <ol>
+          <li>Tap <strong>Start listening</strong>.</li>
+          <li>Allow microphone access.</li>
+          <li>Pluck one string at a time.</li>
+          <li>If the tuner says <strong>flat</strong>, tighten the string.</li>
+          <li>If the tuner says <strong>sharp</strong>, loosen the string.</li>
+          <li>Stop when the meter is green and centered.</li>
+        </ol>
+
+        <h2>DADGAD Guitar Tuner notes</h2>
+        <p>This tuning uses the notes: <strong>D A D G A D</strong>, from the lowest thick string to the highest thin string.</p>
+
+        <div class="notice">
+          This tuner analyzes pitch locally in your browser. Your microphone audio is not recorded, saved, or uploaded.
+        </div>
+
+        <h2>Other common tunings</h2>
+        
+<div class="grid-links">
+  <a href="drop-d-guitar-tuner.html">Drop D Guitar Tuner</a>
+  <a href="dadgad-guitar-tuner.html">DADGAD Guitar Tuner</a>
+  <a href="open-g-guitar-tuner.html">Open G Guitar Tuner</a>
+  <a href="open-d-guitar-tuner.html">Open D Guitar Tuner</a>
+  <a href="half-step-down-guitar-tuner.html">Half Step Down Tuner</a>
+  <a href="whole-step-down-guitar-tuner.html">Whole Step Down Tuner</a>
+</div>
+
+      </article>
+    </section>
+  </main>
+
+
+  <footer class="footer">
+    <p>
+      <a href="index.html">Free Guitar Tuner</a> ·
+      <a href="drop-d-guitar-tuner.html">Drop D</a> ·
+      <a href="dadgad-guitar-tuner.html">DADGAD</a> ·
+      <a href="open-g-guitar-tuner.html">Open G</a> ·
+      <a href="privacy.html">Privacy</a>
+    </p>
+  </footer>
+
+  <script src="tuner.js"></script>
+</body>
+</html>
