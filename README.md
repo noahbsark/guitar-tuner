@@ -12,6 +12,8 @@ This is a GitHub Pages-ready static website for a free browser-based guitar tune
 - `open-e-guitar-tuner.html` — Open E landing page
 - `half-step-down-guitar-tuner.html` — half step down landing page
 - `whole-step-down-guitar-tuner.html` — whole step down landing page
+- `432-hz-guitar-tuner.html` — standard tuning calibrated to A4 = 432 Hz
+- `528-hz-guitar-tuner.html` — standard tuning with C5 = 528 Hz (A4 ≈ 444 Hz)
 - `beginner-guitar-tuning-guide.html` — beginner SEO guide
 - `about.html`, `privacy.html`, `contact.html`
 - `styles.css` — shared styling

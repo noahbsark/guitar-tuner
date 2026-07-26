@@ -20,6 +20,30 @@ const TUNINGS = {
       { note: "E4", frequency: 329.6276 }
     ]
   },
+  standard432: {
+    name: "432 Hz Standard",
+    label: "E A D G B E · A4 = 432 Hz",
+    strings: [
+      { note: "E2", frequency: 80.9086 },
+      { note: "A2", frequency: 108.0000 },
+      { note: "D3", frequency: 144.1627 },
+      { note: "G3", frequency: 192.4341 },
+      { note: "B3", frequency: 242.4518 },
+      { note: "E4", frequency: 323.6343 }
+    ]
+  },
+  standard528: {
+    name: "528 Hz Standard",
+    label: "E A D G B E · C5 = 528 Hz (A4 ≈ 444 Hz)",
+    strings: [
+      { note: "E2", frequency: 83.1548 },
+      { note: "A2", frequency: 110.9983 },
+      { note: "D3", frequency: 148.1650 },
+      { note: "G3", frequency: 197.7765 },
+      { note: "B3", frequency: 249.1828 },
+      { note: "E4", frequency: 332.6192 }
+    ]
+  },
   halfStepDown: {
     name: "Half Step Down",
     label: "Eb Ab Db Gb Bb Eb",

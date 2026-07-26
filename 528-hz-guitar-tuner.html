@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>528 Hz Guitar Tuner</title>
+  <meta name="description" content="Tune a six-string guitar to standard E A D G B E with C5 at 528 Hz and A4 at approximately 444 Hz." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-tuning="standard528">
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="logo" href="index.html">Simple Guitar Tuner</a>
+      <div class="nav-links">
+        <a href="index.html">Tuner</a>
+        <a href="beginner-guitar-tuning-guide.html">Guide</a>
+        <a href="about.html">About</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <h1>528 Hz Guitar Tuner</h1>
+      <p class="lede">Tune to standard E A D G B E with C5 at 528 Hz and A4 at approximately 444 Hz instead of the common 440 Hz reference.</p>
+    </section>
+
+    <section class="app-layout">
+      <section class="tuner-card" aria-label="528 Hz guitar tuner app">
+        <div class="tuning-control">
+          <label for="tuningSelect">Tuning</label>
+          <select id="tuningSelect" aria-label="Choose guitar tuning">
+            <option value="standard">Standard (440 Hz) — E A D G B E</option>
+            <option value="standard432">432 Hz Standard — E A D G B E</option>
+            <option value="standard528">528 Hz (C5) Standard — E A D G B E</option>
+            <option value="halfStepDown">Half Step Down — Eb Ab Db Gb Bb Eb</option>
+            <option value="wholeStepDown">Whole Step Down — D G C F A D</option>
+            <option value="dropD">Drop D — D A D G B E</option>
+            <option value="doubleDropD">Double Drop D — D A D G B D</option>
+            <option value="dadgad">DADGAD — D A D G A D</option>
+            <option value="openG">Open G — D G D G B D</option>
+            <option value="openD">Open D — D A D F# A D</option>
+            <option value="openE">Open E — E B E G# B E</option>
+          </select>
+        </div>
+
+        <div id="statusPill" class="status-pill" aria-live="polite">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="statusText">Microphone off</span>
+        </div>
+
+        <section class="readout" aria-live="polite">
+          <div id="noteReadout" class="note note-idle">—</div>
+          <div id="helperText" class="helper">Tap Start and pluck a string</div>
+          <div id="detailsText" class="details">Waiting for microphone</div>
+        </section>
+
+        <section class="meter-wrap" aria-label="Tuning meter">
+          <div class="meter-labels"><span>Flat</span><span>In tune</span><span>Sharp</span></div>
+          <div class="meter">
+            <div class="ticks" aria-hidden="true">
+              <span class="tick" style="--x: 10%"></span><span class="tick" style="--x: 20%"></span>
+              <span class="tick" style="--x: 30%"></span><span class="tick" style="--x: 40%"></span>
+              <span class="tick" style="--x: 50%"></span><span class="tick" style="--x: 60%"></span>
+              <span class="tick" style="--x: 70%"></span><span class="tick" style="--x: 80%"></span>
+              <span class="tick" style="--x: 90%"></span>
+            </div>
+            <div id="needle" class="needle"></div>
+          </div>
+        </section>
+
+        <section id="strings" class="strings" aria-label="Selected guitar tuning"></section>
+        <div class="level" aria-hidden="true"><div id="levelBar" class="level-bar"></div></div>
+        <button id="toggleButton" type="button">Start listening</button>
+        <div class="small-note">Pluck one string at a time. Left means tune up. Right means tune down.</div>
+      </section>
+
+      <article class="content-card">
+        <h2>How to tune your guitar to 528 Hz</h2>
+        <ol>
+          <li>Tap <strong>Start listening</strong> and allow microphone access.</li>
+          <li>Pluck one string at a time, starting with the lowest E string.</li>
+          <li>Tighten a flat string or loosen a sharp string.</li>
+          <li>Stop when the meter is green and centered for each string.</li>
+        </ol>
+
+        <h2>528 Hz target frequencies</h2>
+        <p>The string targets, low to high, are <strong>E2 83.15, A2 111.00, D3 148.17, G3 197.78, B3 249.18, and E4 332.62 Hz</strong>.</p>
+        <p>This keeps standard tuning intervals while setting C5 to exactly 528 Hz. In equal temperament, that makes A4 approximately 443.993 Hz—normally shown as 444 Hz on a chromatic tuner. C5 occurs at the 8th fret of the high E string and the 13th fret of the B string.</p>
+
+        <div class="notice">Pitch analysis happens locally in your browser. Microphone audio is not recorded, saved, or uploaded.</div>
+
+        <h2>Other tuners</h2>
+        <div class="grid-links">
+          <a href="index.html">440 Hz Standard Tuner</a>
+          <a href="432-hz-guitar-tuner.html">432 Hz Guitar Tuner</a>
+          <a href="drop-d-guitar-tuner.html">Drop D Guitar Tuner</a>
+          <a href="dadgad-guitar-tuner.html">DADGAD Guitar Tuner</a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p><a href="index.html">Free Guitar Tuner</a> · <a href="432-hz-guitar-tuner.html">432 Hz</a> · <a href="528-hz-guitar-tuner.html">528 Hz</a> · <a href="privacy.html">Privacy</a></p>
+  </footer>
+  <script src="tuner.js"></script>
+</body>
+</html>
