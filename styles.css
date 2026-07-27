@@ -411,3 +411,7 @@ button:active { transform: scale(.985); }
   .frequency-table th,
   .frequency-table td { padding: 9px 10px; font-size: .88rem; }
 }
+
+.all-tunings-card {
+  margin-top: 20px;
+}
