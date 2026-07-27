@@ -1,0 +1,198 @@
+{
+  "timezone": "America/Chicago",
+  "publishTime": "09:00",
+  "entries": [
+    {
+      "date": "2026-07-29",
+      "slug": "how-to-tune-a-guitar-without-a-tuner.html",
+      "title": "How to Tune a Guitar Without a Tuner",
+      "source": "scheduled/how-to-tune-a-guitar-without-a-tuner.html"
+    },
+    {
+      "date": "2026-07-31",
+      "slug": "which-way-to-turn-guitar-tuning-pegs.html",
+      "title": "Which Way Do You Turn Guitar Tuning Pegs?",
+      "source": "scheduled/which-way-to-turn-guitar-tuning-pegs.html"
+    },
+    {
+      "date": "2026-08-02",
+      "slug": "how-often-should-you-tune-a-guitar.html",
+      "title": "How Often Should You Tune a Guitar?",
+      "source": "scheduled/how-often-should-you-tune-a-guitar.html"
+    },
+    {
+      "date": "2026-08-03",
+      "slug": "guitar-tuner-accuracy-guide.html",
+      "title": "How Accurate Should a Guitar Tuner Be?",
+      "source": "scheduled/guitar-tuner-accuracy-guide.html"
+    },
+    {
+      "date": "2026-08-05",
+      "slug": "12-string-guitar-tuner-guide.html",
+      "title": "How to Tune a 12-String Guitar",
+      "source": "scheduled/12-string-guitar-tuner-guide.html"
+    },
+    {
+      "date": "2026-08-07",
+      "slug": "classical-guitar-tuning-guide.html",
+      "title": "How to Tune a Classical Guitar",
+      "source": "scheduled/classical-guitar-tuning-guide.html"
+    },
+    {
+      "date": "2026-08-09",
+      "slug": "baritone-guitar-tuning-guide.html",
+      "title": "How to Tune a Baritone Guitar",
+      "source": "scheduled/baritone-guitar-tuning-guide.html"
+    },
+    {
+      "date": "2026-08-10",
+      "slug": "7-string-guitar-tuning-guide.html",
+      "title": "How to Tune a Seven-String Guitar",
+      "source": "scheduled/7-string-guitar-tuning-guide.html"
+    },
+    {
+      "date": "2026-08-12",
+      "slug": "how-to-change-acoustic-guitar-strings.html",
+      "title": "How to Change Acoustic Guitar Strings",
+      "source": "scheduled/how-to-change-acoustic-guitar-strings.html"
+    },
+    {
+      "date": "2026-08-14",
+      "slug": "how-to-change-electric-guitar-strings.html",
+      "title": "How to Change Electric Guitar Strings",
+      "source": "scheduled/how-to-change-electric-guitar-strings.html"
+    },
+    {
+      "date": "2026-08-16",
+      "slug": "how-to-change-classical-guitar-strings.html",
+      "title": "How to Change Classical Guitar Strings",
+      "source": "scheduled/how-to-change-classical-guitar-strings.html"
+    },
+    {
+      "date": "2026-08-17",
+      "slug": "how-to-stretch-new-guitar-strings.html",
+      "title": "How to Stretch New Guitar Strings Properly",
+      "source": "scheduled/how-to-stretch-new-guitar-strings.html"
+    },
+    {
+      "date": "2026-08-19",
+      "slug": "guitar-nut-tuning-problems.html",
+      "title": "Guitar Nut Problems That Cause Tuning Issues",
+      "source": "scheduled/guitar-nut-tuning-problems.html"
+    },
+    {
+      "date": "2026-08-21",
+      "slug": "temperature-humidity-guitar-tuning.html",
+      "title": "How Temperature and Humidity Affect Guitar Tuning",
+      "source": "scheduled/temperature-humidity-guitar-tuning.html"
+    },
+    {
+      "date": "2026-08-23",
+      "slug": "floating-tremolo-guitar-tuning.html",
+      "title": "How to Tune a Guitar with a Floating Tremolo",
+      "source": "scheduled/floating-tremolo-guitar-tuning.html"
+    },
+    {
+      "date": "2026-08-24",
+      "slug": "floyd-rose-guitar-tuning-guide.html",
+      "title": "How to Tune a Floyd Rose Guitar",
+      "source": "scheduled/floyd-rose-guitar-tuning-guide.html"
+    },
+    {
+      "date": "2026-08-26",
+      "slug": "nashville-guitar-tuning-guide.html",
+      "title": "Nashville Guitar Tuning Guide",
+      "source": "scheduled/nashville-guitar-tuning-guide.html"
+    },
+    {
+      "date": "2026-08-28",
+      "slug": "open-a-guitar-tuner.html",
+      "title": "Open A Guitar Tuning Guide",
+      "source": "scheduled/open-a-guitar-tuner.html"
+    },
+    {
+      "date": "2026-08-30",
+      "slug": "open-b-guitar-tuner.html",
+      "title": "Open B Guitar Tuning Guide",
+      "source": "scheduled/open-b-guitar-tuner.html"
+    },
+    {
+      "date": "2026-08-31",
+      "slug": "open-c6-guitar-tuner.html",
+      "title": "Open C6 Guitar Tuning Guide",
+      "source": "scheduled/open-c6-guitar-tuner.html"
+    },
+    {
+      "date": "2026-09-02",
+      "slug": "drop-b-guitar-tuner.html",
+      "title": "Drop B Guitar Tuning Guide",
+      "source": "scheduled/drop-b-guitar-tuner.html"
+    },
+    {
+      "date": "2026-09-04",
+      "slug": "drop-a-guitar-tuner.html",
+      "title": "Drop A Guitar Tuning Guide",
+      "source": "scheduled/drop-a-guitar-tuner.html"
+    },
+    {
+      "date": "2026-09-06",
+      "slug": "c-standard-guitar-tuner.html",
+      "title": "C Standard Guitar Tuning Guide",
+      "source": "scheduled/c-standard-guitar-tuner.html"
+    },
+    {
+      "date": "2026-09-07",
+      "slug": "b-standard-guitar-tuner.html",
+      "title": "B Standard Guitar Tuning Guide",
+      "source": "scheduled/b-standard-guitar-tuner.html"
+    },
+    {
+      "date": "2026-09-09",
+      "slug": "standard-tuning-guitar-chord-guide.html",
+      "title": "Standard Guitar Chord Shapes and Tuning",
+      "source": "scheduled/standard-tuning-guitar-chord-guide.html"
+    },
+    {
+      "date": "2026-09-11",
+      "slug": "drop-d-chord-shapes.html",
+      "title": "Drop D Chord Shapes",
+      "source": "scheduled/drop-d-chord-shapes.html"
+    },
+    {
+      "date": "2026-09-13",
+      "slug": "dadgad-chord-shapes.html",
+      "title": "DADGAD Chord Shapes for Beginners",
+      "source": "scheduled/dadgad-chord-shapes.html"
+    },
+    {
+      "date": "2026-09-14",
+      "slug": "open-g-chord-shapes.html",
+      "title": "Open G Chord Shapes",
+      "source": "scheduled/open-g-chord-shapes.html"
+    },
+    {
+      "date": "2026-09-16",
+      "slug": "open-d-chord-shapes.html",
+      "title": "Open D Chord Shapes",
+      "source": "scheduled/open-d-chord-shapes.html"
+    },
+    {
+      "date": "2026-09-18",
+      "slug": "alternate-tuning-string-tension-guide.html",
+      "title": "Alternate Tuning String-Tension Guide",
+      "source": "scheduled/alternate-tuning-string-tension-guide.html"
+    },
+    {
+      "date": "2026-09-20",
+      "slug": "best-string-gauges-for-drop-tunings.html",
+      "title": "Best String Gauges for Drop Tunings",
+      "source": "scheduled/best-string-gauges-for-drop-tunings.html"
+    },
+    {
+      "date": "2026-09-21",
+      "slug": "can-alternate-tunings-damage-a-guitar.html",
+      "title": "Can Alternate Tunings Damage a Guitar?",
+      "source": "scheduled/can-alternate-tunings-damage-a-guitar.html"
+    }
+  ]
+}
