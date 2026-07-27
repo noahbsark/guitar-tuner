@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Replace https://example.com with your real domain before submitting to Google Search Console. -->
-  <url><loc>https://example.com/index.html</loc></url>
-  <url><loc>https://example.com/drop-d-guitar-tuner.html</loc></url>
-  <url><loc>https://example.com/dadgad-guitar-tuner.html</loc></url>
-  <url><loc>https://example.com/open-g-guitar-tuner.html</loc></url>
-  <url><loc>https://example.com/open-d-guitar-tuner.html</loc></url>
-  <url><loc>https://example.com/open-e-guitar-tuner.html</loc></url>
-  <url><loc>https://example.com/half-step-down-guitar-tuner.html</loc></url>
-  <url><loc>https://example.com/whole-step-down-guitar-tuner.html</loc></url>
-  <url><loc>https://example.com/432-hz-guitar-tuner.html</loc></url>
-  <url><loc>https://example.com/528-hz-guitar-tuner.html</loc></url>
-  <url><loc>https://example.com/beginner-guitar-tuning-guide.html</loc></url>
-  <url><loc>https://example.com/about.html</loc></url>
-  <url><loc>https://example.com/privacy.html</loc></url>
-  <url><loc>https://example.com/contact.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/</loc></url>
+  <url><loc>https://onlineguitartuner.net/432-hz-guitar-tuner.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/528-hz-guitar-tuner.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/about.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/beginner-guitar-tuning-guide.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/contact.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/dadgad-guitar-tuner.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/drop-d-guitar-tuner.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/half-step-down-guitar-tuner.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/open-d-guitar-tuner.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/open-e-guitar-tuner.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/open-g-guitar-tuner.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/privacy.html</loc></url>
+  <url><loc>https://onlineguitartuner.net/whole-step-down-guitar-tuner.html</loc></url>
 </urlset>
