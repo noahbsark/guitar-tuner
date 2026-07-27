@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import html
 import json
-import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -20,6 +19,28 @@ REQUIRED_SNIPPETS = (
     "ca-pub-6136525087204092",
     'href="styles.css"',
 )
+
+
+ALL_TUNINGS_SECTION = """
+    <section class="content-card all-tunings-card" data-all-tunings>
+      <h2>All guitar tunings</h2>
+      <div class="grid-links">
+        <a href="index.html">Standard — E A D G B E</a>
+        <a href="432-hz-guitar-tuner.html">432 Hz Standard</a>
+        <a href="528-hz-guitar-tuner.html">528 Hz (C5) Standard</a>
+        <a href="half-step-down-guitar-tuner.html">Half Step Down — Eb Ab Db Gb Bb Eb</a>
+        <a href="whole-step-down-guitar-tuner.html">Whole Step Down — D G C F A D</a>
+        <a href="drop-d-guitar-tuner.html">Drop D — D A D G B E</a>
+        <a href="double-drop-d-guitar-tuner.html">Double Drop D — D A D G B D</a>
+        <a href="drop-c-guitar-tuner.html">Drop C — C G C F A D</a>
+        <a href="dadgad-guitar-tuner.html">DADGAD — D A D G A D</a>
+        <a href="open-g-guitar-tuner.html">Open G — D G D G B D</a>
+        <a href="open-d-guitar-tuner.html">Open D — D A D F# A D</a>
+        <a href="open-e-guitar-tuner.html">Open E — E B E G# B E</a>
+        <a href="open-c-guitar-tuner.html">Open C — C G C G C E</a>
+      </div>
+    </section>
+"""
 
 
 def fail(message: str) -> None:
@@ -79,7 +100,9 @@ def main() -> None:
         if missing:
             fail(f"{source} failed validation; missing: {', '.join(missing)}")
 
-        shutil.copyfile(source, destination)
+        if "data-all-tunings" not in content:
+            content = content.replace("</main>", ALL_TUNINGS_SECTION + "  </main>")
+        destination.write_text(content, encoding="utf-8")
         url = f"{BASE_URL}/{slug}"
 
         if url not in sitemap:
