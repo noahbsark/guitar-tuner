@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Drop C Guitar Tuner</title>
+  <meta name="description" content="Tune your guitar to Drop C, C G C F A D, with a microphone tuner, string frequencies, and setup guidance." />
+  <link rel="canonical" href="https://onlineguitartuner.net/drop-c-guitar-tuner.html" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6136525087204092" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-tuning="dropC">
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="logo" href="index.html">Simple Guitar Tuner</a>
+      <div class="nav-links">
+        <a href="index.html">Tuner</a>
+        <a href="beginner-guitar-tuning-guide.html">Guide</a>
+        <a href="about.html">About</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+    </nav>
+  </header>
+  <main class="page">
+    <section class="hero">
+      <h1>Drop C Guitar Tuner</h1>
+      <p class="lede">Tune to C G C F A D for a low C power-chord tuning one whole step below Drop D.</p>
+    </section>
+    <section class="app-layout">
+      <section class="tuner-card" aria-label="Drop C Guitar Tuner app">
+        <div class="tuning-control">
+          <label for="tuningSelect">Tuning</label>
+          <select id="tuningSelect" aria-label="Choose guitar tuning">
+            <option value="standard">Standard — E A D G B E</option>
+            <option value="standard432">432 Hz Standard — E A D G B E</option>
+            <option value="standard528">528 Hz (C5) Standard — E A D G B E</option>
+            <option value="halfStepDown">Half Step Down — Eb Ab Db Gb Bb Eb</option>
+            <option value="wholeStepDown">Whole Step Down — D G C F A D</option>
+            <option value="dropD">Drop D — D A D G B E</option>
+            <option value="doubleDropD">Double Drop D — D A D G B D</option>
+            <option value="dropC">Drop C — C G C F A D</option>
+            <option value="dadgad">DADGAD — D A D G A D</option>
+            <option value="openG">Open G — D G D G B D</option>
+            <option value="openD">Open D — D A D F# A D</option>
+            <option value="openE">Open E — E B E G# B E</option>
+            <option value="openC">Open C — C G C G C E</option>
+          </select>
+        </div>
+        <div id="statusPill" class="status-pill" aria-live="polite">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="statusText">Microphone off</span>
+        </div>
+        <section class="readout" aria-live="polite">
+          <div id="noteReadout" class="note note-idle">—</div>
+          <div id="helperText" class="helper">Tap Start and pluck a string</div>
+          <div id="detailsText" class="details">Waiting for microphone</div>
+        </section>
+        <section class="meter-wrap" aria-label="Tuning meter">
+          <div class="meter-labels"><span>Flat</span><span>In tune</span><span>Sharp</span></div>
+          <div class="meter">
+            <div class="ticks" aria-hidden="true">
+              <span class="tick" style="--x: 10%"></span><span class="tick" style="--x: 20%"></span>
+              <span class="tick" style="--x: 30%"></span><span class="tick" style="--x: 40%"></span>
+              <span class="tick" style="--x: 50%"></span><span class="tick" style="--x: 60%"></span>
+              <span class="tick" style="--x: 70%"></span><span class="tick" style="--x: 80%"></span>
+              <span class="tick" style="--x: 90%"></span>
+            </div>
+            <div id="needle" class="needle"></div>
+          </div>
+        </section>
+        <section id="strings" class="strings" aria-label="Selected guitar tuning"></section>
+        <div class="level" aria-hidden="true"><div id="levelBar" class="level-bar"></div></div>
+        <button id="toggleButton" type="button">Start listening</button>
+        <div class="small-note">Pluck one string at a time. Left means tune up. Right means tune down.</div>
+      </section>
+      <article class="content-card">
+        <h2>What is Drop C tuning?</h2>
+        <p>Drop C is <strong>C G C F A D</strong>, low to high. One way to understand it is D-standard tuning with the sixth string lowered one additional whole step from D to C. Compared with standard tuning, strings 5 through 1 are one whole step lower and the sixth string is two whole steps lower.</p>
+        <h2>How to tune from standard</h2>
+        <ol><li>Lower every string one whole step to D G C F A D.</li><li>Lower the sixth string again, from D2 to C2.</li><li>Recheck strings 5 through 1 after the large tension change.</li><li>Pluck the low C with moderate force and center the meter after the initial attack.</li></ol>
+        <h2>Drop C target frequencies</h2>
+        <div class="table-wrap"><table class="frequency-table"><thead><tr><th>String</th><th>Note</th><th>Frequency</th></tr></thead><tbody>
+        <tr><td>6</td><td>C2</td><td>65.41 Hz</td></tr><tr><td>5</td><td>G2</td><td>98.00 Hz</td></tr><tr><td>4</td><td>C3</td><td>130.81 Hz</td></tr><tr><td>3</td><td>F3</td><td>174.61 Hz</td></tr><tr><td>2</td><td>A3</td><td>220.00 Hz</td></tr><tr><td>1</td><td>D4</td><td>293.66 Hz</td></tr>
+        </tbody></table></div>
+        <h2>How Drop C changes chord shapes</h2>
+        <p>The three lowest strings are C, G, and C, so one-finger power chords work across them. Strings 5 through 1 keep the same interval relationships as standard tuning but sound a whole step lower. The low sixth string has a different relationship and requires Drop-C-specific scale and chord patterns.</p>
+        <h2>String gauge and setup</h2>
+        <p>Drop C removes enough tension that a light standard set can feel loose and may buzz. Players who stay in Drop C often use heavier strings, but a gauge change can affect the nut slots, neck relief, action, and intonation. Make permanent changes gradually or ask a qualified repair technician for a setup.</p>
+        <ul><li>Do not judge pitch during the sharp initial attack of a heavily picked low string.</li><li>Check intonation after choosing a permanent string gauge.</li><li>Return to pitch slowly when tuning back up to avoid overshooting.</li></ul>
+        <h2>Related pages</h2>
+        <div class="grid-links"><a href="drop-d-guitar-tuner.html">Drop D Tuner</a><a href="whole-step-down-guitar-tuner.html">D Standard Tuner</a><a href="guitar-string-gauge-guide.html">String Gauge Guide</a><a href="guitar-intonation-guide.html">Intonation Guide</a></div>
+      </article>
+    </section>
+  </main>
+  <footer class="footer">
+    <p><a href="index.html">Free Guitar Tuner</a> · <a href="drop-d-guitar-tuner.html">Drop D</a> · <a href="dadgad-guitar-tuner.html">DADGAD</a> · <a href="open-g-guitar-tuner.html">Open G</a> · <a href="privacy.html">Privacy</a></p>
+  </footer>
+  <script src="tuner.js"></script>
+</body>
+</html>
