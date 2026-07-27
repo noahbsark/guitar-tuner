@@ -92,6 +92,30 @@ const TUNINGS = {
       { note: "D4", frequency: 293.6648 }
     ]
   },
+  dropC: {
+    name: "Drop C",
+    label: "C G C F A D",
+    strings: [
+      { note: "C2", frequency: 65.4064 },
+      { note: "G2", frequency: 97.9989 },
+      { note: "C3", frequency: 130.8128 },
+      { note: "F3", frequency: 174.6141 },
+      { note: "A3", frequency: 220.0000 },
+      { note: "D4", frequency: 293.6648 }
+    ]
+  },
+  openC: {
+    name: "Open C",
+    label: "C G C G C E",
+    strings: [
+      { note: "C2", frequency: 65.4064 },
+      { note: "G2", frequency: 97.9989 },
+      { note: "C3", frequency: 130.8128 },
+      { note: "G3", frequency: 195.9977 },
+      { note: "C4", frequency: 261.6256 },
+      { note: "E4", frequency: 329.6276 }
+    ]
+  },
   dadgad: {
     name: "DADGAD",
     label: "D A D G A D",
