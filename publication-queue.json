@@ -141,25 +141,45 @@
       "date": "2026-09-02",
       "slug": "drop-b-guitar-tuner.html",
       "title": "Drop B Guitar Tuning Guide",
-      "source": "scheduled/drop-b-guitar-tuner.html"
+      "source": "scheduled/drop-b-guitar-tuner.html",
+      "tuning": {
+        "key": "dropB",
+        "optionLabel": "Drop B — B F# B E G# C#",
+        "directoryLabel": "Drop B — B F# B E G# C#"
+      }
     },
     {
       "date": "2026-09-04",
       "slug": "drop-a-guitar-tuner.html",
       "title": "Drop A Guitar Tuning Guide",
-      "source": "scheduled/drop-a-guitar-tuner.html"
+      "source": "scheduled/drop-a-guitar-tuner.html",
+      "tuning": {
+        "key": "dropA",
+        "optionLabel": "Drop A — A E A D F# B",
+        "directoryLabel": "Drop A — A E A D F# B"
+      }
     },
     {
       "date": "2026-09-06",
       "slug": "c-standard-guitar-tuner.html",
       "title": "C Standard Guitar Tuning Guide",
-      "source": "scheduled/c-standard-guitar-tuner.html"
+      "source": "scheduled/c-standard-guitar-tuner.html",
+      "tuning": {
+        "key": "cStandard",
+        "optionLabel": "C Standard — C F Bb Eb G C",
+        "directoryLabel": "C Standard — C F Bb Eb G C"
+      }
     },
     {
       "date": "2026-09-07",
       "slug": "b-standard-guitar-tuner.html",
       "title": "B Standard Guitar Tuning Guide",
-      "source": "scheduled/b-standard-guitar-tuner.html"
+      "source": "scheduled/b-standard-guitar-tuner.html",
+      "tuning": {
+        "key": "bStandard",
+        "optionLabel": "B Standard — B E A D F# B",
+        "directoryLabel": "B Standard — B E A D F# B"
+      }
     },
     {
       "date": "2026-09-09",
