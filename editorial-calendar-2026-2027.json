@@ -1,0 +1,1261 @@
+{
+  "timezone": "America/Chicago",
+  "cadence": "Monday, Wednesday, Friday",
+  "startDate": "2026-09-23",
+  "endDate": "2027-09-20",
+  "strategy": {
+    "activeQueueWeeks": 12,
+    "reviewFrequency": "Monthly",
+    "rule": "Only entries marked queued are added to publication-queue.json. Planned entries remain editable until drafted and reviewed."
+  },
+  "entries": [
+    {
+      "date": "2026-09-23",
+      "slug": "guitar-tuner-cents-explained.html",
+      "title": "Guitar Tuner Cents Explained",
+      "category": "tuner-basics",
+      "status": "queued",
+      "source": "scheduled/guitar-tuner-cents-explained.html"
+    },
+    {
+      "date": "2026-09-25",
+      "slug": "why-guitar-tuner-jumps-between-notes.html",
+      "title": "Why Does My Guitar Tuner Jump Between Notes?",
+      "category": "tuner-basics",
+      "status": "queued",
+      "source": "scheduled/why-guitar-tuner-jumps-between-notes.html"
+    },
+    {
+      "date": "2026-09-28",
+      "slug": "how-to-use-online-guitar-tuner.html",
+      "title": "How to Use an Online Guitar Tuner",
+      "category": "tuner-basics",
+      "status": "queued",
+      "source": "scheduled/how-to-use-online-guitar-tuner.html"
+    },
+    {
+      "date": "2026-09-30",
+      "slug": "chromatic-tuner-vs-guitar-tuner-mode.html",
+      "title": "Chromatic Tuner vs Guitar Tuner Mode",
+      "category": "tuner-basics",
+      "status": "queued",
+      "source": "scheduled/chromatic-tuner-vs-guitar-tuner-mode.html"
+    },
+    {
+      "date": "2026-10-02",
+      "slug": "how-to-tune-guitar-in-noisy-room.html",
+      "title": "How to Tune a Guitar in a Noisy Room",
+      "category": "tuner-basics",
+      "status": "queued",
+      "source": "scheduled/how-to-tune-guitar-in-noisy-room.html"
+    },
+    {
+      "date": "2026-10-05",
+      "slug": "how-hard-to-pluck-string-when-tuning.html",
+      "title": "How Hard Should You Pluck a String When Tuning?",
+      "category": "tuner-basics",
+      "status": "queued",
+      "source": "scheduled/how-hard-to-pluck-string-when-tuning.html"
+    },
+    {
+      "date": "2026-10-07",
+      "slug": "guitar-tuning-order-low-to-high.html",
+      "title": "What Order Should You Tune Guitar Strings?",
+      "category": "tuner-basics",
+      "status": "queued",
+      "source": "scheduled/guitar-tuning-order-low-to-high.html"
+    },
+    {
+      "date": "2026-10-09",
+      "slug": "should-you-tune-up-or-down-to-pitch.html",
+      "title": "Should You Tune Up or Down to the Note?",
+      "category": "tuner-basics",
+      "status": "queued",
+      "source": "scheduled/should-you-tune-up-or-down-to-pitch.html"
+    },
+    {
+      "date": "2026-10-12",
+      "slug": "guitar-tuner-shows-wrong-note.html",
+      "title": "Why Does My Guitar Tuner Show the Wrong Note?",
+      "category": "tuner-basics",
+      "status": "queued",
+      "source": "scheduled/guitar-tuner-shows-wrong-note.html"
+    },
+    {
+      "date": "2026-10-14",
+      "slug": "microphone-not-working-online-guitar-tuner.html",
+      "title": "Microphone Not Working with an Online Guitar Tuner",
+      "category": "tuner-basics",
+      "status": "queued",
+      "source": "scheduled/microphone-not-working-online-guitar-tuner.html"
+    },
+    {
+      "date": "2026-10-16",
+      "slug": "guitar-tuner-needle-explained.html",
+      "title": "How to Read a Guitar Tuner Needle",
+      "category": "tuner-basics",
+      "status": "queued",
+      "source": "scheduled/guitar-tuner-needle-explained.html"
+    },
+    {
+      "date": "2026-10-19",
+      "slug": "a440-guitar-tuning-explained.html",
+      "title": "A440 Guitar Tuning Explained",
+      "category": "tuner-basics",
+      "status": "queued",
+      "source": "scheduled/a440-guitar-tuning-explained.html"
+    },
+    {
+      "date": "2026-10-21",
+      "slug": "drop-d-vs-double-drop-d.html",
+      "title": "Drop D vs Double Drop D Tuning",
+      "category": "tuning-comparisons",
+      "status": "queued",
+      "source": "scheduled/drop-d-vs-double-drop-d.html"
+    },
+    {
+      "date": "2026-10-23",
+      "slug": "drop-c-vs-c-standard.html",
+      "title": "Drop C vs C Standard Tuning",
+      "category": "tuning-comparisons",
+      "status": "queued",
+      "source": "scheduled/drop-c-vs-c-standard.html"
+    },
+    {
+      "date": "2026-10-26",
+      "slug": "drop-b-vs-b-standard.html",
+      "title": "Drop B vs B Standard Tuning",
+      "category": "tuning-comparisons",
+      "status": "queued",
+      "source": "scheduled/drop-b-vs-b-standard.html"
+    },
+    {
+      "date": "2026-10-28",
+      "slug": "open-d-vs-open-e.html",
+      "title": "Open D vs Open E Tuning",
+      "category": "tuning-comparisons",
+      "status": "queued",
+      "source": "scheduled/open-d-vs-open-e.html"
+    },
+    {
+      "date": "2026-10-30",
+      "slug": "open-g-vs-open-a.html",
+      "title": "Open G vs Open A Tuning",
+      "category": "tuning-comparisons",
+      "status": "queued",
+      "source": "scheduled/open-g-vs-open-a.html"
+    },
+    {
+      "date": "2026-11-02",
+      "slug": "dadgad-vs-open-d.html",
+      "title": "DADGAD vs Open D Tuning",
+      "category": "tuning-comparisons",
+      "status": "queued",
+      "source": "scheduled/dadgad-vs-open-d.html"
+    },
+    {
+      "date": "2026-11-04",
+      "slug": "guitar-tunings-for-slide-guitar.html",
+      "title": "Best Guitar Tunings for Slide Guitar",
+      "category": "tuning-uses",
+      "status": "queued",
+      "source": "scheduled/guitar-tunings-for-slide-guitar.html"
+    },
+    {
+      "date": "2026-11-06",
+      "slug": "guitar-tunings-for-fingerstyle.html",
+      "title": "Best Guitar Tunings for Fingerstyle",
+      "category": "tuning-uses",
+      "status": "queued",
+      "source": "scheduled/guitar-tunings-for-fingerstyle.html"
+    },
+    {
+      "date": "2026-11-09",
+      "slug": "guitar-tunings-for-heavy-metal.html",
+      "title": "Best Guitar Tunings for Heavy Metal",
+      "category": "tuning-uses",
+      "status": "queued",
+      "source": "scheduled/guitar-tunings-for-heavy-metal.html"
+    },
+    {
+      "date": "2026-11-11",
+      "slug": "easiest-alternate-guitar-tunings.html",
+      "title": "Easiest Alternate Guitar Tunings for Beginners",
+      "category": "tuning-uses",
+      "status": "queued",
+      "source": "scheduled/easiest-alternate-guitar-tunings.html"
+    },
+    {
+      "date": "2026-11-13",
+      "slug": "how-to-return-guitar-to-standard-tuning.html",
+      "title": "How to Return a Guitar to Standard Tuning",
+      "category": "tuning-uses",
+      "status": "queued",
+      "source": "scheduled/how-to-return-guitar-to-standard-tuning.html"
+    },
+    {
+      "date": "2026-11-16",
+      "slug": "alternate-guitar-tuning-cheat-sheet.html",
+      "title": "Alternate Guitar Tuning Cheat Sheet",
+      "category": "reference",
+      "status": "queued",
+      "source": "scheduled/alternate-guitar-tuning-cheat-sheet.html"
+    },
+    {
+      "date": "2026-11-18",
+      "slug": "locking-tuners-tuning-stability.html",
+      "title": "Do Locking Tuners Improve Tuning Stability?",
+      "category": "hardware",
+      "status": "queued",
+      "source": "scheduled/locking-tuners-tuning-stability.html"
+    },
+    {
+      "date": "2026-11-20",
+      "slug": "how-to-lubricate-guitar-nut.html",
+      "title": "How to Lubricate a Guitar Nut Safely",
+      "category": "hardware",
+      "status": "queued",
+      "source": "scheduled/how-to-lubricate-guitar-nut.html"
+    },
+    {
+      "date": "2026-11-23",
+      "slug": "guitar-string-winding-post-guide.html",
+      "title": "How to Wind Guitar Strings Around Tuning Posts",
+      "category": "hardware",
+      "status": "queued",
+      "source": "scheduled/guitar-string-winding-post-guide.html"
+    },
+    {
+      "date": "2026-11-25",
+      "slug": "how-many-wraps-guitar-tuning-post.html",
+      "title": "How Many Wraps Should a Guitar String Have?",
+      "category": "hardware",
+      "status": "queued",
+      "source": "scheduled/how-many-wraps-guitar-tuning-post.html"
+    },
+    {
+      "date": "2026-11-27",
+      "slug": "guitar-bridge-tuning-stability.html",
+      "title": "How Guitar Bridges Affect Tuning Stability",
+      "category": "hardware",
+      "status": "queued",
+      "source": "scheduled/guitar-bridge-tuning-stability.html"
+    },
+    {
+      "date": "2026-11-30",
+      "slug": "guitar-saddle-intonation-symptoms.html",
+      "title": "Signs Your Guitar Saddle or Intonation Is Wrong",
+      "category": "hardware",
+      "status": "queued",
+      "source": "scheduled/guitar-saddle-intonation-symptoms.html"
+    },
+    {
+      "date": "2026-12-02",
+      "slug": "tune-o-matic-bridge-intonation-guide.html",
+      "title": "Tune-o-Matic Bridge Intonation Guide",
+      "category": "hardware",
+      "status": "queued",
+      "source": "scheduled/tune-o-matic-bridge-intonation-guide.html"
+    },
+    {
+      "date": "2026-12-04",
+      "slug": "acoustic-guitar-bridge-pin-problems.html",
+      "title": "Acoustic Guitar Bridge Pin Problems",
+      "category": "hardware",
+      "status": "queued",
+      "source": "scheduled/acoustic-guitar-bridge-pin-problems.html"
+    },
+    {
+      "date": "2026-12-07",
+      "slug": "guitar-neck-relief-tuning-stability.html",
+      "title": "How Neck Relief Affects Tuning and Intonation",
+      "category": "setup",
+      "status": "queued",
+      "source": "scheduled/guitar-neck-relief-tuning-stability.html"
+    },
+    {
+      "date": "2026-12-09",
+      "slug": "guitar-pickup-height-tuner-accuracy.html",
+      "title": "Can Pickup Height Affect Tuner Accuracy?",
+      "category": "setup",
+      "status": "queued",
+      "source": "scheduled/guitar-pickup-height-tuner-accuracy.html"
+    },
+    {
+      "date": "2026-12-11",
+      "slug": "old-guitar-strings-intonation.html",
+      "title": "How Old Strings Affect Guitar Intonation",
+      "category": "setup",
+      "status": "queued",
+      "source": "scheduled/old-guitar-strings-intonation.html"
+    },
+    {
+      "date": "2026-12-14",
+      "slug": "guitar-tuning-checklist-before-recording.html",
+      "title": "Guitar Tuning Checklist Before Recording",
+      "category": "recording",
+      "status": "queued",
+      "source": "scheduled/guitar-tuning-checklist-before-recording.html"
+    },
+    {
+      "date": "2026-12-16",
+      "slug": "pitch-vs-frequency-for-guitar-players.html",
+      "title": "Pitch vs Frequency for Guitar Players",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2026-12-18",
+      "slug": "how-to-avoid-guitar-tuner-octave-errors.html",
+      "title": "How to Avoid Guitar Tuner Octave Errors",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2026-12-21",
+      "slug": "how-accurate-are-phone-guitar-tuners.html",
+      "title": "How Accurate Are Phone Guitar Tuners?",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2026-12-23",
+      "slug": "what-is-a-strobe-guitar-tuner.html",
+      "title": "What Is a Strobe Guitar Tuner?",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2026-12-25",
+      "slug": "where-to-place-a-clip-on-guitar-tuner.html",
+      "title": "Where to Place a Clip-On Guitar Tuner",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2026-12-28",
+      "slug": "how-to-tune-a-guitar-with-harmonics.html",
+      "title": "How to Tune a Guitar with Harmonics",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2026-12-30",
+      "slug": "how-to-tune-a-guitar-to-a-piano.html",
+      "title": "How to Tune a Guitar to a Piano",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-01",
+      "slug": "how-to-tune-two-guitars-together.html",
+      "title": "How to Tune Two Guitars Together",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-04",
+      "slug": "guitar-reference-pitch-standards-explained.html",
+      "title": "Guitar Reference Pitch Standards Explained",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-06",
+      "slug": "why-concert-pitch-is-a440.html",
+      "title": "Why Concert Pitch Is A440",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-08",
+      "slug": "how-cents-relate-to-hertz-in-guitar-tuning.html",
+      "title": "How Cents Relate to Hertz in Guitar Tuning",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-11",
+      "slug": "should-you-tune-before-every-practice-session.html",
+      "title": "Should You Tune Before Every Practice Session?",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-13",
+      "slug": "why-a-guitar-should-warm-up-before-tuning.html",
+      "title": "Why a Guitar Should Warm Up Before Tuning",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-15",
+      "slug": "live-guitar-tuning-routine-for-the-stage.html",
+      "title": "Live Guitar Tuning Routine for the Stage",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-18",
+      "slug": "backup-ways-to-tune-when-a-tuner-fails.html",
+      "title": "Backup Ways to Tune When a Tuner Fails",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-20",
+      "slug": "how-to-use-the-12th-fret-harmonic-when-tuning.html",
+      "title": "How to Use the 12th-Fret Harmonic When Tuning",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-22",
+      "slug": "why-you-should-tune-with-distortion-turned-off.html",
+      "title": "Why You Should Tune with Distortion Turned Off",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-25",
+      "slug": "best-pickup-selection-for-accurate-tuning.html",
+      "title": "Best Pickup Selection for Accurate Tuning",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-27",
+      "slug": "guitar-volume-and-tone-settings-while-tuning.html",
+      "title": "Guitar Volume and Tone Settings While Tuning",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-01-29",
+      "slug": "how-to-tune-a-left-handed-guitar.html",
+      "title": "How to Tune a Left-Handed Guitar",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-02-01",
+      "slug": "double-drop-c-guitar-tuning-guide.html",
+      "title": "Double Drop C Guitar Tuning Guide",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-02-03",
+      "slug": "drop-d-flat-guitar-tuning-guide.html",
+      "title": "Drop D-Flat Guitar Tuning Guide",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-02-05",
+      "slug": "drop-c-sharp-guitar-tuning-guide.html",
+      "title": "Drop C-Sharp Guitar Tuning Guide",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-02-08",
+      "slug": "six-string-drop-g-tuning-guide.html",
+      "title": "Six-String Drop G Tuning Guide",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-02-10",
+      "slug": "open-f-guitar-tuning-guide.html",
+      "title": "Open F Guitar Tuning Guide",
+      "category": "fundamentals",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-02-12",
+      "slug": "open-e-tuning-tension-and-safety.html",
+      "title": "Open E Tuning Tension and Safety",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-02-15",
+      "slug": "common-open-c-tuning-variations.html",
+      "title": "Common Open C Tuning Variations",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-02-17",
+      "slug": "modal-guitar-tunings-explained.html",
+      "title": "Modal Guitar Tunings Explained",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-02-19",
+      "slug": "cgcgcd-guitar-tuning-guide.html",
+      "title": "CGCGCD Guitar Tuning Guide",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-02-22",
+      "slug": "cgdgad-guitar-tuning-guide.html",
+      "title": "CGDGAD Guitar Tuning Guide",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-02-24",
+      "slug": "facgce-guitar-tuning-guide.html",
+      "title": "FACGCE Guitar Tuning Guide",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-02-26",
+      "slug": "ebeebe-guitar-tuning-guide.html",
+      "title": "EBEEBE Guitar Tuning Guide",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-01",
+      "slug": "alternative-tunings-for-ambient-guitar.html",
+      "title": "Alternative Tunings for Ambient Guitar",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-03",
+      "slug": "alternative-tunings-for-math-rock.html",
+      "title": "Alternative Tunings for Math Rock",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-05",
+      "slug": "alternative-tunings-for-shoegaze.html",
+      "title": "Alternative Tunings for Shoegaze",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-08",
+      "slug": "best-open-tunings-for-blues-guitar.html",
+      "title": "Best Open Tunings for Blues Guitar",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-10",
+      "slug": "folk-guitar-tunings-explained.html",
+      "title": "Folk Guitar Tunings Explained",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-12",
+      "slug": "celtic-guitar-tunings-explained.html",
+      "title": "Celtic Guitar Tunings Explained",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-15",
+      "slug": "lap-slide-guitar-tuning-guide.html",
+      "title": "Lap Slide Guitar Tuning Guide",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-17",
+      "slug": "resonator-guitar-tuning-guide.html",
+      "title": "Resonator Guitar Tuning Guide",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-19",
+      "slug": "bottleneck-slide-tuning-guide.html",
+      "title": "Bottleneck Slide Tuning Guide",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-22",
+      "slug": "using-a-capo-with-alternate-tunings.html",
+      "title": "Using a Capo with Alternate Tunings",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-24",
+      "slug": "partial-capo-guitar-tuning-guide.html",
+      "title": "Partial Capo Guitar Tuning Guide",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-26",
+      "slug": "how-to-label-and-remember-alternate-tunings.html",
+      "title": "How to Label and Remember Alternate Tunings",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-29",
+      "slug": "how-often-can-you-change-guitar-tunings.html",
+      "title": "How Often Can You Change Guitar Tunings?",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-03-31",
+      "slug": "choosing-string-gauges-by-scale-length.html",
+      "title": "Choosing String Gauges by Scale Length",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-02",
+      "slug": "plain-g-vs-wound-g-string-for-tuning.html",
+      "title": "Plain G vs Wound G String for Tuning",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-05",
+      "slug": "do-coated-strings-stay-in-tune-longer.html",
+      "title": "Do Coated Strings Stay in Tune Longer?",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-07",
+      "slug": "round-core-vs-hex-core-guitar-strings.html",
+      "title": "Round-Core vs Hex-Core Guitar Strings",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-09",
+      "slug": "how-to-seat-guitar-string-ball-ends-correctly.html",
+      "title": "How to Seat Guitar String Ball Ends Correctly",
+      "category": "alternate-tunings",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-12",
+      "slug": "best-way-to-stretch-guitar-strings.html",
+      "title": "Best Way to Stretch Guitar Strings",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-14",
+      "slug": "how-much-guitar-string-should-you-cut.html",
+      "title": "How Much Guitar String Should You Cut?",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-16",
+      "slug": "how-to-restring-locking-tuners.html",
+      "title": "How to Restring Locking Tuners",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-19",
+      "slug": "how-to-restring-vintage-split-shaft-tuners.html",
+      "title": "How to Restring Vintage Split-Shaft Tuners",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-21",
+      "slug": "how-to-restring-a-slotted-guitar-headstock.html",
+      "title": "How to Restring a Slotted Guitar Headstock",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-23",
+      "slug": "how-to-tie-classical-guitar-strings-at-the-bridge.html",
+      "title": "How to Tie Classical Guitar Strings at the Bridge",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-26",
+      "slug": "twelve-string-guitar-intonation-problems.html",
+      "title": "Twelve-String Guitar Intonation Problems",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-28",
+      "slug": "baritone-guitar-setup-for-low-tunings.html",
+      "title": "Baritone Guitar Setup for Low Tunings",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-04-30",
+      "slug": "seven-string-low-b-tuning-and-setup.html",
+      "title": "Seven-String Low B Tuning and Setup",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-03",
+      "slug": "eight-string-guitar-standard-tuning-guide.html",
+      "title": "Eight-String Guitar Standard Tuning Guide",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-05",
+      "slug": "how-to-balance-tremolo-springs-after-retuning.html",
+      "title": "How to Balance Tremolo Springs After Retuning",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-07",
+      "slug": "how-to-use-floyd-rose-fine-tuners-correctly.html",
+      "title": "How to Use Floyd Rose Fine Tuners Correctly",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-10",
+      "slug": "bigsby-guitar-tuning-stability-guide.html",
+      "title": "Bigsby Guitar Tuning Stability Guide",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-12",
+      "slug": "how-to-diagnose-nut-slot-problems.html",
+      "title": "How to Diagnose Nut Slot Problems",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-14",
+      "slug": "graphite-vs-bone-vs-synthetic-guitar-nuts.html",
+      "title": "Graphite vs Bone vs Synthetic Guitar Nuts",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-17",
+      "slug": "how-a-locking-nut-affects-tuning.html",
+      "title": "How a Locking Nut Affects Tuning",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-19",
+      "slug": "what-is-a-compensated-guitar-nut.html",
+      "title": "What Is a Compensated Guitar Nut?",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-21",
+      "slug": "how-saddle-break-angle-affects-tuning.html",
+      "title": "How Saddle Break Angle Affects Tuning",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-24",
+      "slug": "guitar-tuner-gear-ratios-explained.html",
+      "title": "Guitar Tuner Gear Ratios Explained",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-26",
+      "slug": "when-to-replace-guitar-tuning-machines.html",
+      "title": "When to Replace Guitar Tuning Machines",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-28",
+      "slug": "drop-d-chord-progressions-for-beginners.html",
+      "title": "Drop D Chord Progressions for Beginners",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-05-31",
+      "slug": "dadgad-chord-progressions.html",
+      "title": "DADGAD Chord Progressions",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-02",
+      "slug": "open-g-blues-chord-shapes.html",
+      "title": "Open G Blues Chord Shapes",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-04",
+      "slug": "open-c-guitar-chord-shapes.html",
+      "title": "Open C Guitar Chord Shapes",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-07",
+      "slug": "open-e-guitar-chord-shapes.html",
+      "title": "Open E Guitar Chord Shapes",
+      "category": "strings-setup",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-09",
+      "slug": "nashville-tuning-chord-shapes.html",
+      "title": "Nashville Tuning Chord Shapes",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-11",
+      "slug": "twelve-string-guitar-chord-voicings.html",
+      "title": "Twelve-String Guitar Chord Voicings",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-14",
+      "slug": "how-to-transpose-guitar-chords-with-a-capo.html",
+      "title": "How to Transpose Guitar Chords with a Capo",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-16",
+      "slug": "guitar-capo-key-chart-explained.html",
+      "title": "Guitar Capo Key Chart Explained",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-18",
+      "slug": "scale-patterns-in-alternate-guitar-tunings.html",
+      "title": "Scale Patterns in Alternate Guitar Tunings",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-21",
+      "slug": "drop-d-pentatonic-scale-shapes.html",
+      "title": "Drop D Pentatonic Scale Shapes",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-23",
+      "slug": "dadgad-scale-patterns-for-beginners.html",
+      "title": "DADGAD Scale Patterns for Beginners",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-25",
+      "slug": "slide-guitar-licks-in-open-g.html",
+      "title": "Slide Guitar Licks in Open G",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-28",
+      "slug": "slide-guitar-licks-in-open-d.html",
+      "title": "Slide Guitar Licks in Open D",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-06-30",
+      "slug": "fingerpicking-patterns-for-open-c.html",
+      "title": "Fingerpicking Patterns for Open C",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-02",
+      "slug": "how-to-use-drone-notes-in-guitar-arrangements.html",
+      "title": "How to Use Drone Notes in Guitar Arrangements",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-05",
+      "slug": "natural-harmonics-in-alternate-tunings.html",
+      "title": "Natural Harmonics in Alternate Tunings",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-07",
+      "slug": "songwriting-with-alternate-guitar-tunings.html",
+      "title": "Songwriting with Alternate Guitar Tunings",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-09",
+      "slug": "why-standard-guitar-tuning-works-so-well.html",
+      "title": "Why Standard Guitar Tuning Works So Well",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-12",
+      "slug": "all-fourths-guitar-tuning-guide.html",
+      "title": "All-Fourths Guitar Tuning Guide",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-14",
+      "slug": "major-thirds-guitar-tuning-explained.html",
+      "title": "Major-Thirds Guitar Tuning Explained",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-16",
+      "slug": "new-standard-tuning-guide.html",
+      "title": "New Standard Tuning Guide",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-19",
+      "slug": "tenor-guitar-tuning-guide.html",
+      "title": "Tenor Guitar Tuning Guide",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-21",
+      "slug": "how-to-map-the-fretboard-in-a-new-tuning.html",
+      "title": "How to Map the Fretboard in a New Tuning",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-23",
+      "slug": "how-to-write-chord-charts-for-alternate-tunings.html",
+      "title": "How to Write Chord Charts for Alternate Tunings",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-26",
+      "slug": "why-guitar-tuning-buttons-feel-stiff.html",
+      "title": "Why Guitar Tuning Buttons Feel Stiff",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-28",
+      "slug": "how-to-fix-a-slipping-guitar-tuning-machine.html",
+      "title": "How to Fix a Slipping Guitar Tuning Machine",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-07-30",
+      "slug": "how-string-trees-affect-tuning-stability.html",
+      "title": "How String Trees Affect Tuning Stability",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-02",
+      "slug": "tremolo-friction-and-tuning-problems.html",
+      "title": "Tremolo Friction and Tuning Problems",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-04",
+      "slug": "how-to-seat-acoustic-bridge-pins.html",
+      "title": "How to Seat Acoustic Bridge Pins",
+      "category": "chords-theory",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-06",
+      "slug": "why-an-acoustic-guitar-saddle-leans.html",
+      "title": "Why an Acoustic Guitar Saddle Leans",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-09",
+      "slug": "seasonal-guitar-setup-and-tuning-changes.html",
+      "title": "Seasonal Guitar Setup and Tuning Changes",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-11",
+      "slug": "how-to-keep-a-guitar-in-tune-while-traveling.html",
+      "title": "How to Keep a Guitar in Tune While Traveling",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-13",
+      "slug": "should-you-detune-a-guitar-for-storage.html",
+      "title": "Should You Detune a Guitar for Storage?",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-16",
+      "slug": "what-happens-when-you-change-string-gauge.html",
+      "title": "What Happens When You Change String Gauge?",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-18",
+      "slug": "why-a-capo-pulls-guitar-strings-sharp.html",
+      "title": "Why a Capo Pulls Guitar Strings Sharp",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-20",
+      "slug": "why-fretting-pressure-makes-notes-sharp.html",
+      "title": "Why Fretting Pressure Makes Notes Sharp",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-23",
+      "slug": "short-scale-guitar-tuning-and-string-gauge-guide.html",
+      "title": "Short-Scale Guitar Tuning and String Gauge Guide",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-25",
+      "slug": "how-to-tune-a-headless-guitar.html",
+      "title": "How to Tune a Headless Guitar",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-27",
+      "slug": "multiscale-guitar-tuning-guide.html",
+      "title": "Multiscale Guitar Tuning Guide",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-08-30",
+      "slug": "when-to-replace-a-clip-on-tuner-battery.html",
+      "title": "When to Replace a Clip-On Tuner Battery",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-09-01",
+      "slug": "enable-microphone-access-for-guitar-tuning-on-iphone.html",
+      "title": "Enable Microphone Access for Guitar Tuning on iPhone",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-09-03",
+      "slug": "enable-microphone-access-for-guitar-tuning-on-android.html",
+      "title": "Enable Microphone Access for Guitar Tuning on Android",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-09-06",
+      "slug": "online-guitar-tuner-setup-in-chrome.html",
+      "title": "Online Guitar Tuner Setup in Chrome",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-09-08",
+      "slug": "online-guitar-tuner-setup-in-safari.html",
+      "title": "Online Guitar Tuner Setup in Safari",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-09-10",
+      "slug": "why-bluetooth-audio-causes-tuner-latency.html",
+      "title": "Why Bluetooth Audio Causes Tuner Latency",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-09-13",
+      "slug": "how-to-tune-through-a-usb-audio-interface.html",
+      "title": "How to Tune Through a USB Audio Interface",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-09-15",
+      "slug": "how-to-use-a-guitar-tuner-plugin-in-a-daw.html",
+      "title": "How to Use a Guitar Tuner Plugin in a DAW",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-09-17",
+      "slug": "where-to-put-a-tuner-pedal-in-the-signal-chain.html",
+      "title": "Where to Put a Tuner Pedal in the Signal Chain",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    },
+    {
+      "date": "2027-09-20",
+      "slug": "how-to-tune-quickly-between-songs-on-stage.html",
+      "title": "How to Tune Quickly Between Songs on Stage",
+      "category": "troubleshooting",
+      "status": "planned",
+      "source": null
+    }
+  ]
+}
