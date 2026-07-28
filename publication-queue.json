@@ -108,19 +108,34 @@
       "date": "2026-08-28",
       "slug": "open-a-guitar-tuner.html",
       "title": "Open A Guitar Tuning Guide",
-      "source": "scheduled/open-a-guitar-tuner.html"
+      "source": "scheduled/open-a-guitar-tuner.html",
+      "tuning": {
+        "key": "openA",
+        "optionLabel": "Open A — E A E A C# E",
+        "directoryLabel": "Open A — E A E A C# E"
+      }
     },
     {
       "date": "2026-08-30",
       "slug": "open-b-guitar-tuner.html",
       "title": "Open B Guitar Tuning Guide",
-      "source": "scheduled/open-b-guitar-tuner.html"
+      "source": "scheduled/open-b-guitar-tuner.html",
+      "tuning": {
+        "key": "openB",
+        "optionLabel": "Open B — B F# B F# B D#",
+        "directoryLabel": "Open B — B F# B F# B D#"
+      }
     },
     {
       "date": "2026-08-31",
       "slug": "open-c6-guitar-tuner.html",
       "title": "Open C6 Guitar Tuning Guide",
-      "source": "scheduled/open-c6-guitar-tuner.html"
+      "source": "scheduled/open-c6-guitar-tuner.html",
+      "tuning": {
+        "key": "openC6",
+        "optionLabel": "Open C6 — C A C G C E",
+        "directoryLabel": "Open C6 — C A C G C E"
+      }
     },
     {
       "date": "2026-09-02",
