@@ -163,6 +163,42 @@ const TUNINGS = {
       { note: "B3", frequency: 246.9417 },
       { note: "E4", frequency: 329.6276 }
     ]
+  },
+  openA: {
+    name: "Open A",
+    label: "E A E A C# E",
+    strings: [
+      { note: "E2", frequency: 82.4069 },
+      { note: "A2", frequency: 110.0000 },
+      { note: "E3", frequency: 164.8138 },
+      { note: "A3", frequency: 220.0000 },
+      { note: "C#4", frequency: 277.1826 },
+      { note: "E4", frequency: 329.6276 }
+    ]
+  },
+  openB: {
+    name: "Open B",
+    label: "B F# B F# B D#",
+    strings: [
+      { note: "B1", frequency: 61.7354 },
+      { note: "F#2", frequency: 92.4986 },
+      { note: "B2", frequency: 123.4708 },
+      { note: "F#3", frequency: 184.9972 },
+      { note: "B3", frequency: 246.9417 },
+      { note: "D#4", frequency: 311.1270 }
+    ]
+  },
+  openC6: {
+    name: "Open C6",
+    label: "C A C G C E",
+    strings: [
+      { note: "C2", frequency: 65.4064 },
+      { note: "A2", frequency: 110.0000 },
+      { note: "C3", frequency: 130.8128 },
+      { note: "G3", frequency: 195.9977 },
+      { note: "C4", frequency: 261.6256 },
+      { note: "E4", frequency: 329.6276 }
+    ]
   }
 };
 
