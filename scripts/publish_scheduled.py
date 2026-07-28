@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -41,6 +42,60 @@ ALL_TUNINGS_SECTION = """
       </div>
     </section>
 """
+
+
+def refresh_tuning_navigation(site: Path, manifest: dict, today) -> None:
+    """Add every published queued tuning to tuner menus and tuning directories."""
+    tuning_entries = []
+    for entry in manifest.get("entries", []):
+        tuning = entry.get("tuning")
+        if not tuning:
+            continue
+        publish_date = datetime.strptime(entry["date"], "%Y-%m-%d").date()
+        if publish_date <= today and (site / entry["slug"]).is_file():
+            tuning_entries.append((entry, tuning))
+
+    if not tuning_entries:
+        return
+
+    section_pattern = re.compile(
+        r'(<section class="content-card all-tunings-card" data-all-tunings>.*?'
+        r'<div class="grid-links">)(.*?)(</div>\s*</section>)',
+        re.DOTALL,
+    )
+    select_pattern = re.compile(
+        r'(<select id="tuningSelect"[^>]*>)(.*?)(</select>)',
+        re.DOTALL,
+    )
+
+    for page_path in site.glob("*.html"):
+        content = page_path.read_text(encoding="utf-8")
+        original = content
+        for entry, tuning in tuning_entries:
+            slug = entry["slug"]
+            key = tuning["key"]
+            if f'href="{slug}"' not in content and section_pattern.search(content):
+                link = (
+                    f'\n        <a href="{html.escape(slug)}">'
+                    f'{html.escape(tuning["directoryLabel"])}</a>'
+                )
+                content = section_pattern.sub(
+                    lambda match: match.group(1) + match.group(2) + link + match.group(3),
+                    content,
+                    count=1,
+                )
+            if f'value="{key}"' not in content and select_pattern.search(content):
+                option = (
+                    f'\n            <option value="{html.escape(key)}">'
+                    f'{html.escape(tuning["optionLabel"])}</option>'
+                )
+                content = select_pattern.sub(
+                    lambda match: match.group(1) + match.group(2) + option + "\n          " + match.group(3),
+                    content,
+                    count=1,
+                )
+        if content != original:
+            page_path.write_text(content, encoding="utf-8")
 
 
 def fail(message: str) -> None:
@@ -122,6 +177,7 @@ def main() -> None:
 
     index_path.write_text(index, encoding="utf-8")
     sitemap_path.write_text(sitemap, encoding="utf-8")
+    refresh_tuning_navigation(site, manifest, today)
 
     (site / ".published-files.txt").write_text(
         "".join(f"{slug}\n" for slug, _, _ in published), encoding="utf-8"
