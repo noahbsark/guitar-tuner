@@ -199,6 +199,54 @@ const TUNINGS = {
       { note: "C4", frequency: 261.6256 },
       { note: "E4", frequency: 329.6276 }
     ]
+  },
+  dropB: {
+    name: "Drop B",
+    label: "B F# B E G# C#",
+    strings: [
+      { note: "B1", frequency: 61.7354 },
+      { note: "F#2", frequency: 92.4986 },
+      { note: "B2", frequency: 123.4708 },
+      { note: "E3", frequency: 164.8138 },
+      { note: "G#3", frequency: 207.6523 },
+      { note: "C#4", frequency: 277.1826 }
+    ]
+  },
+  dropA: {
+    name: "Drop A",
+    label: "A E A D F# B",
+    strings: [
+      { note: "A1", frequency: 55.0000 },
+      { note: "E2", frequency: 82.4069 },
+      { note: "A2", frequency: 110.0000 },
+      { note: "D3", frequency: 146.8324 },
+      { note: "F#3", frequency: 184.9972 },
+      { note: "B3", frequency: 246.9417 }
+    ]
+  },
+  cStandard: {
+    name: "C Standard",
+    label: "C F Bb Eb G C",
+    strings: [
+      { note: "C2", frequency: 65.4064 },
+      { note: "F2", frequency: 87.3071 },
+      { note: "Bb2", frequency: 116.5409 },
+      { note: "Eb3", frequency: 155.5635 },
+      { note: "G3", frequency: 195.9977 },
+      { note: "C4", frequency: 261.6256 }
+    ]
+  },
+  bStandard: {
+    name: "B Standard",
+    label: "B E A D F# B",
+    strings: [
+      { note: "B1", frequency: 61.7354 },
+      { note: "E2", frequency: 82.4069 },
+      { note: "A2", frequency: 110.0000 },
+      { note: "D3", frequency: 146.8324 },
+      { note: "F#3", frequency: 184.9972 },
+      { note: "B3", frequency: 246.9417 }
+    ]
   }
 };
 
