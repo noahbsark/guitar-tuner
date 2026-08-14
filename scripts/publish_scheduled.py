@@ -27,8 +27,8 @@ ALL_TUNINGS_SECTION = """
       <h2>All guitar tunings</h2>
       <div class="grid-links">
         <a href="index.html">Standard — E A D G B E</a>
-        <a href="432-hz-guitar-tuner.html">432 Hz Standard</a>
-        <a href="528-hz-guitar-tuner.html">528 Hz Standard (A=444 Hz)</a>
+        <a href="432-hz-guitar-tuner.html">432 Hz Standard — E A D G B E</a>
+        <a href="528-hz-guitar-tuner.html">528 Hz Standard (A=444 Hz) — E A D G B E</a>
         <a href="half-step-down-guitar-tuner.html">Half Step Down — Eb Ab Db Gb Bb Eb</a>
         <a href="whole-step-down-guitar-tuner.html">Whole Step Down — D G C F A D</a>
         <a href="drop-d-guitar-tuner.html">Drop D — D A D G B E</a>
@@ -55,6 +55,18 @@ def normalize_528_labels(content: str) -> str:
     return content
 
 
+def validate_internal_links(content: str, site: Path, slug: str, source: Path) -> None:
+    """Prevent a scheduled page from launching with a link that returns 404."""
+    for href in re.findall(r'<a\s+[^>]*href="([^"]+)"', content, re.IGNORECASE):
+        if href.startswith(("http://", "https://", "mailto:", "tel:", "#")):
+            continue
+        target = href.split("#", 1)[0].split("?", 1)[0].lstrip("/")
+        if not target or not target.endswith(".html") or target == slug:
+            continue
+        if not (site / target).is_file():
+            fail(f"{source} links to an unpublished or missing page: {target}")
+
+
 def refresh_tuning_navigation(site: Path, manifest: dict, today) -> None:
     """Add every published queued tuning to tuner menus and tuning directories."""
     tuning_entries = []
@@ -77,8 +89,8 @@ def refresh_tuning_navigation(site: Path, manifest: dict, today) -> None:
     )
 
     for page_path in site.glob("*.html"):
-        content = normalize_528_labels(page_path.read_text(encoding="utf-8"))
         original = page_path.read_text(encoding="utf-8")
+        content = normalize_528_labels(original)
         for entry, tuning in tuning_entries:
             slug = entry["slug"]
             key = tuning["key"]
@@ -115,6 +127,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--site", required=True, type=Path)
     parser.add_argument("--queue", required=True, type=Path)
+    parser.add_argument(
+        "--date",
+        help="Override the publication date as YYYY-MM-DD (useful for validation)",
+    )
     args = parser.parse_args()
 
     site = args.site.resolve()
@@ -125,7 +141,11 @@ def main() -> None:
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     timezone = ZoneInfo(manifest.get("timezone", "America/Chicago"))
-    today = datetime.now(timezone).date()
+    today = (
+        datetime.strptime(args.date, "%Y-%m-%d").date()
+        if args.date
+        else datetime.now(timezone).date()
+    )
 
     index_path = site / "index.html"
     sitemap_path = site / "sitemap.xml"
@@ -162,6 +182,7 @@ def main() -> None:
             missing.append("title and h1")
         if missing:
             fail(f"{source} failed validation; missing: {', '.join(missing)}")
+        validate_internal_links(content, site, slug, source)
 
         if "data-all-tunings" not in content:
             content = content.replace("</main>", ALL_TUNINGS_SECTION + "  </main>")

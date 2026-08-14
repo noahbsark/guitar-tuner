@@ -252,6 +252,9 @@ const TUNINGS = {
 
 const IN_TUNE_CENTS = 5;
 const MAX_METER_CENTS = 50;
+const MAX_TARGET_DISTANCE_CENTS = 225;
+const MIN_DETECTABLE_FREQUENCY = 45;
+const MAX_DETECTABLE_FREQUENCY = 390;
 const MIN_RMS = 0.012;
 const MIN_CLARITY = 0.68;
 const STABLE_FRAMES_REQUIRED = 3;
@@ -340,6 +343,7 @@ async function startListening() {
     isListening = true;
     toggleButton.textContent = "Stop listening";
     toggleButton.classList.add("stop");
+    toggleButton.setAttribute("aria-pressed", "true");
     setStatus("Listening", "listening");
     helperText.textContent = "Pluck a string";
     detailsText.textContent = `${TUNINGS[currentTuningKey].name}: ${TUNINGS[currentTuningKey].label}`;
@@ -388,6 +392,7 @@ function stopListening() {
   if (toggleButton) {
     toggleButton.textContent = "Start listening";
     toggleButton.classList.remove("stop");
+    toggleButton.setAttribute("aria-pressed", "false");
   }
 
   setStatus("Microphone off", "idle");
@@ -417,7 +422,7 @@ function updateLoop() {
 
   const result = detectPitchAutocorrelation(buffer, audioContext.sampleRate, rms);
 
-  if (!result || result.frequency < 65 || result.frequency > 390 || result.clarity < MIN_CLARITY) {
+  if (!result || result.frequency < MIN_DETECTABLE_FREQUENCY || result.frequency > MAX_DETECTABLE_FREQUENCY || result.clarity < MIN_CLARITY) {
     handleUnstablePitch(rms);
     rafId = requestAnimationFrame(updateLoop);
     return;
@@ -426,7 +431,7 @@ function updateLoop() {
   const nearest = getNearestString(result.frequency);
   const cents = frequencyToCents(result.frequency, nearest.frequency);
 
-  if (Math.abs(cents) > 85) {
+  if (Math.abs(cents) > MAX_TARGET_DISTANCE_CENTS) {
     handleUnstablePitch(rms);
     rafId = requestAnimationFrame(updateLoop);
     return;
@@ -563,8 +568,8 @@ function detectPitchAutocorrelation(samples, sampleRate, rms) {
   if (rms < MIN_RMS) return null;
 
   const size = samples.length;
-  const minFrequency = 65;
-  const maxFrequency = 390;
+  const minFrequency = MIN_DETECTABLE_FREQUENCY;
+  const maxFrequency = MAX_DETECTABLE_FREQUENCY;
   const minLag = Math.floor(sampleRate / maxFrequency);
   const maxLag = Math.floor(sampleRate / minFrequency);
 
@@ -595,6 +600,21 @@ function detectPitchAutocorrelation(samples, sampleRate, rms) {
   }
 
   if (bestLag === -1 || bestCorrelation < MIN_CLARITY) return null;
+
+  // A periodic signal also correlates at two, three, or more times its true
+  // period. Prefer the earliest strong local peak so a clean A2 does not get
+  // mistaken for the A1 subharmonic when low tunings are enabled.
+  const peakThreshold = Math.max(MIN_CLARITY, bestCorrelation * 0.9);
+  for (let lag = minLag + 1; lag < maxLag; lag++) {
+    const previous = correlations[lag - 1];
+    const current = correlations[lag];
+    const next = correlations[lag + 1];
+    if (current >= peakThreshold && current >= previous && current > next) {
+      bestLag = lag;
+      bestCorrelation = current;
+      break;
+    }
+  }
 
   let refinedLag = bestLag;
   if (bestLag > minLag && bestLag < maxLag) {

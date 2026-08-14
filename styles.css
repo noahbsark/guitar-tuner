@@ -23,8 +23,29 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 a { color: var(--blue); }
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 900;
+  text-decoration: none;
+  transform: translateY(-160%);
+}
+.skip-link:focus { transform: translateY(0); }
+a:focus-visible,
+button:focus-visible,
+select:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
 .site-header {
   width: min(100%, 1000px);
   margin: 0 auto;
@@ -56,6 +77,12 @@ a { color: var(--blue); }
   font-size: .92rem;
 }
 .nav-links a:hover { color: var(--text); }
+.nav-links a[aria-current="page"] {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--blue);
+  text-underline-offset: .3em;
+}
 .page {
   width: min(100%, 1000px);
   margin: 0 auto;
@@ -92,6 +119,7 @@ h3 { font-size: 1.2rem; margin: 24px 0 8px; }
 .content-card {
   box-shadow: 0 14px 34px rgba(0,0,0,.22);
 }
+.content-card > :first-child { margin-top: 0; }
 .content-card p, .content-card li { color: #c9d1d9; }
 .content-card .muted { color: var(--muted); }
 .tuning-control { margin: 0 0 18px; }
@@ -334,6 +362,10 @@ button:active { transform: scale(.985); }
   color: var(--text);
   text-decoration: none;
   font-weight: 850;
+}
+.grid-links a:hover {
+  border-color: rgba(88,166,255,.65);
+  background: rgba(88,166,255,.14);
 }
 .notice {
   border-left: 4px solid var(--blue);
