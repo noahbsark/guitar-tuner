@@ -28,7 +28,7 @@ ALL_TUNINGS_SECTION = """
       <div class="grid-links">
         <a href="index.html">Standard — E A D G B E</a>
         <a href="432-hz-guitar-tuner.html">432 Hz Standard</a>
-        <a href="528-hz-guitar-tuner.html">528 Hz (C5) Standard</a>
+        <a href="528-hz-guitar-tuner.html">528 Hz Standard (A=444 Hz)</a>
         <a href="half-step-down-guitar-tuner.html">Half Step Down — Eb Ab Db Gb Bb Eb</a>
         <a href="whole-step-down-guitar-tuner.html">Whole Step Down — D G C F A D</a>
         <a href="drop-d-guitar-tuner.html">Drop D — D A D G B E</a>
@@ -44,6 +44,17 @@ ALL_TUNINGS_SECTION = """
 """
 
 
+def normalize_528_labels(content: str) -> str:
+    """Keep 528 Hz naming consistent in published and scheduled pages."""
+    replacements = {
+        "528 Hz (C5) Standard — E A D G B E": "528 Hz (A=444 Hz) — E A D G B E",
+        "528 Hz (C5) Standard": "528 Hz Standard (A=444 Hz)",
+    }
+    for old, new in replacements.items():
+        content = content.replace(old, new)
+    return content
+
+
 def refresh_tuning_navigation(site: Path, manifest: dict, today) -> None:
     """Add every published queued tuning to tuner menus and tuning directories."""
     tuning_entries = []
@@ -54,9 +65,6 @@ def refresh_tuning_navigation(site: Path, manifest: dict, today) -> None:
         publish_date = datetime.strptime(entry["date"], "%Y-%m-%d").date()
         if publish_date <= today and (site / entry["slug"]).is_file():
             tuning_entries.append((entry, tuning))
-
-    if not tuning_entries:
-        return
 
     section_pattern = re.compile(
         r'(<section class="content-card all-tunings-card" data-all-tunings>.*?'
@@ -69,8 +77,8 @@ def refresh_tuning_navigation(site: Path, manifest: dict, today) -> None:
     )
 
     for page_path in site.glob("*.html"):
-        content = page_path.read_text(encoding="utf-8")
-        original = content
+        content = normalize_528_labels(page_path.read_text(encoding="utf-8"))
+        original = page_path.read_text(encoding="utf-8")
         for entry, tuning in tuning_entries:
             slug = entry["slug"]
             key = tuning["key"]
@@ -145,7 +153,7 @@ def main() -> None:
             print(f"SKIP {slug}: scheduled source is not ready")
             continue
 
-        content = source.read_text(encoding="utf-8")
+        content = normalize_528_labels(source.read_text(encoding="utf-8"))
         expected_canonical = f'{BASE_URL}/{slug}'
         missing = [item for item in REQUIRED_SNIPPETS if item not in content]
         if expected_canonical not in content:
@@ -172,6 +180,7 @@ def main() -> None:
         print(f"PUBLISH {slug}")
 
     if not published:
+        refresh_tuning_navigation(site, manifest, today)
         print("No completed articles are due.")
         return
 

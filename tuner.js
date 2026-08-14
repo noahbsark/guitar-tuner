@@ -33,8 +33,8 @@ const TUNINGS = {
     ]
   },
   standard528: {
-    name: "528 Hz Standard",
-    label: "E A D G B E · C5 = 528 Hz (A4 ≈ 444 Hz)",
+    name: "528 Hz (A=444 Hz)",
+    label: "E A D G B E · C5 = 528 Hz (A4 = 443.993 Hz)",
     strings: [
       { note: "E2", frequency: 83.1548 },
       { note: "A2", frequency: 110.9983 },
