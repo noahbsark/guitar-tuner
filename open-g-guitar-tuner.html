@@ -11,28 +11,31 @@
   </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
   <title>Open G Guitar Tuner</title>
-  <meta name="description" content="Use this free Open G guitar tuner to tune your guitar to D G D G B D." />
+  <meta name="description" content="Use this free Open G guitar tuner to tune D G D G B D with your microphone, exact string targets, and a safe step-by-step method." />
   <link rel="canonical" href="https://onlineguitartuner.net/open-g-guitar-tuner.html" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6136525087204092" crossorigin="anonymous"></script>
   
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body data-tuning="openG">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <header class="site-header">
     <nav class="nav" aria-label="Main navigation">
       <a class="logo" href="index.html">Simple Guitar Tuner</a>
       <div class="nav-links">
-        <a href="index.html">Tuner</a>
+        <a href="index.html" aria-current="page">Tuner</a>
         <a href="beginner-guitar-tuning-guide.html">Guide</a>
         <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
         <a href="privacy.html">Privacy</a>
       </div>
     </nav>
   </header>
 
   
-  <main class="page">
+  <main id="main-content" class="page">
     <section class="hero">
       <h1>Open G Guitar Tuner</h1>
       <p class="lede">Use this free Open G guitar tuner to tune your guitar to D G D G B D.</p>
@@ -45,18 +48,20 @@
 <div class="tuning-control">
   <label for="tuningSelect">Tuning</label>
   <select id="tuningSelect" aria-label="Choose guitar tuning">
-    <option value="standard">Standard — E A D G B E</option>
-    <option value="halfStepDown">Half Step Down — Eb Ab Db Gb Bb Eb</option>
-    <option value="wholeStepDown">Whole Step Down — D G C F A D</option>
-    <option value="dropD">Drop D — D A D G B E</option>
-    <option value="doubleDropD">Double Drop D — D A D G B D</option>
-    <option value="dropC">Drop C — C G C F A D</option>
-    <option value="dadgad">DADGAD — D A D G A D</option>
-    <option value="openG">Open G — D G D G B D</option>
-    <option value="openD">Open D — D A D F# A D</option>
-    <option value="openE">Open E — E B E G# B E</option>
-    <option value="openC">Open C — C G C G C E</option>
-  </select>
+            <option value="standard">Standard — E A D G B E</option>
+            <option value="standard432">432 Hz Standard — E A D G B E</option>
+            <option value="standard528">528 Hz (A=444 Hz) — E A D G B E</option>
+            <option value="halfStepDown">Half Step Down — Eb Ab Db Gb Bb Eb</option>
+            <option value="wholeStepDown">Whole Step Down — D G C F A D</option>
+            <option value="dropD">Drop D — D A D G B E</option>
+            <option value="doubleDropD">Double Drop D — D A D G B D</option>
+            <option value="dropC">Drop C — C G C F A D</option>
+            <option value="dadgad">DADGAD — D A D G A D</option>
+            <option value="openG">Open G — D G D G B D</option>
+            <option value="openD">Open D — D A D F# A D</option>
+            <option value="openE">Open E — E B E G# B E</option>
+            <option value="openC">Open C — C G C G C E</option>
+          </select>
 </div>
 
   <div id="statusPill" class="status-pill" aria-live="polite">
@@ -98,7 +103,7 @@
     <div id="levelBar" class="level-bar"></div>
   </div>
 
-  <button id="toggleButton" type="button">Start listening</button>
+  <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
   <div class="small-note">
     Pluck one string at a time. Left means tune up. Right means tune down.
   </div>
@@ -149,15 +154,33 @@
         </div>
       </article>
     </section>
+    <section class="content-card all-tunings-card" data-all-tunings>
+      <h2>All guitar tunings</h2>
+      <div class="grid-links">
+        <a href="index.html">Standard — E A D G B E</a>
+        <a href="432-hz-guitar-tuner.html">432 Hz Standard — E A D G B E</a>
+        <a href="528-hz-guitar-tuner.html">528 Hz Standard (A=444 Hz) — E A D G B E</a>
+        <a href="half-step-down-guitar-tuner.html">Half Step Down — Eb Ab Db Gb Bb Eb</a>
+        <a href="whole-step-down-guitar-tuner.html">Whole Step Down — D G C F A D</a>
+        <a href="drop-d-guitar-tuner.html">Drop D — D A D G B E</a>
+        <a href="double-drop-d-guitar-tuner.html">Double Drop D — D A D G B D</a>
+        <a href="drop-c-guitar-tuner.html">Drop C — C G C F A D</a>
+        <a href="dadgad-guitar-tuner.html">DADGAD — D A D G A D</a>
+        <a href="open-g-guitar-tuner.html">Open G — D G D G B D</a>
+        <a href="open-d-guitar-tuner.html">Open D — D A D F# A D</a>
+        <a href="open-e-guitar-tuner.html">Open E — E B E G# B E</a>
+        <a href="open-c-guitar-tuner.html">Open C — C G C G C E</a>
+      </div>
+    </section>
   </main>
-
 
   <footer class="footer">
     <p>
       <a href="index.html">Free Guitar Tuner</a> ·
-      <a href="drop-d-guitar-tuner.html">Drop D</a> ·
-      <a href="dadgad-guitar-tuner.html">DADGAD</a> ·
-      <a href="open-g-guitar-tuner.html">Open G</a> ·
+      <a href="beginner-guitar-tuning-guide.html">Beginner Guide</a> ·
+      <a href="about.html">About</a> ·
+      <a href="contact.html">Contact</a> ·
+      <a href="affiliate-disclosure.html">Affiliate Disclosure</a> ·
       <a href="privacy.html">Privacy</a>
     </p>
   </footer>
@@ -165,3 +188,4 @@
   <script src="tuner.js"></script>
 </body>
 </html>
+

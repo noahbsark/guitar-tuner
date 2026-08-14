@@ -163,11 +163,98 @@ const TUNINGS = {
       { note: "B3", frequency: 246.9417 },
       { note: "E4", frequency: 329.6276 }
     ]
+  },
+  openA: {
+    name: "Open A",
+    label: "E A E A C# E",
+    strings: [
+      { note: "E2", frequency: 82.4069 },
+      { note: "A2", frequency: 110.0000 },
+      { note: "E3", frequency: 164.8138 },
+      { note: "A3", frequency: 220.0000 },
+      { note: "C#4", frequency: 277.1826 },
+      { note: "E4", frequency: 329.6276 }
+    ]
+  },
+  openB: {
+    name: "Open B",
+    label: "B F# B F# B D#",
+    strings: [
+      { note: "B1", frequency: 61.7354 },
+      { note: "F#2", frequency: 92.4986 },
+      { note: "B2", frequency: 123.4708 },
+      { note: "F#3", frequency: 184.9972 },
+      { note: "B3", frequency: 246.9417 },
+      { note: "D#4", frequency: 311.1270 }
+    ]
+  },
+  openC6: {
+    name: "Open C6",
+    label: "C A C G C E",
+    strings: [
+      { note: "C2", frequency: 65.4064 },
+      { note: "A2", frequency: 110.0000 },
+      { note: "C3", frequency: 130.8128 },
+      { note: "G3", frequency: 195.9977 },
+      { note: "C4", frequency: 261.6256 },
+      { note: "E4", frequency: 329.6276 }
+    ]
+  },
+  dropB: {
+    name: "Drop B",
+    label: "B F# B E G# C#",
+    strings: [
+      { note: "B1", frequency: 61.7354 },
+      { note: "F#2", frequency: 92.4986 },
+      { note: "B2", frequency: 123.4708 },
+      { note: "E3", frequency: 164.8138 },
+      { note: "G#3", frequency: 207.6523 },
+      { note: "C#4", frequency: 277.1826 }
+    ]
+  },
+  dropA: {
+    name: "Drop A",
+    label: "A E A D F# B",
+    strings: [
+      { note: "A1", frequency: 55.0000 },
+      { note: "E2", frequency: 82.4069 },
+      { note: "A2", frequency: 110.0000 },
+      { note: "D3", frequency: 146.8324 },
+      { note: "F#3", frequency: 184.9972 },
+      { note: "B3", frequency: 246.9417 }
+    ]
+  },
+  cStandard: {
+    name: "C Standard",
+    label: "C F Bb Eb G C",
+    strings: [
+      { note: "C2", frequency: 65.4064 },
+      { note: "F2", frequency: 87.3071 },
+      { note: "Bb2", frequency: 116.5409 },
+      { note: "Eb3", frequency: 155.5635 },
+      { note: "G3", frequency: 195.9977 },
+      { note: "C4", frequency: 261.6256 }
+    ]
+  },
+  bStandard: {
+    name: "B Standard",
+    label: "B E A D F# B",
+    strings: [
+      { note: "B1", frequency: 61.7354 },
+      { note: "E2", frequency: 82.4069 },
+      { note: "A2", frequency: 110.0000 },
+      { note: "D3", frequency: 146.8324 },
+      { note: "F#3", frequency: 184.9972 },
+      { note: "B3", frequency: 246.9417 }
+    ]
   }
 };
 
 const IN_TUNE_CENTS = 5;
 const MAX_METER_CENTS = 50;
+const MAX_TARGET_DISTANCE_CENTS = 225;
+const MIN_DETECTABLE_FREQUENCY = 45;
+const MAX_DETECTABLE_FREQUENCY = 390;
 const MIN_RMS = 0.012;
 const MIN_CLARITY = 0.68;
 const STABLE_FRAMES_REQUIRED = 3;
@@ -256,6 +343,7 @@ async function startListening() {
     isListening = true;
     toggleButton.textContent = "Stop listening";
     toggleButton.classList.add("stop");
+    toggleButton.setAttribute("aria-pressed", "true");
     setStatus("Listening", "listening");
     helperText.textContent = "Pluck a string";
     detailsText.textContent = `${TUNINGS[currentTuningKey].name}: ${TUNINGS[currentTuningKey].label}`;
@@ -304,6 +392,7 @@ function stopListening() {
   if (toggleButton) {
     toggleButton.textContent = "Start listening";
     toggleButton.classList.remove("stop");
+    toggleButton.setAttribute("aria-pressed", "false");
   }
 
   setStatus("Microphone off", "idle");
@@ -333,7 +422,7 @@ function updateLoop() {
 
   const result = detectPitchAutocorrelation(buffer, audioContext.sampleRate, rms);
 
-  if (!result || result.frequency < 65 || result.frequency > 390 || result.clarity < MIN_CLARITY) {
+  if (!result || result.frequency < MIN_DETECTABLE_FREQUENCY || result.frequency > MAX_DETECTABLE_FREQUENCY || result.clarity < MIN_CLARITY) {
     handleUnstablePitch(rms);
     rafId = requestAnimationFrame(updateLoop);
     return;
@@ -342,7 +431,7 @@ function updateLoop() {
   const nearest = getNearestString(result.frequency);
   const cents = frequencyToCents(result.frequency, nearest.frequency);
 
-  if (Math.abs(cents) > 85) {
+  if (Math.abs(cents) > MAX_TARGET_DISTANCE_CENTS) {
     handleUnstablePitch(rms);
     rafId = requestAnimationFrame(updateLoop);
     return;
@@ -479,8 +568,8 @@ function detectPitchAutocorrelation(samples, sampleRate, rms) {
   if (rms < MIN_RMS) return null;
 
   const size = samples.length;
-  const minFrequency = 65;
-  const maxFrequency = 390;
+  const minFrequency = MIN_DETECTABLE_FREQUENCY;
+  const maxFrequency = MAX_DETECTABLE_FREQUENCY;
   const minLag = Math.floor(sampleRate / maxFrequency);
   const maxLag = Math.floor(sampleRate / minFrequency);
 
@@ -511,6 +600,21 @@ function detectPitchAutocorrelation(samples, sampleRate, rms) {
   }
 
   if (bestLag === -1 || bestCorrelation < MIN_CLARITY) return null;
+
+  // A periodic signal also correlates at two, three, or more times its true
+  // period. Prefer the earliest strong local peak so a clean A2 does not get
+  // mistaken for the A1 subharmonic when low tunings are enabled.
+  const peakThreshold = Math.max(MIN_CLARITY, bestCorrelation * 0.9);
+  for (let lag = minLag + 1; lag < maxLag; lag++) {
+    const previous = correlations[lag - 1];
+    const current = correlations[lag];
+    const next = correlations[lag + 1];
+    if (current >= peakThreshold && current >= previous && current > next) {
+      bestLag = lag;
+      bestCorrelation = current;
+      break;
+    }
+  }
 
   let refinedLag = bestLag;
   if (bestLag > minLag && bestLag < maxLag) {

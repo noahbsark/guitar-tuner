@@ -6,6 +6,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61XFFV7JZT');</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
   <title>Open B Guitar Tuner</title>
   <meta name="description" content="Tune guitar to Open B, B F# B F# B D#, with a microphone tuner, target frequencies, conversion steps, and string-gauge advice." />
   <link rel="canonical" href="https://onlineguitartuner.net/open-b-guitar-tuner.html" />
@@ -13,15 +14,24 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body data-tuning="openB">
-  <header class="site-header"><nav class="nav" aria-label="Main navigation"><a class="logo" href="index.html">Simple Guitar Tuner</a><div class="nav-links"><a href="index.html">Tuner</a><a href="beginner-guitar-tuning-guide.html">Guide</a><a href="about.html">About</a><a href="privacy.html">Privacy</a></div></nav></header>
-  <main class="page">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header"><nav class="nav" aria-label="Main navigation"><a class="logo" href="index.html">Simple Guitar Tuner</a><div class="nav-links">
+        <a href="index.html" aria-current="page">Tuner</a>
+        <a href="beginner-guitar-tuning-guide.html">Guide</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+        <a href="privacy.html">Privacy</a>
+      </div></nav></header>
+  <main id="main-content" class="page">
     <section class="hero"><h1>Open B Guitar Tuner</h1><p class="lede">Tune to B F# B F# B D# for a low, resonant B major chord on the open strings.</p></section>
     <section class="app-layout">
       <section class="tuner-card" aria-label="Open B Guitar Tuner app">
-        <div class="tuning-control"><label for="tuningSelect">Tuning</label><select id="tuningSelect" aria-label="Choose guitar tuning">
+        <div class="tuning-control">
+          <label for="tuningSelect">Tuning</label>
+          <select id="tuningSelect" aria-label="Choose guitar tuning">
             <option value="standard">Standard — E A D G B E</option>
             <option value="standard432">432 Hz Standard — E A D G B E</option>
-            <option value="standard528">528 Hz (C5) Standard — E A D G B E</option>
+            <option value="standard528">528 Hz (A=444 Hz) — E A D G B E</option>
             <option value="halfStepDown">Half Step Down — Eb Ab Db Gb Bb Eb</option>
             <option value="wholeStepDown">Whole Step Down — D G C F A D</option>
             <option value="dropD">Drop D — D A D G B E</option>
@@ -35,13 +45,35 @@
             <option value="openA">Open A — E A E A C# E</option>
             <option value="openB">Open B — B F# B F# B D#</option>
             <option value="openC6">Open C6 — C A C G C E</option>
-          </select></div>
-        <div class="status-row"><div id="statusPill" class="status"><span class="dot"></span><span id="statusText">Microphone off</span></div></div>
-        <section class="meter" aria-live="polite"><div id="noteReadout" class="note note-idle">—</div><div id="helperText" class="helper">Tap Start and pluck a string</div><div id="detailsText" class="details">B F# B F# B D#</div><div class="meter-track"><span class="flat-label">Flat</span><span class="center-label">In tune</span><span class="sharp-label">Sharp</span><div id="needle" class="needle"></div></div></section>
+          </select>
+        </div>
+        <div id="statusPill" class="status-pill" aria-live="polite">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="statusText">Microphone off</span>
+        </div>
+        <section class="readout" aria-live="polite">
+          <div id="noteReadout" class="note note-idle">—</div>
+          <div id="helperText" class="helper">Tap Start and pluck a string</div>
+          <div id="detailsText" class="details">Waiting for microphone</div>
+        </section>
+        <section class="meter-wrap" aria-label="Tuning meter">
+          <div class="meter-labels"><span>Flat</span><span>In tune</span><span>Sharp</span></div>
+          <div class="meter">
+            <div class="ticks" aria-hidden="true">
+              <span class="tick" style="--x: 10%"></span><span class="tick" style="--x: 20%"></span>
+              <span class="tick" style="--x: 30%"></span><span class="tick" style="--x: 40%"></span>
+              <span class="tick" style="--x: 50%"></span><span class="tick" style="--x: 60%"></span>
+              <span class="tick" style="--x: 70%"></span><span class="tick" style="--x: 80%"></span>
+              <span class="tick" style="--x: 90%"></span>
+            </div>
+            <div id="needle" class="needle"></div>
+          </div>
+        </section>
         <section id="strings" class="strings" aria-label="Selected guitar tuning"></section>
         <div class="level" aria-hidden="true"><div id="levelBar" class="level-bar"></div></div>
-        <button id="toggleButton" type="button">Start listening</button>
+        <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
         <div class="small-note">Pluck one string at a time. Left means tune up. Right means tune down.</div>
+        <noscript><p class="notice">This tuner requires JavaScript. Enable JavaScript, reload the page, and then allow microphone access.</p></noscript>
       </section>
       <article class="content-card">
         <h2>What is Open B tuning?</h2><p>Tune to B F# B F# B D# for a low, resonant B major chord on the open strings. The notes below are listed from the thick sixth string to the thin first string.</p>
@@ -57,14 +89,34 @@
     <section class="content-card all-tunings-card" data-all-tunings>
       <h2>All guitar tunings</h2>
       <div class="grid-links">
-        <a href="index.html">Standard — E A D G B E</a><a href="432-hz-guitar-tuner.html">432 Hz Standard</a><a href="528-hz-guitar-tuner.html">528 Hz (C5) Standard</a>
-        <a href="half-step-down-guitar-tuner.html">Half Step Down — Eb Ab Db Gb Bb Eb</a><a href="whole-step-down-guitar-tuner.html">Whole Step Down — D G C F A D</a>
-        <a href="drop-d-guitar-tuner.html">Drop D — D A D G B E</a><a href="double-drop-d-guitar-tuner.html">Double Drop D — D A D G B D</a><a href="drop-c-guitar-tuner.html">Drop C — C G C F A D</a>
-        <a href="dadgad-guitar-tuner.html">DADGAD — D A D G A D</a><a href="open-g-guitar-tuner.html">Open G — D G D G B D</a><a href="open-d-guitar-tuner.html">Open D — D A D F# A D</a><a href="open-e-guitar-tuner.html">Open E — E B E G# B E</a><a href="open-c-guitar-tuner.html">Open C — C G C G C E</a>
+        <a href="index.html">Standard — E A D G B E</a>
+        <a href="432-hz-guitar-tuner.html">432 Hz Standard — E A D G B E</a>
+        <a href="528-hz-guitar-tuner.html">528 Hz Standard (A=444 Hz) — E A D G B E</a>
+        <a href="half-step-down-guitar-tuner.html">Half Step Down — Eb Ab Db Gb Bb Eb</a>
+        <a href="whole-step-down-guitar-tuner.html">Whole Step Down — D G C F A D</a>
+        <a href="drop-d-guitar-tuner.html">Drop D — D A D G B E</a>
+        <a href="double-drop-d-guitar-tuner.html">Double Drop D — D A D G B D</a>
+        <a href="drop-c-guitar-tuner.html">Drop C — C G C F A D</a>
+        <a href="dadgad-guitar-tuner.html">DADGAD — D A D G A D</a>
+        <a href="open-g-guitar-tuner.html">Open G — D G D G B D</a>
+        <a href="open-d-guitar-tuner.html">Open D — D A D F# A D</a>
+        <a href="open-e-guitar-tuner.html">Open E — E B E G# B E</a>
+        <a href="open-c-guitar-tuner.html">Open C — C G C G C E</a>
       </div>
     </section>
   </main>
-  <footer class="footer"><p><a href="index.html">Free Guitar Tuner</a> · <a href="drop-d-guitar-tuner.html">Drop D</a> · <a href="dadgad-guitar-tuner.html">DADGAD</a> · <a href="open-g-guitar-tuner.html">Open G</a> · <a href="privacy.html">Privacy</a></p></footer>
+
+  <footer class="footer">
+    <p>
+      <a href="index.html">Free Guitar Tuner</a> ·
+      <a href="beginner-guitar-tuning-guide.html">Beginner Guide</a> ·
+      <a href="about.html">About</a> ·
+      <a href="contact.html">Contact</a> ·
+      <a href="affiliate-disclosure.html">Affiliate Disclosure</a> ·
+      <a href="privacy.html">Privacy</a>
+    </p>
+  </footer>
   <script src="tuner.js"></script>
 </body>
 </html>
+

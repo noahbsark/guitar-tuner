@@ -43,3 +43,4 @@ This is a GitHub Pages-ready static website for a free browser-based guitar tune
 - Add affiliate disclosure before using affiliate links.
 - Add beginner-focused articles around strings, capos, clip-on tuners, and tuning problems.
 - Apply for ads only after the site has useful content and some traffic.
+
