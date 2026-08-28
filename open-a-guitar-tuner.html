@@ -3,44 +3,29 @@
 <head>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-61XFFV7JZT"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-61XFFV7JZT');
-  </script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61XFFV7JZT');</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0d1117" />
-  <title>432 Hz Guitar Tuner</title>
-  <meta name="description" content="Tune a six-string guitar to standard E A D G B E using A4 = 432 Hz as the reference pitch." />
-  <link rel="canonical" href="https://onlineguitartuner.net/432-hz-guitar-tuner.html" />
+  <title>Open A Guitar Tuner</title>
+  <meta name="description" content="Tune guitar to Open A, E A E A C# E, with a microphone tuner, exact frequencies, safe tuning steps, and setup advice." />
+  <link rel="canonical" href="https://onlineguitartuner.net/open-a-guitar-tuner.html" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6136525087204092" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body data-tuning="standard432">
+<body data-tuning="openA">
   <a class="skip-link" href="#main-content">Skip to main content</a>
-  <header class="site-header">
-    <nav class="nav" aria-label="Main navigation">
-      <a class="logo" href="index.html">Simple Guitar Tuner</a>
-      <div class="nav-links">
+  <header class="site-header"><nav class="nav" aria-label="Main navigation"><a class="logo" href="index.html">Simple Guitar Tuner</a><div class="nav-links">
         <a href="index.html" aria-current="page">Tuner</a>
         <a href="beginner-guitar-tuning-guide.html">Guide</a>
         <a href="about.html">About</a>
         <a href="contact.html">Contact</a>
         <a href="privacy.html">Privacy</a>
-      </div>
-    </nav>
-  </header>
-
+      </div></nav></header>
   <main id="main-content" class="page">
-    <section class="hero">
-      <h1>432 Hz Guitar Tuner</h1>
-      <p class="lede">Tune to standard E A D G B E with A4 calibrated to 432 Hz instead of the common 440 Hz reference.</p>
-    </section>
-
+    <section class="hero"><h1>Open A Guitar Tuner</h1><p class="lede">Tune to E A E A C# E so the open strings form an A major chord with E in the bass.</p></section>
     <section class="app-layout">
-      <section class="tuner-card" aria-label="432 Hz guitar tuner app">
+      <section class="tuner-card" aria-label="Open A Guitar Tuner app">
         <div class="tuning-control">
           <label for="tuningSelect">Tuning</label>
           <select id="tuningSelect" aria-label="Choose guitar tuning">
@@ -57,22 +42,20 @@
             <option value="openD">Open D — D A D F# A D</option>
             <option value="openE">Open E — E B E G# B E</option>
             <option value="openC">Open C — C G C G C E</option>
-          
             <option value="openA">Open A — E A E A C# E</option>
+            <option value="openB">Open B — B F# B F# B D#</option>
+            <option value="openC6">Open C6 — C A C G C E</option>
           </select>
         </div>
-
         <div id="statusPill" class="status-pill" aria-live="polite">
           <span class="dot" aria-hidden="true"></span>
           <span id="statusText">Microphone off</span>
         </div>
-
         <section class="readout" aria-live="polite">
           <div id="noteReadout" class="note note-idle">—</div>
           <div id="helperText" class="helper">Tap Start and pluck a string</div>
           <div id="detailsText" class="details">Waiting for microphone</div>
         </section>
-
         <section class="meter-wrap" aria-label="Tuning meter">
           <div class="meter-labels"><span>Flat</span><span>In tune</span><span>Sharp</span></div>
           <div class="meter">
@@ -86,49 +69,21 @@
             <div id="needle" class="needle"></div>
           </div>
         </section>
-
         <section id="strings" class="strings" aria-label="Selected guitar tuning"></section>
         <div class="level" aria-hidden="true"><div id="levelBar" class="level-bar"></div></div>
         <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
         <div class="small-note">Pluck one string at a time. Left means tune up. Right means tune down.</div>
         <noscript><p class="notice">This tuner requires JavaScript. Enable JavaScript, reload the page, and then allow microphone access.</p></noscript>
       </section>
-
       <article class="content-card">
-        <h2>What does 432 Hz tuning mean?</h2>
-        <p>This page keeps standard guitar intervals—E A D G B E—but calibrates the reference note A4 to 432 Hz instead of the widely used 440 Hz. Every target pitch is scaled by 432 ÷ 440, so the guitar remains internally in tune while sounding about 31.8 cents lower than standard concert calibration.</p>
-
-        <h2>How to tune a guitar to A4 = 432 Hz</h2>
-        <ol>
-          <li>Select the 432 Hz preset and allow microphone access.</li>
-          <li>Pluck one string at a time, beginning with the low E.</li>
-          <li>Loosen each string gradually because every target is below its 440 Hz equivalent.</li>
-          <li>Center the meter for all six strings, then repeat the sequence once.</li>
-        </ol>
-
-        <h2>432 Hz target frequencies</h2>
-        <div class="table-wrap"><table class="frequency-table"><thead><tr><th>String</th><th>Note</th><th>432 Hz target</th><th>440 Hz standard</th></tr></thead><tbody>
-          <tr><td>6</td><td>E2</td><td>80.91 Hz</td><td>82.41 Hz</td></tr>
-          <tr><td>5</td><td>A2</td><td>108.00 Hz</td><td>110.00 Hz</td></tr>
-          <tr><td>4</td><td>D3</td><td>144.16 Hz</td><td>146.83 Hz</td></tr>
-          <tr><td>3</td><td>G3</td><td>192.43 Hz</td><td>196.00 Hz</td></tr>
-          <tr><td>2</td><td>B3</td><td>242.45 Hz</td><td>246.94 Hz</td></tr>
-          <tr><td>1</td><td>E4</td><td>323.63 Hz</td><td>329.63 Hz</td></tr>
-        </tbody></table></div>
-
-        <h2>Playing with other musicians</h2>
-        <p>A guitar calibrated to 432 Hz will sound slightly flat beside an instrument calibrated to A4 = 440 Hz. Agree on one reference before rehearsing or recording. If a fixed-pitch instrument cannot be recalibrated, use its reference rather than mixing standards.</p>
-
-        <h2>What 432 Hz does not change</h2>
-        <p>The tuning is still standard E A D G B E, and chord shapes, scale patterns, and intervals are unchanged. Only the absolute reference pitch moves. Claims that 432 Hz provides medical or healing effects are not established by this tuner; this page is simply a precise pitch-calibration tool.</p>
-
-        <h2>Related pages</h2>
-        <div class="grid-links">
-          <a href="index.html">440 Hz Standard Tuner</a>
-          <a href="528-hz-guitar-tuner.html">528 Hz / A≈444 Tuner</a>
-          <a href="guitar-string-frequency-chart.html">Frequency Chart</a>
-          <a href="beginner-guitar-tuning-guide.html">Beginner Tuning Guide</a>
-        </div>
+        <h2>What is Open A tuning?</h2><p>Tune to E A E A C# E so the open strings form an A major chord with E in the bass. The notes below are listed from the thick sixth string to the thin first string.</p>
+        <h2>How to tune from standard</h2><ol><li>Leave the sixth string at E2.</li><li>Leave the fifth string at A2.</li><li>Raise the fourth string from D3 to E3 slowly.</li><li>Raise the third string from G3 to A3 slowly.</li><li>Raise the second string from B3 to C#4 carefully.</li><li>Leave the first string at E4, then recheck every string.</li></ol>
+        <div class="notice"><strong>String-safety note:</strong> Three strings tune upward, increasing total tension. Use suitable gauges, stop if a string or guitar seems stressed, and consider a professional setup for regular use.</div>
+        <h2>E A E A C# E target frequencies</h2><div class="table-wrap"><table class="frequency-table"><thead><tr><th>String</th><th>Note</th><th>Frequency</th></tr></thead><tbody><tr><td>6</td><td>E2</td><td>82.41 Hz</td></tr><tr><td>5</td><td>A2</td><td>110.00 Hz</td></tr><tr><td>4</td><td>E3</td><td>164.81 Hz</td></tr><tr><td>3</td><td>A3</td><td>220.00 Hz</td></tr><tr><td>2</td><td>C#4</td><td>277.18 Hz</td></tr><tr><td>1</td><td>E4</td><td>329.63 Hz</td></tr></tbody></table></div>
+        <h2>How it feels and sounds</h2><p>The open strings spell an A major chord. Straight barres create movable major chords, while the repeating E and A notes produce strong drones for slide guitar, roots music, and spacious rhythm parts.</p>
+        <h2>Setup and tuning stability</h2><p>Open A increases tension compared with standard tuning, especially on the fourth, third, and second strings. Lighter gauges can reduce the increase. A lower-tension alternative is to use Open G and place a capo at the second fret, although the lowest note and voicing differ.</p>
+        <h2>Practical tuning routine</h2><p>Tune slowly, use a light attack, and make the final adjustment by approaching each pitch from below. After all six strings are close, repeat the pass because changing one string changes neck and bridge tension slightly. Check again after a minute of playing.</p>
+        <h2>Related guides</h2><div class="grid-links"><a href="open-e-guitar-tuner.html">Open E Tuner</a><a href="open-g-guitar-tuner.html">Open G Tuner</a><a href="guitar-string-gauge-guide.html">String Gauge Guide</a><a href="guitar-string-frequency-chart.html">Frequency Chart</a></div>
       </article>
     </section>
     <section class="content-card all-tunings-card" data-all-tunings>
