@@ -3,44 +3,27 @@
 <head>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-61XFFV7JZT"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-61XFFV7JZT');
-  </script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61XFFV7JZT');</script>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0d1117" />
-  <title>432 Hz Guitar Tuner</title>
-  <meta name="description" content="Tune a six-string guitar to standard E A D G B E using A4 = 432 Hz as the reference pitch." />
-  <link rel="canonical" href="https://onlineguitartuner.net/432-hz-guitar-tuner.html" />
+  <title>Drop B Guitar Tuner</title><meta name="description" content="Tune your guitar to Drop B, B F# B E G# C#, using a free microphone tuner with exact frequencies, conversion steps, and string-gauge advice." />
+  <link rel="canonical" href="https://onlineguitartuner.net/drop-b-guitar-tuner.html" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6136525087204092" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body data-tuning="standard432">
+<body data-tuning="dropB">
   <a class="skip-link" href="#main-content">Skip to main content</a>
-  <header class="site-header">
-    <nav class="nav" aria-label="Main navigation">
-      <a class="logo" href="index.html">Simple Guitar Tuner</a>
-      <div class="nav-links">
+  <header class="site-header"><nav class="nav" aria-label="Main navigation"><a class="logo" href="index.html">Simple Guitar Tuner</a><div class="nav-links">
         <a href="index.html" aria-current="page">Tuner</a>
         <a href="beginner-guitar-tuning-guide.html">Guide</a>
         <a href="about.html">About</a>
         <a href="contact.html">Contact</a>
         <a href="privacy.html">Privacy</a>
-      </div>
-    </nav>
-  </header>
-
+      </div></nav></header>
   <main id="main-content" class="page">
-    <section class="hero">
-      <h1>432 Hz Guitar Tuner</h1>
-      <p class="lede">Tune to standard E A D G B E with A4 calibrated to 432 Hz instead of the common 440 Hz reference.</p>
-    </section>
-
+    <section class="hero"><h1>Drop B Guitar Tuner</h1><p class="lede">Tune to B F# B E G# C# for low, heavy riffs and one-finger power chords.</p></section>
     <section class="app-layout">
-      <section class="tuner-card" aria-label="432 Hz guitar tuner app">
+      <section class="tuner-card" aria-label="Drop B Guitar Tuner app">
         <div class="tuning-control">
           <label for="tuningSelect">Tuning</label>
           <select id="tuningSelect" aria-label="Choose guitar tuning">
@@ -57,28 +40,24 @@
             <option value="openD">Open D — D A D F# A D</option>
             <option value="openE">Open E — E B E G# B E</option>
             <option value="openC">Open C — C G C G C E</option>
-          
             <option value="openA">Open A — E A E A C# E</option>
-          
             <option value="openB">Open B — B F# B F# B D#</option>
-          
             <option value="openC6">Open C6 — C A C G C E</option>
-          
             <option value="dropB">Drop B — B F# B E G# C#</option>
+            <option value="dropA">Drop A — A E A D F# B</option>
+            <option value="cStandard">C Standard — C F Bb Eb G C</option>
+            <option value="bStandard">B Standard — B E A D F# B</option>
           </select>
         </div>
-
         <div id="statusPill" class="status-pill" aria-live="polite">
           <span class="dot" aria-hidden="true"></span>
           <span id="statusText">Microphone off</span>
         </div>
-
         <section class="readout" aria-live="polite">
           <div id="noteReadout" class="note note-idle">—</div>
           <div id="helperText" class="helper">Tap Start and pluck a string</div>
           <div id="detailsText" class="details">Waiting for microphone</div>
         </section>
-
         <section class="meter-wrap" aria-label="Tuning meter">
           <div class="meter-labels"><span>Flat</span><span>In tune</span><span>Sharp</span></div>
           <div class="meter">
@@ -92,49 +71,21 @@
             <div id="needle" class="needle"></div>
           </div>
         </section>
-
         <section id="strings" class="strings" aria-label="Selected guitar tuning"></section>
         <div class="level" aria-hidden="true"><div id="levelBar" class="level-bar"></div></div>
         <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
         <div class="small-note">Pluck one string at a time. Left means tune up. Right means tune down.</div>
         <noscript><p class="notice">This tuner requires JavaScript. Enable JavaScript, reload the page, and then allow microphone access.</p></noscript>
       </section>
-
       <article class="content-card">
-        <h2>What does 432 Hz tuning mean?</h2>
-        <p>This page keeps standard guitar intervals—E A D G B E—but calibrates the reference note A4 to 432 Hz instead of the widely used 440 Hz. Every target pitch is scaled by 432 ÷ 440, so the guitar remains internally in tune while sounding about 31.8 cents lower than standard concert calibration.</p>
-
-        <h2>How to tune a guitar to A4 = 432 Hz</h2>
-        <ol>
-          <li>Select the 432 Hz preset and allow microphone access.</li>
-          <li>Pluck one string at a time, beginning with the low E.</li>
-          <li>Loosen each string gradually because every target is below its 440 Hz equivalent.</li>
-          <li>Center the meter for all six strings, then repeat the sequence once.</li>
-        </ol>
-
-        <h2>432 Hz target frequencies</h2>
-        <div class="table-wrap"><table class="frequency-table"><thead><tr><th>String</th><th>Note</th><th>432 Hz target</th><th>440 Hz standard</th></tr></thead><tbody>
-          <tr><td>6</td><td>E2</td><td>80.91 Hz</td><td>82.41 Hz</td></tr>
-          <tr><td>5</td><td>A2</td><td>108.00 Hz</td><td>110.00 Hz</td></tr>
-          <tr><td>4</td><td>D3</td><td>144.16 Hz</td><td>146.83 Hz</td></tr>
-          <tr><td>3</td><td>G3</td><td>192.43 Hz</td><td>196.00 Hz</td></tr>
-          <tr><td>2</td><td>B3</td><td>242.45 Hz</td><td>246.94 Hz</td></tr>
-          <tr><td>1</td><td>E4</td><td>323.63 Hz</td><td>329.63 Hz</td></tr>
-        </tbody></table></div>
-
-        <h2>Playing with other musicians</h2>
-        <p>A guitar calibrated to 432 Hz will sound slightly flat beside an instrument calibrated to A4 = 440 Hz. Agree on one reference before rehearsing or recording. If a fixed-pitch instrument cannot be recalibrated, use its reference rather than mixing standards.</p>
-
-        <h2>What 432 Hz does not change</h2>
-        <p>The tuning is still standard E A D G B E, and chord shapes, scale patterns, and intervals are unchanged. Only the absolute reference pitch moves. Claims that 432 Hz provides medical or healing effects are not established by this tuner; this page is simply a precise pitch-calibration tool.</p>
-
-        <h2>Related pages</h2>
-        <div class="grid-links">
-          <a href="index.html">440 Hz Standard Tuner</a>
-          <a href="528-hz-guitar-tuner.html">528 Hz / A≈444 Tuner</a>
-          <a href="guitar-string-frequency-chart.html">Frequency Chart</a>
-          <a href="beginner-guitar-tuning-guide.html">Beginner Tuning Guide</a>
-        </div>
+        <h2>What is Drop B tuning?</h2><p>Drop B uses B F# B E G# C# from the sixth string to the first. It is C# standard with the lowest string dropped one whole step, preserving familiar interval shapes across the upper five strings while creating a low B root.</p>
+        <h2>How to tune from standard</h2><ol><li>Lower the sixth string from E2 to B1.</li><li>Lower the fifth string from A2 to F#2.</li><li>Lower the fourth string from D3 to B2.</li><li>Lower the third string from G3 to E3.</li><li>Lower the second string from B3 to G#3.</li><li>Lower the first string from E4 to C#4, then repeat the tuning pass.</li></ol>
+        <div class="notice"><strong>Setup note:</strong> Every string is lowered substantially. A normal light set will usually feel loose, so use appropriate heavier strings and have the guitar checked after a permanent change.</div>
+        <h2>Drop B target frequencies</h2><div class="table-wrap"><table class="frequency-table"><thead><tr><th>String</th><th>Note</th><th>Frequency</th></tr></thead><tbody><tr><td>6</td><td>B1</td><td>61.74 Hz</td></tr><tr><td>5</td><td>F#2</td><td>92.50 Hz</td></tr><tr><td>4</td><td>B2</td><td>123.47 Hz</td></tr><tr><td>3</td><td>E3</td><td>164.81 Hz</td></tr><tr><td>2</td><td>G#3</td><td>207.65 Hz</td></tr><tr><td>1</td><td>C#4</td><td>277.18 Hz</td></tr></tbody></table></div>
+        <h2>Sound and playing approach</h2><p>The lowest three strings form B–F#–B, so barring them at one fret creates a power chord. The upper strings retain the relationships of C# standard, making the tuning useful for metal rhythm parts, low pedal tones, and chord voicings with a clear high register.</p>
+        <h2>String gauges and setup</h2><p>Many 25.5-inch guitars use roughly .012–.060 or heavier for Drop B, but scale length, playing attack, and preferred tension matter. Gauge changes may require nut-slot, neck-relief, action, and intonation adjustments.</p>
+        <h2>How to get a stable reading</h2><p>Use the neck pickup if your guitar has one, reduce background noise, and pluck one string gently near its center. Let the pitch settle before adjusting. Tune upward into each target pitch, then repeat all six strings because the neck and bridge respond as total tension changes.</p>
+        <h2>Related guides</h2><div class="grid-links"><a href="drop-c-guitar-tuner.html">Drop C Tuner</a><a href="whole-step-down-guitar-tuner.html">Whole Step Down</a><a href="guitar-string-gauge-guide.html">String Gauge Guide</a><a href="guitar-intonation-guide.html">Intonation Guide</a></div>
       </article>
     </section>
     <section class="content-card all-tunings-card" data-all-tunings>
