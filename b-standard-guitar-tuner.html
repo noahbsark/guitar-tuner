@@ -3,44 +3,27 @@
 <head>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-61XFFV7JZT"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-61XFFV7JZT');
-  </script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61XFFV7JZT');</script>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0d1117" />
-  <title>528 Hz Guitar Tuner (A=444 Hz) – Free Online Tuner</title>
-  <meta name="description" content="Free 528 Hz guitar tuner for standard E A D G B E, calibrated to C5 = 528 Hz and A4 = 443.993 Hz (commonly rounded to 444 Hz)." />
-  <link rel="canonical" href="https://onlineguitartuner.net/528-hz-guitar-tuner.html" />
+  <title>B Standard Guitar Tuner</title><meta name="description" content="Tune your guitar to B Standard, B E A D F# B, using a free microphone tuner with exact frequencies, steps, and string-gauge guidance." />
+  <link rel="canonical" href="https://onlineguitartuner.net/b-standard-guitar-tuner.html" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6136525087204092" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body data-tuning="standard528">
+<body data-tuning="bStandard">
   <a class="skip-link" href="#main-content">Skip to main content</a>
-  <header class="site-header">
-    <nav class="nav" aria-label="Main navigation">
-      <a class="logo" href="index.html">Simple Guitar Tuner</a>
-      <div class="nav-links">
+  <header class="site-header"><nav class="nav" aria-label="Main navigation"><a class="logo" href="index.html">Simple Guitar Tuner</a><div class="nav-links">
         <a href="index.html" aria-current="page">Tuner</a>
         <a href="beginner-guitar-tuning-guide.html">Guide</a>
         <a href="about.html">About</a>
         <a href="contact.html">Contact</a>
         <a href="privacy.html">Privacy</a>
-      </div>
-    </nav>
-  </header>
-
+      </div></nav></header>
   <main id="main-content" class="page">
-    <section class="hero">
-      <h1>528 Hz Guitar Tuner</h1>
-      <p class="lede">Tune standard E A D G B E with C5 at exactly 528 Hz. This equals A4 = 443.993 Hz in twelve-tone equal temperament, commonly rounded to A = 444 Hz.</p>
-    </section>
-
+    <section class="hero"><h1>B Standard Guitar Tuner</h1><p class="lede">Tune every string five semitones below standard to B E A D F# B.</p></section>
     <section class="app-layout">
-      <section class="tuner-card" aria-label="528 Hz guitar tuner app">
+      <section class="tuner-card" aria-label="B Standard Guitar Tuner app">
         <div class="tuning-control">
           <label for="tuningSelect">Tuning</label>
           <select id="tuningSelect" aria-label="Choose guitar tuning">
@@ -57,34 +40,24 @@
             <option value="openD">Open D — D A D F# A D</option>
             <option value="openE">Open E — E B E G# B E</option>
             <option value="openC">Open C — C G C G C E</option>
-          
             <option value="openA">Open A — E A E A C# E</option>
-          
             <option value="openB">Open B — B F# B F# B D#</option>
-          
             <option value="openC6">Open C6 — C A C G C E</option>
-          
             <option value="dropB">Drop B — B F# B E G# C#</option>
-          
             <option value="dropA">Drop A — A E A D F# B</option>
-          
             <option value="cStandard">C Standard — C F Bb Eb G C</option>
-          
             <option value="bStandard">B Standard — B E A D F# B</option>
           </select>
         </div>
-
         <div id="statusPill" class="status-pill" aria-live="polite">
           <span class="dot" aria-hidden="true"></span>
           <span id="statusText">Microphone off</span>
         </div>
-
         <section class="readout" aria-live="polite">
           <div id="noteReadout" class="note note-idle">—</div>
           <div id="helperText" class="helper">Tap Start and pluck a string</div>
           <div id="detailsText" class="details">Waiting for microphone</div>
         </section>
-
         <section class="meter-wrap" aria-label="Tuning meter">
           <div class="meter-labels"><span>Flat</span><span>In tune</span><span>Sharp</span></div>
           <div class="meter">
@@ -98,50 +71,21 @@
             <div id="needle" class="needle"></div>
           </div>
         </section>
-
         <section id="strings" class="strings" aria-label="Selected guitar tuning"></section>
         <div class="level" aria-hidden="true"><div id="levelBar" class="level-bar"></div></div>
         <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
         <div class="small-note">Pluck one string at a time. Left means tune up. Right means tune down.</div>
         <noscript><p class="notice">This tuner requires JavaScript. Enable JavaScript, reload the page, and then allow microphone access.</p></noscript>
       </section>
-
       <article class="content-card">
-        <h2>How this 528 Hz preset is calibrated</h2>
-        <p>This preset places C5 at exactly 528 Hz in twelve-tone equal temperament. That makes A4 equal to 443.993 Hz, commonly rounded to 444 Hz on a chromatic tuner. The guitar strings remain in standard E A D G B E intervals, but every pitch is about 15.7 cents above A4 = 440 Hz calibration.</p>
-
-        <h2>How to tune safely</h2>
-        <ol>
-          <li>Select the 528 Hz preset and allow microphone access.</li>
-          <li>Pluck each string separately and use small tuning-key movements.</li>
-          <li>Because these targets are slightly higher than standard, approach each pitch slowly.</li>
-          <li>Repeat all six strings after the total tension settles.</li>
-        </ol>
-        <div class="notice">This preset raises every string slightly above its normal 440 Hz target. Stop and replace any damaged or heavily corroded string before tuning upward.</div>
-
-        <h2>528 Hz target frequencies</h2>
-        <div class="table-wrap"><table class="frequency-table"><thead><tr><th>String</th><th>Note</th><th>C5 = 528 target</th><th>440 Hz standard</th></tr></thead><tbody>
-          <tr><td>6</td><td>E2</td><td>83.15 Hz</td><td>82.41 Hz</td></tr>
-          <tr><td>5</td><td>A2</td><td>111.00 Hz</td><td>110.00 Hz</td></tr>
-          <tr><td>4</td><td>D3</td><td>148.17 Hz</td><td>146.83 Hz</td></tr>
-          <tr><td>3</td><td>G3</td><td>197.78 Hz</td><td>196.00 Hz</td></tr>
-          <tr><td>2</td><td>B3</td><td>249.18 Hz</td><td>246.94 Hz</td></tr>
-          <tr><td>1</td><td>E4</td><td>332.62 Hz</td><td>329.63 Hz</td></tr>
-        </tbody></table></div>
-
-        <h2>Where C5 appears on guitar</h2>
-        <p>With this calibration, C5 at 528 Hz occurs at the eighth fret of the high E string and the thirteenth fret of the B string. Those fretted notes are useful checks, but fret pressure and intonation can move them slightly sharp or flat. Tune the open strings first.</p>
-
-        <h2>Reference-pitch clarification</h2>
-        <p>“528 Hz tuning” can refer to different systems online. This page uses a specific, reproducible definition: C5 equals 528 Hz under equal temperament. It does not claim that the frequency provides medical or healing effects.</p>
-
-        <h2>Related pages</h2>
-        <div class="grid-links">
-          <a href="index.html">440 Hz Standard Tuner</a>
-          <a href="432-hz-guitar-tuner.html">432 Hz Guitar Tuner</a>
-          <a href="guitar-string-frequency-chart.html">Frequency Chart</a>
-          <a href="guitar-intonation-guide.html">Intonation Guide</a>
-        </div>
+        <h2>What is B Standard tuning?</h2><p>B Standard preserves standard tuning's intervals while moving every string down a perfect fourth. Chord and scale shapes remain familiar, but their sounding pitch is five semitones lower. It is common on baritone guitars and properly set-up extended-range six strings.</p>
+        <h2>How to tune from standard</h2><ol><li>Lower the sixth string from E2 to B1.</li><li>Lower the fifth string from A2 to E2.</li><li>Lower the fourth string from D3 to A2.</li><li>Lower the third string from G3 to D3.</li><li>Lower the second string from B3 to F#3.</li><li>Lower the first string from E4 to B3, then recheck all strings.</li></ol>
+        <div class="notice"><strong>Setup note:</strong> B Standard is far below a conventional six-string setup. Heavy strings, sufficient scale length, and correct nut and bridge adjustment are important for clear notes and reliable intonation.</div>
+        <h2>B Standard target frequencies</h2><div class="table-wrap"><table class="frequency-table"><thead><tr><th>String</th><th>Note</th><th>Frequency</th></tr></thead><tbody><tr><td>6</td><td>B1</td><td>61.74 Hz</td></tr><tr><td>5</td><td>E2</td><td>82.41 Hz</td></tr><tr><td>4</td><td>A2</td><td>110.00 Hz</td></tr><tr><td>3</td><td>D3</td><td>146.83 Hz</td></tr><tr><td>2</td><td>F#3</td><td>185.00 Hz</td></tr><tr><td>1</td><td>B3</td><td>246.94 Hz</td></tr></tbody></table></div>
+        <h2>Sound and playing approach</h2><p>All standard-tuning patterns transfer because the interval layout is unchanged. The lower register provides a dark, broad sound for heavy rhythm guitar, while upper-string chord voicings remain easy to map using familiar shapes.</p>
+        <h2>String gauges and setup</h2><p>Baritone-scale instruments handle B Standard especially well. On a regular scale, heavier strings can restore tension but may require permanent nut-slot changes. Verify relief, action, intonation, pickup clearance, and tuning-machine compatibility.</p>
+        <h2>How to get a stable reading</h2><p>Use the neck pickup if your guitar has one, reduce background noise, and pluck one string gently near its center. Let the pitch settle before adjusting. Tune upward into each target pitch, then repeat all six strings because the neck and bridge respond as total tension changes.</p>
+        <h2>Related guides</h2><div class="grid-links"><a href="c-standard-guitar-tuner.html">C Standard Tuner</a><a href="drop-a-guitar-tuner.html">Drop A Tuner</a><a href="baritone-guitar-tuning-guide.html">Baritone Tuning</a><a href="guitar-string-gauge-guide.html">String Gauge Guide</a></div>
       </article>
     </section>
     <section class="content-card all-tunings-card" data-all-tunings>
@@ -165,8 +109,6 @@
         <a href="open-b-guitar-tuner.html">Open B — B F# B F# B D#</a>
         <a href="open-c6-guitar-tuner.html">Open C6 — C A C G C E</a>
         <a href="drop-b-guitar-tuner.html">Drop B — B F# B E G# C#</a>
-        <a href="drop-a-guitar-tuner.html">Drop A — A E A D F# B</a>
-        <a href="c-standard-guitar-tuner.html">C Standard — C F Bb Eb G C</a>
         <a href="b-standard-guitar-tuner.html">B Standard — B E A D F# B</a></div>
     </section>
   </main>
