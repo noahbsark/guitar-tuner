@@ -498,3 +498,21 @@ code { overflow-wrap: anywhere; }
   .nav-links a { padding-inline: 3px; font-size: .85rem; }
   .tuning-control select { font-size: 1rem; padding-left: 12px; padding-right: 36px; }
 }
+
+/* Keep the meter in view on shorter desktop and laptop windows. */
+@media (min-width: 851px) and (max-height: 900px) {
+  .page:has(.app-layout) { padding-top: 8px; }
+  .page:has(.app-layout) .hero { margin: 8px auto 16px; }
+  .page:has(.app-layout) .hero h1 { font-size: 3rem; margin-top: 12px; }
+  .tuner-card { padding: 24px; }
+  .tuner-card .tuning-control { margin-bottom: 12px; }
+  .tuner-card #toggleButton { margin-bottom: 10px; }
+  .tuner-card .status-pill { margin-bottom: 8px; }
+  .tuner-card .readout { gap: 6px; margin: 4px 0 12px; }
+  .tuner-card .note { font-size: 6rem; }
+  .tuner-card .helper { min-height: 28px; font-size: 1.25rem; }
+  .tuner-card .meter-wrap { margin: 14px 0; }
+  .tuner-card .meter { height: 62px; }
+  .tuner-card .needle { height: 44px; }
+  .tuner-card .strings { margin: 12px 0; }
+}
