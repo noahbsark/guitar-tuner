@@ -1,4 +1,4 @@
-// Optional support stays outside the tuner and disappears while listening.
+// Offer optional support after a listening session, always outside the tuner.
 (() => {
   const storageKey = 'tuner-support-dismissed-v1';
   try { if (sessionStorage.getItem(storageKey)) return; } catch (_) {}
@@ -17,15 +17,29 @@
   close.textContent = '\u00d7';
   banner.append(link, close);
   document.body.append(banner);
-  document.body.classList.add('has-support-banner');
 
   const tuner = document.querySelector('.tuner-card');
   const toggle = document.querySelector('#toggleButton');
+  const readyKey = 'tuner-support-ready-v1';
+  let ready = false;
+  try { ready = sessionStorage.getItem(readyKey) === '1'; } catch (_) {}
+  let wasListening = false;
   let dismissed = false;
   let frame = 0;
   function update() {
     frame = 0;
     if (dismissed) return;
+    const listening = toggle && toggle.getAttribute('aria-pressed') === 'true';
+    if (wasListening && !listening) {
+      ready = true;
+      try { sessionStorage.setItem(readyKey, '1'); } catch (_) {}
+    }
+    wasListening = Boolean(listening);
+    if (!ready) {
+      banner.classList.add('is-hidden');
+      return;
+    }
+    document.body.classList.add('has-support-banner');
     const box = banner.getBoundingClientRect();
     // Reserve the full banner height, including the phone's safe-area inset.
     const space = Math.ceil(box.height + innerHeight - box.bottom + 12) + 'px';
@@ -35,7 +49,6 @@
     const tool = tuner && tuner.getBoundingClientRect();
     const overlaps = tool && tool.left < box.right + 12 && tool.right > box.left - 12 &&
       tool.top < box.bottom + 12 && tool.bottom > box.top - 12;
-    const listening = toggle && toggle.getAttribute('aria-pressed') === 'true';
     const keyboard = window.visualViewport && innerHeight - window.visualViewport.height > 120;
     banner.classList.toggle('is-hidden', Boolean(overlaps || listening || keyboard));
   }
