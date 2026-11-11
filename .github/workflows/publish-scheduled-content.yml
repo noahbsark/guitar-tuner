@@ -59,7 +59,7 @@ jobs:
           git commit -m "Publish scheduled content updates"
           git push origin main
 
-      - name: Wait for GitHub Pages
+      - name: Wait for the live site
         if: steps.changes.outputs.published == 'true'
         shell: bash
         run: |
@@ -73,7 +73,7 @@ jobs:
               sleep 30
             done
             if [[ "$ready" != "true" ]]; then
-              echo "::warning::GitHub Pages was not ready for $url before the IndexNow notification."
+              echo "::warning::The live site was not ready for $url before the IndexNow notification."
             fi
           done < site/.published-urls.txt
 
