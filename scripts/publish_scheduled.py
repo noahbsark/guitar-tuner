@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-"""Publish due HTML files from the content-queue branch checkout."""
-
+"""Publish due reviewed HTML from content-queue and refresh the static directory."""
 from __future__ import annotations
-
 import argparse
 import html
 import json
@@ -11,221 +9,95 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from site_content import BASE_URL, normalize_page, public_url, rebuild_guides, rebuild_sitemap
 
-BASE_URL = "https://onlineguitartuner.net"
-HOME_MARKER = "          <!-- AUTO-PUBLISHED-GUIDES -->"
-REQUIRED_SNIPPETS = (
-    'rel="canonical"',
-    "G-61XFFV7JZT",
-    "ca-pub-6136525087204092",
-    'href="styles.css"',
-)
+REQUIRED_SNIPPETS = ('rel="canonical"', 'G-61XFFV7JZT', 'ca-pub-6136525087204092', 'href="styles.css"')
 
 
-ALL_TUNINGS_SECTION = """
-    <section class="content-card all-tunings-card" data-all-tunings>
-      <h2>All guitar tunings</h2>
-      <div class="grid-links">
-        <a href="index.html">Standard — E A D G B E</a>
-        <a href="432-hz-guitar-tuner.html">432 Hz Standard — E A D G B E</a>
-        <a href="528-hz-guitar-tuner.html">528 Hz Standard (A=444 Hz) — E A D G B E</a>
-        <a href="half-step-down-guitar-tuner.html">Half Step Down — Eb Ab Db Gb Bb Eb</a>
-        <a href="whole-step-down-guitar-tuner.html">Whole Step Down — D G C F A D</a>
-        <a href="drop-d-guitar-tuner.html">Drop D — D A D G B E</a>
-        <a href="double-drop-d-guitar-tuner.html">Double Drop D — D A D G B D</a>
-        <a href="drop-c-guitar-tuner.html">Drop C — C G C F A D</a>
-        <a href="dadgad-guitar-tuner.html">DADGAD — D A D G A D</a>
-        <a href="open-g-guitar-tuner.html">Open G — D G D G B D</a>
-        <a href="open-d-guitar-tuner.html">Open D — D A D F# A D</a>
-        <a href="open-e-guitar-tuner.html">Open E — E B E G# B E</a>
-        <a href="open-c-guitar-tuner.html">Open C — C G C G C E</a>
-      </div>
-    </section>
-"""
-
-
-def normalize_528_labels(content: str) -> str:
-    """Keep 528 Hz naming consistent in published and scheduled pages."""
-    replacements = {
-        "528 Hz (C5) Standard — E A D G B E": "528 Hz (A=444 Hz) — E A D G B E",
-        "528 Hz (C5) Standard": "528 Hz Standard (A=444 Hz)",
-    }
-    for old, new in replacements.items():
-        content = content.replace(old, new)
-    return content
-
-
-def validate_internal_links(content: str, site: Path, slug: str, source: Path) -> None:
-    """Prevent a scheduled page from launching with a link that returns 404."""
-    for href in re.findall(r'<a\s+[^>]*href="([^"]+)"', content, re.IGNORECASE):
-        if href.startswith(("http://", "https://", "mailto:", "tel:", "#")):
-            continue
-        target = href.split("#", 1)[0].split("?", 1)[0].lstrip("/")
-        if not target or not target.endswith(".html") or target == slug:
-            continue
-        if not (site / target).is_file():
-            fail(f"{source} links to an unpublished or missing page: {target}")
-
-
-def refresh_tuning_navigation(site: Path, manifest: dict, today) -> None:
-    """Add every published queued tuning to tuner menus and tuning directories."""
-    tuning_entries = []
-    for entry in manifest.get("entries", []):
-        tuning = entry.get("tuning")
-        if not tuning:
-            continue
-        publish_date = datetime.strptime(entry["date"], "%Y-%m-%d").date()
-        if publish_date <= today and (site / entry["slug"]).is_file():
-            tuning_entries.append((entry, tuning))
-
-    section_pattern = re.compile(
-        r'(<section class="content-card all-tunings-card" data-all-tunings>.*?'
-        r'<div class="grid-links">)(.*?)(</div>\s*</section>)',
-        re.DOTALL,
-    )
-    select_pattern = re.compile(
-        r'(<select id="tuningSelect"[^>]*>)(.*?)(</select>)',
-        re.DOTALL,
-    )
-
-    for page_path in site.glob("*.html"):
-        original = page_path.read_text(encoding="utf-8")
-        content = normalize_528_labels(original)
-        for entry, tuning in tuning_entries:
-            slug = entry["slug"]
-            key = tuning["key"]
-            if f'href="{slug}"' not in content and section_pattern.search(content):
-                link = (
-                    f'\n        <a href="{html.escape(slug)}">'
-                    f'{html.escape(tuning["directoryLabel"])}</a>'
-                )
-                content = section_pattern.sub(
-                    lambda match: match.group(1) + match.group(2) + link + match.group(3),
-                    content,
-                    count=1,
-                )
-            if f'value="{key}"' not in content and select_pattern.search(content):
-                option = (
-                    f'\n            <option value="{html.escape(key)}">'
-                    f'{html.escape(tuning["optionLabel"])}</option>'
-                )
-                content = select_pattern.sub(
-                    lambda match: match.group(1) + match.group(2) + option + "\n          " + match.group(3),
-                    content,
-                    count=1,
-                )
-        if content != original:
-            page_path.write_text(content, encoding="utf-8")
-
-
-def fail(message: str) -> None:
-    print(f"ERROR: {message}", file=sys.stderr)
+def fail(message):
+    print('ERROR: ' + message, file=sys.stderr)
     raise SystemExit(1)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--site", required=True, type=Path)
-    parser.add_argument("--queue", required=True, type=Path)
-    parser.add_argument(
-        "--date",
-        help="Override the publication date as YYYY-MM-DD (useful for validation)",
-    )
-    args = parser.parse_args()
-
-    site = args.site.resolve()
-    queue = args.queue.resolve()
-    manifest_path = queue / "publication-queue.json"
-    if not manifest_path.is_file():
-        fail(f"Missing queue manifest: {manifest_path}")
-
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    timezone = ZoneInfo(manifest.get("timezone", "America/Chicago"))
-    today = (
-        datetime.strptime(args.date, "%Y-%m-%d").date()
-        if args.date
-        else datetime.now(timezone).date()
-    )
-
-    index_path = site / "index.html"
-    sitemap_path = site / "sitemap.xml"
-    index = index_path.read_text(encoding="utf-8")
-    sitemap = sitemap_path.read_text(encoding="utf-8")
-    if HOME_MARKER not in index:
-        fail("Homepage publication marker is missing")
-    if "</urlset>" not in sitemap:
-        fail("sitemap.xml is not a valid URL set")
-
-    published: list[tuple[str, str, str]] = []
-    for entry in manifest.get("entries", []):
-        publish_date = datetime.strptime(entry["date"], "%Y-%m-%d").date()
-        if publish_date > today:
+def validate_internal_links(content, site, slug, source):
+    for href in re.findall(r'<a\s+[^>]*href="([^"]+)"', content, re.I):
+        if href.startswith(('http://', 'https://', 'mailto:', 'tel:', '#')):
             continue
+        target = href.split('#', 1)[0].split('?', 1)[0].lstrip('/')
+        if not target:
+            target = 'index.html'
+        elif not Path(target).suffix:
+            target += '.html'
+        if target == slug or target == 'guides.html':
+            continue
+        if not (site / target).is_file():
+            fail(f'{source} links to an unpublished or missing page: {target}')
 
-        slug = entry["slug"]
-        title = entry["title"]
-        source = queue / entry["source"]
-        destination = site / slug
 
+def refresh_tuning_choices(site, manifest, today):
+    pattern = re.compile(r'(<select id="tuningSelect"[^>]*>)(.*?)(</select>)', re.S)
+    for page in site.glob('*.html'):
+        original = page.read_text(encoding='utf-8')
+        content = original
+        for entry in manifest.get('entries', []):
+            tuning = entry.get('tuning')
+            if not tuning or entry['date'] > today.isoformat() or not (site / entry['slug']).is_file():
+                continue
+            if f'value="{tuning["key"]}"' not in content:
+                option = f'\n<option value="{html.escape(tuning["key"])}">{html.escape(tuning["optionLabel"])}</option>\n'
+                content = pattern.sub(lambda m: m.group(1) + m.group(2) + option + m.group(3), content, count=1)
+        content = normalize_page(content, page.name)
+        if content != original:
+            page.write_text(content, encoding='utf-8')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--site', required=True, type=Path)
+    parser.add_argument('--queue', required=True, type=Path)
+    parser.add_argument('--date', help='Override publication date as YYYY-MM-DD for validation')
+    args = parser.parse_args()
+    site, queue = args.site.resolve(), args.queue.resolve()
+    manifest_path = queue / 'publication-queue.json'
+    if not manifest_path.is_file():
+        fail(f'Missing queue manifest: {manifest_path}')
+    manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+    today = datetime.strptime(args.date, '%Y-%m-%d').date() if args.date else datetime.now(ZoneInfo(manifest.get('timezone', 'America/Chicago'))).date()
+    published = []
+    for entry in manifest.get('entries', []):
+        if datetime.strptime(entry['date'], '%Y-%m-%d').date() > today:
+            continue
+        slug = entry['slug']
+        destination, source = site / slug, queue / entry['source']
         if destination.exists():
             continue
         if not source.is_file():
-            print(f"SKIP {slug}: scheduled source is not ready")
+            print(f'SKIP {slug}: scheduled source is not ready')
             continue
-
-        content = normalize_528_labels(source.read_text(encoding="utf-8"))
-        expected_canonical = f'{BASE_URL}/{slug}'
-        missing = [item for item in REQUIRED_SNIPPETS if item not in content]
-        if expected_canonical not in content:
-            missing.append(expected_canonical)
-        if "<title>" not in content or "<h1>" not in content:
-            missing.append("title and h1")
+        content = normalize_page(source.read_text(encoding='utf-8'), slug)
+        missing = [snippet for snippet in REQUIRED_SNIPPETS if snippet not in content]
+        canonical = re.search(r'<link\s+rel="canonical"\s+href="([^"]+)"', content)
+        if not canonical or canonical.group(1) != public_url(slug):
+            missing.append('correct canonical URL: ' + public_url(slug))
+        if '<title>' not in content or '<h1>' not in content:
+            missing.append('title and h1')
         if missing:
-            fail(f"{source} failed validation; missing: {', '.join(missing)}")
+            fail(f'{source} failed validation; missing: {", ".join(missing)}')
         validate_internal_links(content, site, slug, source)
-
-        if "data-all-tunings" not in content:
-            content = content.replace("</main>", ALL_TUNINGS_SECTION + "  </main>")
-        destination.write_text(content, encoding="utf-8")
-        url = f"{BASE_URL}/{slug}"
-
-        if url not in sitemap:
-            sitemap_line = f"  <url><loc>{html.escape(url)}</loc></url>\n"
-            sitemap = sitemap.replace("</urlset>", sitemap_line + "</urlset>")
-
-        link = f'          <a href="{html.escape(slug)}">{html.escape(title)}</a>\n'
-        if f'href="{slug}"' not in index:
-            index = index.replace(HOME_MARKER, link + HOME_MARKER)
-
-        published.append((slug, title, url))
-        print(f"PUBLISH {slug}")
-
+        destination.write_text(content, encoding='utf-8')
+        published.append(slug)
+        print(f'PUBLISH {slug}')
+    refresh_tuning_choices(site, manifest, today)
+    rebuild_guides(site)
+    rebuild_sitemap(site)
+    urls = [public_url(slug) for slug in published]
+    (site / '.published-files.txt').write_text(''.join(slug + '\n' for slug in published), encoding='utf-8')
+    (site / '.published-urls.txt').write_text(''.join(url + '\n' for url in urls), encoding='utf-8')
+    payload = {'host': 'onlineguitartuner.net', 'key': 'bf71bddc4fcdf5fa3ef27b1f62e4a112', 'keyLocation': BASE_URL + '/bf71bddc4fcdf5fa3ef27b1f62e4a112.txt', 'urlList': urls}
+    (site / '.indexnow-payload.json').write_text(json.dumps(payload, separators=(',', ':')), encoding='utf-8')
     if not published:
-        refresh_tuning_navigation(site, manifest, today)
-        print("No completed articles are due.")
-        return
-
-    index_path.write_text(index, encoding="utf-8")
-    sitemap_path.write_text(sitemap, encoding="utf-8")
-    refresh_tuning_navigation(site, manifest, today)
-
-    (site / ".published-files.txt").write_text(
-        "".join(f"{slug}\n" for slug, _, _ in published), encoding="utf-8"
-    )
-    urls = [url for _, _, url in published]
-    (site / ".published-urls.txt").write_text(
-        "".join(f"{url}\n" for url in urls), encoding="utf-8"
-    )
-    payload = {
-        "host": "onlineguitartuner.net",
-        "key": "bf71bddc4fcdf5fa3ef27b1f62e4a112",
-        "keyLocation": f"{BASE_URL}/bf71bddc4fcdf5fa3ef27b1f62e4a112.txt",
-        "urlList": urls,
-    }
-    (site / ".indexnow-payload.json").write_text(
-        json.dumps(payload, separators=(",", ":")), encoding="utf-8"
-    )
+        print('No completed articles are due.')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
