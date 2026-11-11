@@ -493,3 +493,8 @@ code { overflow-wrap: anywhere; }
   .frequency-table th, .frequency-table td { white-space: normal; }
   .table-wrap { -webkit-overflow-scrolling: touch; }
 }
+@media (max-width: 380px) {
+  .nav-links { gap: 0 2px; }
+  .nav-links a { padding-inline: 3px; font-size: .85rem; }
+  .tuning-control select { font-size: 1rem; padding-left: 12px; padding-right: 36px; }
+}
