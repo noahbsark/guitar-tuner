@@ -11,7 +11,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 from site_content import BASE_URL, normalize_page, public_url, rebuild_guides, rebuild_sitemap
 
-REQUIRED_SNIPPETS = ('rel="canonical"', 'G-61XFFV7JZT', 'ca-pub-6136525087204092', 'href="styles.css"')
+REQUIRED_SNIPPETS = ('rel="canonical"', 'G-61XFFV7JZT', 'ca-pub-6136525087204092', 'href="/styles.css?v=20261111-mobile"')
 
 
 def fail(message):
