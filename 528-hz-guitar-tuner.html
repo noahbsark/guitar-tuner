@@ -16,7 +16,7 @@
   <meta name="description" content="Free 528 Hz guitar tuner for standard E A D G B E, calibrated to C5 = 528 Hz and A4 = 443.993 Hz (commonly rounded to 444 Hz)." />
   <link rel="canonical" href="https://onlineguitartuner.net/528-hz-guitar-tuner" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6136525087204092" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=20261111-mobile" />
 </head>
 <body data-tuning="standard528">
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -74,7 +74,8 @@
           </select>
         </div>
 
-        <div id="statusPill" class="status-pill" aria-live="polite">
+        <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
+  <div id="statusPill" class="status-pill" aria-live="polite">
           <span class="dot" aria-hidden="true"></span>
           <span id="statusText">Microphone off</span>
         </div>
@@ -101,7 +102,7 @@
 
         <section id="strings" class="strings" aria-label="Selected guitar tuning"></section>
         <div class="level" aria-hidden="true"><div id="levelBar" class="level-bar"></div></div>
-        <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
+        
         <div class="small-note">Pluck one string at a time. Left means tune up. Right means tune down.</div>
         <noscript><p class="notice">This tuner requires JavaScript. Enable JavaScript, reload the page, and then allow microphone access.</p></noscript>
       </section>
@@ -157,7 +158,8 @@
       <a href="/affiliate-disclosure">Affiliate Disclosure</a> ·
       <a href="/privacy">Privacy</a>
     </p>
-  </footer>
+  <p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>
+</footer>
   <script src="tuner.js"></script>
 </body>
 </html>

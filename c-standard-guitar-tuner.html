@@ -9,7 +9,7 @@
   <title>C Standard Guitar Tuner</title><meta name="description" content="Tune your guitar to C Standard, C F Bb Eb G C, using a free microphone tuner with exact frequencies and setup advice." />
   <link rel="canonical" href="https://onlineguitartuner.net/c-standard-guitar-tuner" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6136525087204092" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=20261111-mobile" />
 </head>
 <body data-tuning="cStandard">
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -49,7 +49,8 @@
             <option value="bStandard">B Standard — B E A D F# B</option>
           </select>
         </div>
-        <div id="statusPill" class="status-pill" aria-live="polite">
+        <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
+  <div id="statusPill" class="status-pill" aria-live="polite">
           <span class="dot" aria-hidden="true"></span>
           <span id="statusText">Microphone off</span>
         </div>
@@ -73,7 +74,7 @@
         </section>
         <section id="strings" class="strings" aria-label="Selected guitar tuning"></section>
         <div class="level" aria-hidden="true"><div id="levelBar" class="level-bar"></div></div>
-        <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
+        
         <div class="small-note">Pluck one string at a time. Left means tune up. Right means tune down.</div>
         <noscript><p class="notice">This tuner requires JavaScript. Enable JavaScript, reload the page, and then allow microphone access.</p></noscript>
       </section>
@@ -101,7 +102,8 @@
       <a href="/affiliate-disclosure">Affiliate Disclosure</a> ·
       <a href="/privacy">Privacy</a>
     </p>
-  </footer>
+  <p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>
+</footer>
   <script src="tuner.js"></script>
 </body>
 </html>

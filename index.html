@@ -17,7 +17,7 @@
   <link rel="canonical" href="https://onlineguitartuner.net/" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6136525087204092" crossorigin="anonymous"></script>
   
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=20261111-mobile" />
 </head>
 <body data-tuning="standard">
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -38,7 +38,7 @@
   <main id="main-content" class="page">
     <section class="hero">
       <h1>Free Online Guitar Tuner</h1>
-      <p class="lede">Tune your guitar quickly with a simple microphone-based tuner. Choose standard tuning, Drop D, DADGAD, Open G, Open D, half step down, and more.</p>
+      <p class="lede">Choose a tuning, tap Start listening, and pluck one string. Free to use on your phone or computer.</p>
     </section>
 
     <section class="app-layout">
@@ -78,6 +78,7 @@
           </select>
 </div>
 
+  <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
   <div id="statusPill" class="status-pill" aria-live="polite">
     <span class="dot" aria-hidden="true"></span>
     <span id="statusText">Microphone off</span>
@@ -117,7 +118,7 @@
     <div id="levelBar" class="level-bar"></div>
   </div>
 
-  <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
+  
   <div class="small-note">
     Pluck one string at a time. Left means tune up. Right means tune down.
   </div>
@@ -165,6 +166,7 @@
         </div>
 </article>
     </section>
+<section class="content-card support-card" aria-labelledby="support-heading"><div><h2 id="support-heading">Finding the tuner useful?</h2><p>You can help support this free tool with an optional coffee.</p></div><a class="support-button" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></section>
     <section class="content-card all-tunings-card" data-all-tunings><h2>Find your next step</h2><p><a href="/guides#tuners">Browse all tuning presets</a> · <a href="/guides">Explore the guitar guides</a> · <a href="/microphone-not-working-online-guitar-tuner">Microphone help</a></p></section>
   </main>
 
@@ -177,7 +179,8 @@
       <a href="/affiliate-disclosure">Affiliate Disclosure</a> ·
       <a href="/privacy">Privacy</a>
     </p>
-  </footer>
+  <p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>
+</footer>
 
   <script src="tuner.js"></script>
 </body>

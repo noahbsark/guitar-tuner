@@ -61,6 +61,12 @@ def category(filename: str) -> str:
 
 def normalize_page(content: str, filename: str) -> str:
     content = normalize_links(content)
+    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261111-mobile"', content)
+    # Keep the primary action above the changing pitch readout on small screens.
+    action = re.search(r'<button id="toggleButton"[^>]*>.*?</button>', content, re.S)
+    if action and content.index(action.group()) > content.index('id="statusPill"'):
+        content = content.replace(action.group(), '', 1)
+        content = content.replace('<div id="statusPill"', action.group() + '\n  <div id="statusPill"', 1)
     current = '/' if filename == 'index.html' or 'id="tuningSelect"' in content else '/guides' if filename not in UTILITY or filename == 'guides.html' else public_path(filename)
     nav = [('Tuner', '/'), ('Guides', '/guides'), ('About', '/about'), ('Contact', '/contact'), ('Privacy', '/privacy')]
     links = '\n'.join('        <a href="' + url + '"' + (' aria-current="page"' if url == current else '') + '>' + label + '</a>' for label, url in nav)
@@ -73,6 +79,8 @@ def normalize_page(content: str, filename: str) -> str:
     # Reading-only pages do not need microphone-tuner initialization.
     if 'id="tuningSelect"' not in content:
         content = re.sub(r'\s*<script src="tuner.js"></script>', '', content)
+    if '<footer class="footer">' in content and 'class="support-link"' not in content:
+        content = re.sub(r'(<footer class="footer">.*?)(</footer>)', lambda m: m.group(1) + '<p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>\n' + m.group(2), content, count=1, flags=re.S)
     return content
 
 
