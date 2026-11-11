@@ -61,7 +61,7 @@ def category(filename: str) -> str:
 
 def normalize_page(content: str, filename: str) -> str:
     content = normalize_links(content)
-    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261111-mobile"', content)
+    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261111-support"', content)
     # Keep the primary action above the changing pitch readout on small screens.
     action = re.search(r'<button id="toggleButton"[^>]*>.*?</button>', content, re.S)
     if action and content.index(action.group()) > content.index('id="statusPill"'):
@@ -81,6 +81,9 @@ def normalize_page(content: str, filename: str) -> str:
         content = re.sub(r'\s*<script src="tuner.js"></script>', '', content)
     if '<footer class="footer">' in content and 'class="support-link"' not in content:
         content = re.sub(r'(<footer class="footer">.*?)(</footer>)', lambda m: m.group(1) + '<p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>\n' + m.group(2), content, count=1, flags=re.S)
+    content = re.sub(r'<section class="content-card support-card".*?</section>', '', content, flags=re.S)
+    if 'src="/support.js' not in content:
+        content = content.replace('</body>', '<script src="/support.js?v=20261111" defer></script>\n</body>')
     return content
 
 
