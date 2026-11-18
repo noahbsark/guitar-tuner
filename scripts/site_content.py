@@ -115,7 +115,7 @@ def normalize_page(content: str, filename: str) -> str:
         content = re.sub(r'(</select>\s*</div>)', r'\1\n        <p id="selectedPreset" role="status"></p>', content, count=1)
     tuner_script = r'<script src="/?tuner\.js(?:\?[^"]*)?"></script>'
     if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content or 'id="tensionComparison"' in content:
-        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118d"></script>', content)
+        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118e"></script>', content)
     else:
         content = re.sub(tuner_script, '', content)
     if '<footer class="footer">' in content and 'class="support-link"' not in content:
@@ -158,6 +158,8 @@ def rebuild_guides(site: Path) -> None:
             if key == 'tuners':
                 if url == '/7-string-guitar-tuner':
                     family = 'Seven-string guitars'
+                elif url == '/bass-guitar-tuner':
+                    family = 'Bass guitars'
                 elif url == '/12-string-guitar-tuner':
                     family = '12-string guitars'
                 elif url == '/chromatic-guitar-tuner':

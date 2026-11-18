@@ -127,3 +127,34 @@ vm.runInContext(`
 assert.match(readout.detailsText.textContent, /Course 2 second: B3/);
 assert.equal(vm.runInContext('checkedNotes.size', browser), 3);
 console.log('12-string G4 detection and separate unison targets passed.');
+
+for (const rate of [44100, 48000, 96000, 192000]) {
+  for (const pitch of [30.8677, 41.20345, 55, 73.4162, 97.99885]) {
+    const actual = vm.runInContext(`
+      (() => {
+        const rate = ${rate};
+        const pitch = ${pitch};
+        const stride = clamp(2 ** Math.ceil(Math.log2(rate / 24000)), 2, 8);
+        const input = Float32Array.from({length: 4096 * stride}, (_, i) => {
+          const phase = 2 * Math.PI * pitch * i / rate;
+          return 0.2 * (Math.sin(phase) + 0.65 * Math.sin(2 * phase));
+        });
+        const filtered = new Float32Array(4096);
+        averageSamples(input, filtered, stride);
+        return detectPitchAutocorrelation(filtered, rate / stride, getRMS(input),
+          MAX_BASS_FREQUENCY, MIN_BASS_FREQUENCY)?.frequency;
+      })()
+    `, browser);
+    assert.ok(Math.abs(1200 * Math.log2(actual / pitch)) < 1, `${rate} Hz input, pitch ${pitch}: ${actual}`);
+  }
+}
+vm.runInContext(`
+  currentTuningKey = "standard";
+  currentStrings = TUNINGS.standard.strings;
+  manualTarget = null;
+  testPitch = Math.sqrt(82.4069 * 110);
+  resetDetectionState();
+  updateLoop();
+`, browser);
+assert.match(readout.helperText.textContent, /Pitch outside this preset/);
+console.log('20 low-bass sample-rate checks and out-of-preset feedback passed.');

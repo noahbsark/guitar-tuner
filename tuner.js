@@ -280,6 +280,22 @@ TUNINGS[TWELVE_STRING_DEFAULT] = {
   })
 };
 
+TUNINGS.bass4 = {
+  name: "4-string bass Standard",
+  label: "E A D G",
+  strings: TUNINGS.standard.strings.slice(0, 4).map(string => ({
+    note: string.note[0] + (Number(string.note[1]) - 1),
+    frequency: string.frequency / 2
+  }))
+};
+TUNINGS.bass5 = {
+  name: "5-string bass Standard",
+  label: "B E A D G",
+  strings: [{note: "B0", frequency: TUNINGS.sevenStandard.strings[0].frequency / 2}, ...TUNINGS.bass4.strings]
+};
+const MIN_BASS_FREQUENCY = 27;
+const MAX_BASS_FREQUENCY = 210;
+
 const IN_TUNE_CENTS = 5;
 const MAX_METER_CENTS = 50;
 const MAX_TARGET_DISTANCE_CENTS = 225;
@@ -308,6 +324,7 @@ if (!Object.hasOwn(TUNINGS, currentTuningKey) ||
 }
 let currentStrings = TUNINGS[currentTuningKey].strings;
 const isPairedTuning = () => currentTuningKey === TWELVE_STRING_DEFAULT;
+const isBassTuning = () => currentTuningKey === "bass4" || currentTuningKey === "bass5";
 const selectedPreset = document.getElementById("selectedPreset");
 
 let audioContext = null;
@@ -315,6 +332,8 @@ let analyser = null;
 let mediaStream = null;
 let sourceNode = null;
 let buffer = null;
+let bassSamples = null;
+let bassStride = 1;
 let rafId = null;
 
 let isListening = false;
@@ -429,7 +448,7 @@ function renderFrequencyLookup() {
     targets.replaceChildren();
     strings.forEach((string, index) => {
       const row = targets.insertRow();
-      row.insertCell().textContent = strings.length - index;
+      row.insertCell().textContent = string.label?.split(":")[0] || strings.length - index;
       row.insertCell().textContent = string.note;
       row.insertCell().textContent = `${string.frequency.toFixed(2)} Hz`;
     });
@@ -510,7 +529,9 @@ async function startListening() {
 
     sourceNode = audioContext.createMediaStreamSource(mediaStream);
     analyser = audioContext.createAnalyser();
-    analyser.fftSize = 4096;
+    bassStride = isBassTuning() ? clamp(2 ** Math.ceil(Math.log2(audioContext.sampleRate / 24000)), 2, 8) : 1;
+    analyser.fftSize = 4096 * bassStride;
+    bassSamples = isBassTuning() ? new Float32Array(4096) : null;
     analyser.smoothingTimeConstant = 0;
 
     buffer = new Float32Array(analyser.fftSize);
@@ -567,6 +588,7 @@ function stopListening() {
 
   analyser = null;
   buffer = null;
+  bassSamples = null;
   resetDetectionState();
 
   if (toggleButton) {
@@ -606,10 +628,19 @@ function updateLoop() {
     rafId = requestAnimationFrame(updateLoop);
     return;
   }
-  const frequencyLimit = chromatic || isPairedTuning() ? MAX_CHROMATIC_FREQUENCY : MAX_DETECTABLE_FREQUENCY;
-  const result = detectPitchAutocorrelation(buffer, audioContext.sampleRate, rms, frequencyLimit);
+  const minimum = isBassTuning() ? MIN_BASS_FREQUENCY : MIN_DETECTABLE_FREQUENCY;
+  const frequencyLimit = isBassTuning() ? MAX_BASS_FREQUENCY
+    : chromatic || isPairedTuning() ? MAX_CHROMATIC_FREQUENCY : MAX_DETECTABLE_FREQUENCY;
+  let samples = buffer;
+  let sampleRate = audioContext.sampleRate;
+  if (bassSamples) {
+    averageSamples(buffer, bassSamples, bassStride);
+    samples = bassSamples;
+    sampleRate /= bassStride;
+  }
+  const result = detectPitchAutocorrelation(samples, sampleRate, rms, frequencyLimit, minimum);
 
-  if (!result || result.frequency < MIN_DETECTABLE_FREQUENCY || result.frequency > frequencyLimit || result.clarity < MIN_CLARITY) {
+  if (!result || result.frequency < minimum || result.frequency > frequencyLimit || result.clarity < MIN_CLARITY) {
     handleUnstablePitch(rms);
     rafId = requestAnimationFrame(updateLoop);
     return;
@@ -619,7 +650,8 @@ function updateLoop() {
   const cents = frequencyToCents(result.frequency, nearest.frequency);
 
   if (!manualTarget && Math.abs(cents) > MAX_TARGET_DISTANCE_CENTS) {
-    handleUnstablePitch(rms);
+    resetDetectionState();
+    showWaiting("Pitch outside this preset. Choose a string target or check the preset.");
     rafId = requestAnimationFrame(updateLoop);
     return;
   }
@@ -823,11 +855,19 @@ function getRMS(samples) {
   return Math.sqrt(sum / samples.length);
 }
 
-function detectPitchAutocorrelation(samples, sampleRate, rms, maxFrequency = MAX_DETECTABLE_FREQUENCY) {
+function averageSamples(input, output, stride) {
+  for (let i = 0; i < output.length; i++) {
+    let sum = 0;
+    for (let j = 0; j < stride; j++) sum += input[i * stride + j];
+    output[i] = sum / stride;
+  }
+}
+
+function detectPitchAutocorrelation(samples, sampleRate, rms,
+    maxFrequency = MAX_DETECTABLE_FREQUENCY, minFrequency = MIN_DETECTABLE_FREQUENCY) {
   if (rms < MIN_RMS) return null;
 
   const size = samples.length;
-  const minFrequency = MIN_DETECTABLE_FREQUENCY;
   const minLag = Math.floor(sampleRate / maxFrequency);
   const maxLag = Math.floor(sampleRate / minFrequency);
 
