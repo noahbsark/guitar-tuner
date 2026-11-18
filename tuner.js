@@ -354,6 +354,10 @@ let playReference;
 let referenceContext;
 let referenceTone;
 let microphoneHelp;
+let inputControl;
+let inputSelect;
+let inputStatus;
+let selectedInputId = "";
 let stableFrameCount = 0;
 let lastDetectedTarget = null;
 let passProgress;
@@ -442,6 +446,24 @@ if (toggleButton) {
   microphoneHelp.textContent = "Fix microphone access";
   microphoneHelp.hidden = true;
   toggleButton.after(microphoneHelp);
+  inputControl = document.createElement("div");
+  inputControl.className = "tuning-control";
+  inputControl.hidden = true;
+  const label = document.createElement("label");
+  label.textContent = "Microphone input";
+  label.htmlFor = "microphoneInput";
+  inputSelect = document.createElement("select");
+  inputSelect.id = "microphoneInput";
+  inputSelect.addEventListener("change", () => {
+    selectedInputId = inputSelect.value;
+    if (isListening) stopListening();
+    inputStatus.textContent = "Press Start listening to use this input.";
+  });
+  inputStatus = document.createElement("p");
+  inputStatus.setAttribute("role", "status");
+  inputStatus.className = "reference-tone-help";
+  inputControl.append(label, inputSelect, inputStatus);
+  microphoneHelp.after(inputControl);
 }
 renderTuningChoices();
 setNeedle(0, "idle");
@@ -572,8 +594,35 @@ function relativeTensionChange(fromFrequency, toFrequency) {
   return ((toFrequency / fromFrequency) ** 2 - 1) * 100;
 }
 
+function microphoneConstraints(inputId) {
+  const audio = {echoCancellation: false, noiseSuppression: false, autoGainControl: false};
+  if (inputId) audio.deviceId = {exact: inputId};
+  return {audio};
+}
+
+async function showMicrophoneInputs(stream, track) {
+  if (!inputSelect || !navigator.mediaDevices.enumerateDevices) return;
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    if (mediaStream !== stream || !isListening) return;
+    const inputs = devices.filter(device => device.kind === "audioinput" && device.deviceId &&
+      device.deviceId !== "default" && device.deviceId !== "communications");
+    inputSelect.replaceChildren(new Option("System default", ""));
+    inputs.forEach((device, index) => {
+      inputSelect.add(new Option(device.label || `Microphone ${index + 1}`, device.deviceId));
+    });
+    if (!inputs.some(device => device.deviceId === selectedInputId)) selectedInputId = "";
+    inputSelect.value = selectedInputId;
+    inputControl.hidden = inputs.length === 0;
+    inputStatus.textContent = track?.label ? `Using ${track.label}.` : "Using the selected audio input.";
+  } catch {
+    // Device listing is optional. An active microphone can still tune.
+  }
+}
+
 async function startListening() {
   toggleButton.disabled = true;
+  if (inputSelect) inputSelect.disabled = true;
   const referenceShortcut = document.querySelector(".reference-shortcut");
   if (referenceShortcut) referenceShortcut.disabled = true;
   if (playReference) playReference.disabled = true;
@@ -591,13 +640,7 @@ async function startListening() {
       await audioContext.resume();
     }
 
-    mediaStream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false
-      }
-    });
+    mediaStream = await navigator.mediaDevices.getUserMedia(microphoneConstraints(selectedInputId));
 
     sourceNode = audioContext.createMediaStreamSource(mediaStream);
     analyser = audioContext.createAnalyser();
@@ -610,6 +653,16 @@ async function startListening() {
     sourceNode.connect(analyser);
 
     isListening = true;
+    const stream = mediaStream;
+    const track = stream.getAudioTracks()[0];
+    track?.addEventListener("ended", () => {
+      if (!isListening || stream !== mediaStream) return;
+      stopListening();
+      setStatus("Microphone disconnected", "error");
+      helperText.textContent = "Reconnect the input or choose System default, then press Start listening.";
+      if (microphoneHelp) microphoneHelp.hidden = false;
+    });
+    void showMicrophoneInputs(stream, track);
     toggleButton.textContent = "Stop listening";
     toggleButton.classList.add("stop");
     toggleButton.setAttribute("aria-pressed", "true");
@@ -623,7 +676,11 @@ async function startListening() {
 
     let message = "Could not access microphone.";
     if (error && error.name === "NotAllowedError") message = "Microphone permission was denied.";
-    else if (error && error.name === "NotFoundError") message = "No microphone was found.";
+    else if (selectedInputId && (error?.name === "NotFoundError" || error?.name === "OverconstrainedError")) {
+      selectedInputId = "";
+      inputSelect.value = "";
+      message = "That input is unavailable. Press Start listening to try the system default.";
+    } else if (error?.name === "NotFoundError") message = "No microphone was found.";
     else if (!window.isSecureContext) message = "Microphone access needs HTTPS on most phones.";
 
     setStatus("Microphone error", "error");
@@ -634,6 +691,7 @@ async function startListening() {
     if (microphoneHelp) microphoneHelp.hidden = false;
   } finally {
     toggleButton.disabled = false;
+    if (inputSelect) inputSelect.disabled = false;
     if (referenceShortcut) referenceShortcut.disabled = false;
   }
 }
@@ -670,6 +728,7 @@ function stopListening() {
   }
 
   if (playReference) playReference.disabled = !manualTarget;
+  if (inputStatus) inputStatus.textContent = "";
   setStatus("Microphone off", "idle");
   noteReadout.textContent = "—";
   noteReadout.className = "note note-idle";

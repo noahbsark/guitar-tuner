@@ -203,3 +203,35 @@ captureElements.clearIntonation.click();
 assert.equal(captureElements.captureFrettedPitch.disabled, true);
 assert.equal(captureElements.intonationOpen.textContent, '—');
 console.log('Intonation capture and reset flow passed.');
+
+assert.equal(vm.runInContext('microphoneConstraints("").audio.deviceId', browser), undefined);
+assert.equal(vm.runInContext('microphoneConstraints("interface").audio.deviceId.exact', browser), 'interface');
+browser.Option = function Option(label, value) { this.label = label; this.value = value; };
+browser.navigator = {mediaDevices: {enumerateDevices: async () => [
+  {kind:'audioinput', deviceId:'default', label:'Default'},
+  {kind:'audioinput', deviceId:'communications', label:'Communications'},
+  {kind:'audioinput', deviceId:'builtin', label:'Built-in'},
+  {kind:'audioinput', deviceId:'interface', label:'USB interface'},
+  {kind:'audiooutput', deviceId:'speaker', label:'Speaker'}
+]}};
+(async () => {
+  await vm.runInContext(`
+    inputSelect = {
+      items: [],
+      replaceChildren(option) { this.items = [option]; },
+      add(option) { this.items.push(option); }
+    };
+    inputControl = {hidden: true};
+    inputStatus = {};
+    selectedInputId = "interface";
+    mediaStream = {};
+    isListening = true;
+    showMicrophoneInputs(mediaStream, {label:"USB interface"});
+  `, browser);
+  assert.equal(vm.runInContext('inputSelect.items.map(item => item.value).join(",")', browser), ',builtin,interface');
+  assert.equal(vm.runInContext('inputSelect.value', browser), 'interface');
+  assert.equal(vm.runInContext('inputStatus.textContent', browser), 'Using USB interface.');
+  await vm.runInContext('showMicrophoneInputs({}, {label:"Stale input"});', browser);
+  assert.equal(vm.runInContext('inputStatus.textContent', browser), 'Using USB interface.');
+  console.log('Microphone constraints, device filtering, and stale-list protection passed.');
+})().catch(error => { console.error(error); process.exitCode = 1; });
