@@ -171,3 +171,35 @@ for (const bad of ['32,45,50,55,59,64', '40,45,50,55,59,77', '40,45', '40,45,50,
 assert.equal(vm.runInContext('createCustomTuning([38,45,50,55,57,62]).label', browser), 'D2 A2 D3 G3 A3 D4');
 assert.equal(vm.runInContext('createCustomTuning([40,45,50,55,59,76]).strings[5].note', browser), 'E5');
 console.log('Custom tuning link validation and exact note targets passed.');
+
+assert.equal(vm.runInContext('intonationDifferenceCents(110, 220)', browser), 0);
+assert.equal(vm.runInContext('Math.round(intonationDifferenceCents(110, 220 * 2 ** (12 / 1200)))', browser), 12);
+assert.equal(vm.runInContext('Math.round(intonationDifferenceCents(110, 220 * 2 ** (-8 / 1200)))', browser), -8);
+assert.equal(vm.runInContext('intonationDifferenceCents(110, 110)', browser), null);
+assert.equal(vm.runInContext('intonationDifferenceCents(110, 329.63)', browser), null);
+console.log('Intonation comparison reports sharp, flat, exact octave, and invalid second readings.');
+
+const captureElements = Object.fromEntries([
+  'captureOpenPitch', 'captureFrettedPitch', 'clearIntonation',
+  'intonationOpen', 'intonationFretted', 'intonationResult'
+].map(id => [id, {
+  disabled: true,
+  addEventListener(event, listener) { this[event] = listener; }
+}]));
+const captureBrowser = vm.createContext({
+  document: {body: {dataset: {tuning: 'chromatic'}}, getElementById: id => captureElements[id] || null},
+  location: {search: ''},
+  URLSearchParams
+});
+vm.runInContext(source, captureBrowser);
+vm.runInContext('setIntonationPitch(110)', captureBrowser);
+assert.equal(captureElements.captureFrettedPitch.disabled, true);
+captureElements.captureOpenPitch.click();
+vm.runInContext('setIntonationPitch(220 * 2 ** (12 / 1200))', captureBrowser);
+assert.equal(captureElements.captureFrettedPitch.disabled, false);
+captureElements.captureFrettedPitch.click();
+assert.match(captureElements.intonationResult.textContent, /12 cents sharp/);
+captureElements.clearIntonation.click();
+assert.equal(captureElements.captureFrettedPitch.disabled, true);
+assert.equal(captureElements.intonationOpen.textContent, '—');
+console.log('Intonation capture and reset flow passed.');

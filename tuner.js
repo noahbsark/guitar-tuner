@@ -359,6 +359,10 @@ let lastDetectedTarget = null;
 let passProgress;
 let resetPass;
 const checkedNotes = new Set();
+const openCapture = document.getElementById("captureOpenPitch");
+const frettedCapture = document.getElementById("captureFrettedPitch");
+let intonationOpen = null;
+let intonationLive = null;
 
 if (tuningSelect) {
   tuningSelect.value = currentTuningKey;
@@ -445,6 +449,7 @@ renderFrequencyLookup();
 renderTensionComparison();
 renderRetuningPlanner();
 renderCustomEditor();
+initializeIntonationCheck();
 
 function renderFrequencyLookup() {
   const lookup = document.getElementById("frequencyLookup");
@@ -676,6 +681,7 @@ function stopListening() {
 }
 
 function resetDetectionState() {
+  setIntonationPitch(null);
   smoothedFrequency = null;
   smoothedCents = 0;
   stableFrameCount = 0;
@@ -754,6 +760,7 @@ function showWaiting(message) {
 }
 
 function renderTuning(target, frequency, cents) {
+  setIntonationPitch(frequency);
   const absCents = Math.abs(cents);
   let state;
   let helper;
@@ -859,6 +866,59 @@ function renderCustomEditor() {
 
   updateShareLink(TUNINGS.custom.strings.map(string => string.midi));
   editor.hidden = false;
+}
+
+function initializeIntonationCheck() {
+  if (!openCapture) return;
+  const openReading = document.getElementById("intonationOpen");
+  const frettedReading = document.getElementById("intonationFretted");
+  const result = document.getElementById("intonationResult");
+
+  openCapture.addEventListener("click", () => {
+    if (intonationLive === null) return;
+    intonationOpen = intonationLive;
+    openReading.textContent = formatIntonationReading(intonationOpen);
+    frettedReading.textContent = "—";
+    result.textContent = "Open pitch recorded. Fret the same string at the 12th fret.";
+    setIntonationPitch(null);
+  });
+
+  frettedCapture.addEventListener("click", () => {
+    if (intonationLive === null || intonationOpen === null) return;
+    const cents = intonationDifferenceCents(intonationOpen, intonationLive);
+    if (cents === null) {
+      frettedReading.textContent = "—";
+      result.textContent = "That reading is outside the expected octave. Fret the same string at the 12th fret and try again.";
+      return;
+    }
+    frettedReading.textContent = formatIntonationReading(intonationLive);
+    const rounded = Math.round(Math.abs(cents));
+    result.textContent = rounded === 0 ? "The fretted note is within one cent of the expected octave."
+      : `The fretted note is about ${rounded} ${rounded === 1 ? "cent" : "cents"} ${cents > 0 ? "sharp" : "flat"} against the measured open string. Repeat the check before making an adjustment.`;
+  });
+  document.getElementById("clearIntonation").addEventListener("click", () => {
+    intonationOpen = null;
+    openReading.textContent = "—";
+    frettedReading.textContent = "—";
+    result.textContent = "Start with an open string.";
+    setIntonationPitch(null);
+  });
+}
+
+function formatIntonationReading(frequency) {
+  return `${getChromaticTarget(frequency).note} · ${frequency.toFixed(2)} Hz`;
+}
+
+function intonationDifferenceCents(open, fretted) {
+  const cents = frequencyToCents(fretted, open * 2);
+  return Math.abs(cents) <= 100 ? cents : null;
+}
+
+function setIntonationPitch(frequency) {
+  if (!openCapture) return;
+  intonationLive = frequency;
+  openCapture.disabled = frequency === null;
+  frettedCapture.disabled = frequency === null || intonationOpen === null;
 }
 
 function updatePassProgress() {
