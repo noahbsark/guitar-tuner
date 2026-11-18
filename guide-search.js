@@ -26,7 +26,7 @@ const searchableItems = new Map();
 for (const section of guideSections) {
   for (const link of section.querySelectorAll(".guide-list a")) {
     const path = link.getAttribute("href");
-    searchableItems.set(link.parentElement, words(link.textContent + " " + path + " " + (searchAliases[path] || "")).split(" "));
+    searchableItems.set(link.parentElement, words(link.parentElement.textContent + " " + path + " " + (searchAliases[path] || "")).split(" "));
   }
 }
 

@@ -8,8 +8,17 @@ from urllib.parse import urlsplit
 
 BASE_URL = 'https://onlineguitartuner.net'
 UTILITY = {'index.html', '404.html', 'guides.html', 'about.html', 'contact.html', 'privacy.html', 'affiliate-disclosure.html'}
+TOOL_TASKS = {
+    'guitar-retuning-planner.html': 'See which strings to raise or lower.',
+    'guitar-string-tension-calculator.html': 'Estimate tension changes on the same strings.',
+    'guitar-string-frequency-chart.html': 'Look up a string’s target frequency.',
+    'capo-transposition-chart.html': 'Find the sounding key, chord shapes or capo fret.',
+    'guitar-intonation-checker.html': 'Compare an open note with the same string at the 12th fret.',
+    'custom-guitar-tuner.html': 'Set and share six note-and-octave targets.',
+}
 GROUPS = {
     'tuners': 'Tuners and tuning presets',
+    'tools': 'Plan and check your tuning',
     'start': 'Start here: tuning basics',
     'troubleshooting': 'Fix a tuning or microphone problem',
     'strings': 'Strings, setup and maintenance',
@@ -146,12 +155,18 @@ def rebuild_guides(site: Path) -> None:
         body = page.read_text(encoding='utf-8')
         match = re.search(r'<h1[^>]*>(.*?)</h1>', body, re.S)
         title = re.sub('<[^>]+>', '', match.group(1)) if match else page.stem.replace('-', ' ')
-        group = 'tuners' if 'id="tuningSelect"' in body else category(page.name)
+        if page.name in TOOL_TASKS:
+            group = 'tools'
+        else:
+            group = 'tuners' if 'id="tuningSelect"' in body else category(page.name)
         grouped[group].append((html.unescape(title), public_path(page.name)))
     grouped['troubleshooting'].sort(key=lambda page: page[1] != '/guitar-tuning-troubleshooter')
+    tool_order = {public_path(name): index for index, name in enumerate(TOOL_TASKS)}
+    grouped['tools'].sort(key=lambda page: tool_order[page[1]])
     grouped['tuners'].insert(0, ('Standard guitar tuner — E A D G B E', '/'))
     jump_labels = {
         'tuners': 'Tune now',
+        'tools': 'Planning and checks',
         'start': 'Learn to tune',
         'troubleshooting': 'Fix a problem',
     }
@@ -168,10 +183,6 @@ def rebuild_guides(site: Path) -> None:
                     family = 'Bass guitars'
                 elif url == '/12-string-guitar-tuner':
                     family = '12-string guitars'
-                elif url == '/custom-guitar-tuner':
-                    family = 'Custom tunings'
-                elif url == '/guitar-intonation-checker':
-                    family = 'Intonation checks'
                 elif url == '/chromatic-guitar-tuner':
                     family = 'Chromatic'
                 elif 'drop' in url:
@@ -186,11 +197,18 @@ def rebuild_guides(site: Path) -> None:
         groups = []
         for family, pages in families.items():
             subheading = '<h3>' + family + '</h3>' if family else ''
-            items = ''.join('<li><a href="' + url + '">' + html.escape(title) + '</a></li>' for title, url in pages)
+            items = []
+            for title, url in pages:
+                link = '<a href="' + url + '">' + html.escape(title) + '</a>'
+                task = TOOL_TASKS.get(url.lstrip('/') + '.html')
+                if task:
+                    link += '<div>' + html.escape(task) + '</div>'
+                items.append('<li>' + link + '</li>')
+            items = ''.join(items)
             groups.append(subheading + '<ul class="guide-list">' + items + '</ul>')
         sections.append('<section id="' + key + '" class="content-card guide-group"><h2>' + label + '</h2>' + ''.join(groups) + '</section>')
     search = '<form class="content-card" role="search" hidden><div class="tuning-control"><label for="guideSearch">Find a tuner or guide</label><input id="guideSearch" type="search" placeholder="Try Drop D, mic permission or capo"></div><p id="guideResults" role="status"></p></form>'
-    content = head + '</head><body><a class="skip-link" href="#main-content">Skip to main content</a>' + header + '<main id="main-content" class="page"><section class="hero"><h1>Guitar tuning guides</h1><p class="lede">Choose a tuning, learn the basics, or find a fix for the problem you are hearing.</p></section>' + search + jump + ''.join(sections) + '</main>' + footer + '<script src="/guide-search.js?v=20261118b" defer></script></body></html>\n'
+    content = head + '</head><body><a class="skip-link" href="#main-content">Skip to main content</a>' + header + '<main id="main-content" class="page"><section class="hero"><h1>Guitar tuning guides</h1><p class="lede">Choose a tuning, learn the basics, or find a fix for the problem you are hearing.</p></section>' + search + jump + ''.join(sections) + '</main>' + footer + '<script src="/guide-search.js?v=20261118c" defer></script></body></html>\n'
     (site / 'guides.html').write_text(normalize_page(content, 'guides.html'), encoding='utf-8')
 
 
