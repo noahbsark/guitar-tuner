@@ -620,3 +620,15 @@ code { overflow-wrap: anywhere; }
   content: " ✓";
   color: var(--green);
 }
+
+button.reference-shortcut {
+  min-height: 44px;
+  margin-top: 8px;
+  color: var(--text);
+  background: var(--panel-soft);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  font-size: 1rem;
+}
+.reference-tone-help { margin: 8px 0 0; font-size: .9rem; color: var(--muted); }
+.tuner-card .string-target-controls button:disabled { display: block; opacity: .55; cursor: default; }

@@ -98,3 +98,8 @@ assert.equal(vm.runInContext('recordedCount', browser), 1);
 vm.runInContext('renderTuning(currentStrings[1], 110, 0);', browser);
 assert.equal(vm.runInContext('recordedCount', browser), 2);
 console.log('Tuning-pass count ignores repeats and out-of-tune notes.');
+
+assert.equal(vm.runInContext('relativeTensionChange(110, 110)', browser), 0);
+assert.equal(vm.runInContext('Math.round(relativeTensionChange(82.4069, 73.4162))', browser), -21);
+assert.equal(vm.runInContext('Math.round(relativeTensionChange(73.4162, 82.4069))', browser), 26);
+console.log('Same-string tension examples and reverse comparison passed.');

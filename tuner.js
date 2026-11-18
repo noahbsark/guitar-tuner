@@ -354,8 +354,20 @@ if (stringsContainer && currentTuningKey !== "chromatic") {
   playReference.textContent = "Play reference tone";
   playReference.disabled = true;
   playReference.addEventListener("click", playTargetTone);
-  controls.append(label, stringSelect, playReference);
+  const toneHelp = document.createElement("p");
+  toneHelp.className = "reference-tone-help";
+  toneHelp.textContent = "To tune by ear, leave the microphone off and choose a numbered string.";
+  controls.append(label, stringSelect, toneHelp, playReference);
   stringsContainer.before(controls);
+  const referenceShortcut = document.createElement("button");
+  referenceShortcut.type = "button";
+  referenceShortcut.className = "reference-shortcut";
+  referenceShortcut.textContent = "Tune by ear";
+  referenceShortcut.addEventListener("click", () => {
+    if (isListening) stopListening();
+    stringSelect.focus();
+  });
+  toggleButton.after(referenceShortcut);
   passProgress = document.createElement("span");
   passProgress.setAttribute("role", "status");
   resetPass = document.createElement("button");
@@ -382,6 +394,7 @@ if (toggleButton) {
 renderTuningChoices();
 setNeedle(0, "idle");
 renderFrequencyLookup();
+renderTensionComparison();
 
 function renderFrequencyLookup() {
   const lookup = document.getElementById("frequencyLookup");
@@ -407,8 +420,52 @@ function renderFrequencyLookup() {
   lookup.hidden = false;
 }
 
+function renderTensionComparison() {
+  const comparison = document.getElementById("tensionComparison");
+  if (!comparison) return;
+
+  const from = document.getElementById("tensionFrom");
+  const to = document.getElementById("tensionTo");
+  const targets = document.getElementById("tensionTargets");
+  for (const [key, tuning] of Object.entries(TUNINGS)) {
+    if (tuning.strings.length !== 6) continue;
+    from.add(new Option(tuning.name, key));
+    to.add(new Option(tuning.name, key));
+  }
+  from.value = "standard";
+  to.value = "dropD";
+
+  function renderComparison() {
+    const source = TUNINGS[from.value].strings;
+    targets.replaceChildren();
+    TUNINGS[to.value].strings.forEach((target, index) => {
+      const start = source[index];
+      const percent = Math.round(relativeTensionChange(start.frequency, target.frequency));
+      const row = targets.insertRow();
+      const number = document.createElement("th");
+      number.scope = "row";
+      number.textContent = 6 - index;
+      row.appendChild(number);
+      row.insertCell().textContent = start.note;
+      row.insertCell().textContent = target.note;
+      row.insertCell().textContent = percent === 0 ? "Unchanged" : `${percent > 0 ? "+" : "−"}${Math.abs(percent)}%`;
+    });
+  }
+
+  from.addEventListener("change", renderComparison);
+  to.addEventListener("change", renderComparison);
+  renderComparison();
+  comparison.hidden = false;
+}
+
+function relativeTensionChange(fromFrequency, toFrequency) {
+  return ((toFrequency / fromFrequency) ** 2 - 1) * 100;
+}
+
 async function startListening() {
   toggleButton.disabled = true;
+  const referenceShortcut = document.querySelector(".reference-shortcut");
+  if (referenceShortcut) referenceShortcut.disabled = true;
   if (playReference) playReference.disabled = true;
   if (referenceTone) referenceTone.stop();
   if (microphoneHelp) microphoneHelp.hidden = true;
@@ -465,6 +522,7 @@ async function startListening() {
     if (microphoneHelp) microphoneHelp.hidden = false;
   } finally {
     toggleButton.disabled = false;
+    if (referenceShortcut) referenceShortcut.disabled = false;
   }
 }
 

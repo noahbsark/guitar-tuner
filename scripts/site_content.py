@@ -51,7 +51,7 @@ def normalize_links(content: str) -> str:
 
 
 def category(filename: str) -> str:
-    if filename in {'guitar-tuning-gear-guide.html', 'clip-on-vs-online-guitar-tuner.html', 'best-string-gauges-for-drop-tunings.html', 'guitar-string-gauge-guide.html'}:
+    if filename in {'guitar-tuning-gear-guide.html', 'clip-on-vs-online-guitar-tuner.html', 'best-string-gauges-for-drop-tunings.html', 'guitar-string-gauge-guide.html', 'guitar-string-tension-calculator.html'}:
         return 'gear'
     if any(word in filename for word in ('chord', 'capo', 'tunings-for', '-vs-', 'alternate', 'nashville', 'easiest')):
         return 'music'
@@ -64,7 +64,7 @@ def category(filename: str) -> str:
 
 def normalize_page(content: str, filename: str) -> str:
     content = normalize_links(content)
-    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261118b"', content)
+    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261118c"', content)
     # Keep the primary action above the changing pitch readout on small screens.
     action = re.search(r'<button id="toggleButton"[^>]*>.*?</button>', content, re.S)
     if action and content.index(action.group()) > content.index('id="statusPill"'):
@@ -111,8 +111,8 @@ def normalize_page(content: str, filename: str) -> str:
                 content = content.replace('</head>', '  <meta name="google-adsense-account" content="' + publisher.group(1) + '">\n</head>', 1)
         content = re.sub(ad_script, '', content)
     tuner_script = r'<script src="/?tuner\.js(?:\?[^"]*)?"></script>'
-    if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content:
-        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118b"></script>', content)
+    if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content or 'id="tensionComparison"' in content:
+        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118c"></script>', content)
     else:
         content = re.sub(tuner_script, '', content)
     if '<footer class="footer">' in content and 'class="support-link"' not in content:
