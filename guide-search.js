@@ -19,6 +19,7 @@ const searchAliases = {
   "/guitar-retuning-planner": "which strings move lower raise change preset",
   "/guitar-string-tension-calculator": "strings too loose tight tension when retuning",
   "/clip-on-vs-online-guitar-tuner": "hardware headstock tuner background noise",
+  "/pedal-tuner-guide": "pedal tuner silent tune tuning onstage stage rehearsal mute bypass bass guitar",
   "/guitar-tuning-gear-guide": "buy replacement strings equipment gear",
 };
 
