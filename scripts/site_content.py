@@ -61,7 +61,7 @@ def category(filename: str) -> str:
 
 def normalize_page(content: str, filename: str) -> str:
     content = normalize_links(content)
-    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261111-support"', content)
+    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261118"', content)
     # Keep the primary action above the changing pitch readout on small screens.
     action = re.search(r'<button id="toggleButton"[^>]*>.*?</button>', content, re.S)
     if action and content.index(action.group()) > content.index('id="statusPill"'):
@@ -76,9 +76,11 @@ def normalize_page(content: str, filename: str) -> str:
     if filename not in UTILITY and 'class="editorial-note"' not in content:
         note = '<p class="editorial-note">Published by Online Guitar Tuner. <a href="/about#editorial">How our guides are maintained</a> · <a href="/contact">Report a correction</a></p>'
         content = re.sub(r'(<article\b[^>]*>)', lambda m: m.group(1) + '\n' + note, content, count=1)
-    # Reading-only pages do not need microphone-tuner initialization.
-    if 'id="tuningSelect"' not in content:
-        content = re.sub(r'\s*<script src="tuner.js"></script>', '', content)
+    tuner_script = r'<script src="/?tuner\.js(?:\?[^"]*)?"></script>'
+    if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content:
+        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118"></script>', content)
+    else:
+        content = re.sub(tuner_script, '', content)
     if '<footer class="footer">' in content and 'class="support-link"' not in content:
         content = re.sub(r'(<footer class="footer">.*?)(</footer>)', lambda m: m.group(1) + '<p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>\n' + m.group(2), content, count=1, flags=re.S)
     content = re.sub(r'<section class="content-card support-card".*?</section>', '', content, flags=re.S)
@@ -105,11 +107,35 @@ def rebuild_guides(site: Path) -> None:
         group = 'tuners' if 'id="tuningSelect"' in body else category(page.name)
         grouped[group].append((html.unescape(title), public_path(page.name)))
     grouped['tuners'].insert(0, ('Standard guitar tuner — E A D G B E', '/'))
-    jump = '<nav class="guide-categories" aria-label="Guide categories">' + ''.join('<a href="#' + key + '">' + label + '</a>' for key, label in GROUPS.items()) + '</nav>'
+    jump_labels = {
+        'tuners': 'Tune now',
+        'start': 'Learn to tune',
+        'troubleshooting': 'Fix a problem',
+    }
+    jump = '<nav class="guide-categories" aria-label="Guide categories">' + ''.join('<a href="#' + key + '">' + jump_labels.get(key, label) + '</a>' for key, label in GROUPS.items()) + '</nav>'
     sections = []
     for key, label in GROUPS.items():
-        items = ''.join('<li><a href="' + url + '">' + html.escape(title) + '</a></li>' for title, url in grouped[key])
-        sections.append('<section id="' + key + '" class="content-card guide-group"><h2>' + label + '</h2><ul class="guide-list">' + items + '</ul></section>')
+        families = {}
+        for title, url in grouped[key]:
+            family = None
+            if key == 'tuners':
+                if url == '/7-string-guitar-tuner':
+                    family = 'Seven-string guitars'
+                elif 'drop' in url:
+                    family = 'Drop tunings'
+                elif '/open-' in url:
+                    family = 'Open tunings'
+                elif url == '/dadgad-guitar-tuner':
+                    family = 'DADGAD'
+                else:
+                    family = 'Standard, down-tuned and reference pitch presets'
+            families.setdefault(family, []).append((title, url))
+        groups = []
+        for family, pages in families.items():
+            subheading = '<h3>' + family + '</h3>' if family else ''
+            items = ''.join('<li><a href="' + url + '">' + html.escape(title) + '</a></li>' for title, url in pages)
+            groups.append(subheading + '<ul class="guide-list">' + items + '</ul>')
+        sections.append('<section id="' + key + '" class="content-card guide-group"><h2>' + label + '</h2>' + ''.join(groups) + '</section>')
     content = head + '</head><body><a class="skip-link" href="#main-content">Skip to main content</a>' + header + '<main id="main-content" class="page"><section class="hero"><h1>Guitar tuning guides</h1><p class="lede">Choose a tuning, learn the basics, or find a fix for the problem you are hearing.</p></section>' + jump + ''.join(sections) + '</main>' + footer + '</body></html>\n'
     (site / 'guides.html').write_text(normalize_page(content, 'guides.html'), encoding='utf-8')
 

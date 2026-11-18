@@ -558,3 +558,40 @@ code { overflow-wrap: anywhere; }
   .tuner-card .needle { height: 44px; }
   .tuner-card .strings { margin: 12px 0; }
 }
+
+.tuner-card .string-target-controls button {
+  margin-top: 8px;
+  min-height: 44px;
+  font-size: 1rem;
+  box-shadow: none;
+}
+.tuner-card .string-target-controls button:disabled {
+  display: none;
+}
+.tuner-card .strings {
+  grid-template-columns: repeat(auto-fit, minmax(33px, 1fr));
+}
+@media (min-width: 421px) {
+  .tuner-card .strings {
+    grid-template-columns: repeat(var(--string-count, 6), minmax(0, 1fr));
+  }
+}
+
+.chord-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 18px;
+}
+.chord-grid .chord-diagram {
+  min-width: 0;
+  text-align: center;
+}
+.chord-diagram caption {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.chord-diagram th,
+.chord-diagram td {
+  min-width: 0;
+  padding: 4px;
+}

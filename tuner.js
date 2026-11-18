@@ -250,6 +250,17 @@ const TUNINGS = {
   }
 };
 
+TUNINGS.sevenStandard = {
+  name: "Seven-string Standard",
+  label: "B E A D G B E",
+  strings: [TUNINGS.bStandard.strings[0], ...TUNINGS.standard.strings]
+};
+TUNINGS.sevenDropA = {
+  name: "Seven-string Drop A",
+  label: "A E A D G B E",
+  strings: [TUNINGS.dropA.strings[0], ...TUNINGS.standard.strings]
+};
+
 const IN_TUNE_CENTS = 5;
 const MAX_METER_CENTS = 50;
 const MAX_TARGET_DISTANCE_CENTS = 225;
@@ -271,7 +282,10 @@ const needle = document.getElementById("needle");
 const levelBar = document.getElementById("levelBar");
 
 let currentTuningKey = document.body.dataset.tuning || new URLSearchParams(location.search).get("tuning") || "standard";
-if (!TUNINGS[currentTuningKey]) currentTuningKey = "standard";
+if (!Object.hasOwn(TUNINGS, currentTuningKey) ||
+    (tuningSelect && !Array.from(tuningSelect.options).some(option => option.value === currentTuningKey))) {
+  currentTuningKey = tuningSelect?.options[0]?.value || "standard";
+}
 let currentStrings = TUNINGS[currentTuningKey].strings;
 
 let audioContext = null;
@@ -284,7 +298,12 @@ let rafId = null;
 let isListening = false;
 let smoothedCents = 0;
 let smoothedFrequency = null;
-let lastStableNote = null;
+let manualTarget = null;
+let stringSelect;
+let playReference;
+let referenceContext;
+let referenceTone;
+let microphoneHelp;
 let stableFrameCount = 0;
 let lastDetectedNote = null;
 
@@ -293,6 +312,7 @@ if (tuningSelect) {
   tuningSelect.addEventListener("change", () => {
     currentTuningKey = tuningSelect.value;
     currentStrings = TUNINGS[currentTuningKey].strings;
+    manualTarget = null;
     resetDetectionState();
     renderTuningChoices();
     helperText.textContent = isListening ? "Pluck a string" : "Tap Start and pluck a string";
@@ -308,10 +328,68 @@ toggleButton?.addEventListener("click", () => {
   else startListening();
 });
 
+if (stringsContainer) {
+  const controls = document.createElement("div");
+  controls.className = "tuning-control string-target-controls";
+  const label = document.createElement("label");
+  label.htmlFor = "stringSelect";
+  label.textContent = "String target";
+  stringSelect = document.createElement("select");
+  stringSelect.id = "stringSelect";
+  stringSelect.addEventListener("change", () => {
+    manualTarget = stringSelect.value === "auto" ? null : currentStrings[Number(stringSelect.value)];
+    handleUnstablePitch(0);
+    if (!isListening) helperText.textContent = "Tap Start and pluck a string";
+    playReference.disabled = !manualTarget || isListening;
+  });
+  playReference = document.createElement("button");
+  playReference.type = "button";
+  playReference.textContent = "Play reference tone";
+  playReference.disabled = true;
+  playReference.addEventListener("click", playTargetTone);
+  controls.append(label, stringSelect, playReference);
+  stringsContainer.before(controls);
+}
+if (toggleButton) {
+  microphoneHelp = document.createElement("a");
+  microphoneHelp.href = "/microphone-not-working-online-guitar-tuner";
+  microphoneHelp.textContent = "Fix microphone access";
+  microphoneHelp.hidden = true;
+  toggleButton.after(microphoneHelp);
+}
 renderTuningChoices();
 setNeedle(0, "idle");
+renderFrequencyLookup();
+
+function renderFrequencyLookup() {
+  const lookup = document.getElementById("frequencyLookup");
+  if (!lookup) return;
+
+  const select = document.getElementById("frequencyPreset");
+  const targets = document.getElementById("frequencyTargets");
+  for (const [key, tuning] of Object.entries(TUNINGS)) {
+    select.add(new Option(tuning.name, key));
+  }
+  function renderTargets() {
+    const {strings} = TUNINGS[select.value];
+    targets.replaceChildren();
+    strings.forEach((string, index) => {
+      const row = targets.insertRow();
+      row.insertCell().textContent = strings.length - index;
+      row.insertCell().textContent = string.note;
+      row.insertCell().textContent = `${string.frequency.toFixed(2)} Hz`;
+    });
+  }
+  select.addEventListener("change", renderTargets);
+  renderTargets();
+  lookup.hidden = false;
+}
 
 async function startListening() {
+  toggleButton.disabled = true;
+  if (playReference) playReference.disabled = true;
+  if (referenceTone) referenceTone.stop();
+  if (microphoneHelp) microphoneHelp.hidden = true;
   try {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       throw new Error("getUserMedia is not supported in this browser.");
@@ -362,6 +440,9 @@ async function startListening() {
     noteReadout.className = "note note-idle";
     helperText.textContent = message;
     detailsText.textContent = "Open the HTTPS website and check browser permissions.";
+    if (microphoneHelp) microphoneHelp.hidden = false;
+  } finally {
+    toggleButton.disabled = false;
   }
 }
 
@@ -395,6 +476,7 @@ function stopListening() {
     toggleButton.setAttribute("aria-pressed", "false");
   }
 
+  if (playReference) playReference.disabled = !manualTarget;
   setStatus("Microphone off", "idle");
   noteReadout.textContent = "—";
   noteReadout.className = "note note-idle";
@@ -410,7 +492,6 @@ function resetDetectionState() {
   smoothedCents = 0;
   stableFrameCount = 0;
   lastDetectedNote = null;
-  lastStableNote = null;
 }
 
 function updateLoop() {
@@ -428,46 +509,43 @@ function updateLoop() {
     return;
   }
 
-  const nearest = getNearestString(result.frequency);
+  const nearest = manualTarget || getNearestString(result.frequency);
   const cents = frequencyToCents(result.frequency, nearest.frequency);
 
-  if (Math.abs(cents) > MAX_TARGET_DISTANCE_CENTS) {
+  if (!manualTarget && Math.abs(cents) > MAX_TARGET_DISTANCE_CENTS) {
     handleUnstablePitch(rms);
     rafId = requestAnimationFrame(updateLoop);
     return;
   }
 
-  if (lastDetectedNote === nearest.note) stableFrameCount += 1;
-  else {
-    stableFrameCount = 1;
+  if (lastDetectedNote !== nearest.note ||
+      (smoothedFrequency !== null && Math.abs(frequencyToCents(result.frequency, smoothedFrequency)) > 100)) {
+    resetDetectionState();
+    showWaiting("Waiting for a steady pitch");
     lastDetectedNote = nearest.note;
   }
+  stableFrameCount += 1;
 
-  if (stableFrameCount >= STABLE_FRAMES_REQUIRED) lastStableNote = nearest.note;
+  const firstFrame = smoothedFrequency === null;
+  smoothedFrequency = firstFrame ? result.frequency : smoothedFrequency * 0.72 + result.frequency * 0.28;
+  smoothedCents = firstFrame ? cents : smoothedCents * 0.72 + cents * 0.28;
 
-  smoothedFrequency = smoothedFrequency === null
-    ? result.frequency
-    : smoothedFrequency * 0.72 + result.frequency * 0.28;
-
-  smoothedCents = smoothedCents * 0.72 + cents * 0.28;
-
-  if (lastStableNote) renderTuning(nearest, smoothedFrequency, smoothedCents);
+  if (stableFrameCount >= STABLE_FRAMES_REQUIRED) renderTuning(nearest, smoothedFrequency, smoothedCents);
   rafId = requestAnimationFrame(updateLoop);
 }
 
 function handleUnstablePitch(rms) {
-  stableFrameCount = 0;
-  if (rms < MIN_RMS) {
-    helperText.textContent = "Pluck a string";
-    detailsText.textContent = "No stable pitch detected";
-  } else {
-    helperText.textContent = "Let one string ring clearly";
-    detailsText.textContent = "Listening for a steady note";
-  }
-  noteReadout.textContent = lastStableNote || "—";
+  resetDetectionState();
+  showWaiting(rms < MIN_RMS ? "Pluck a string" : "Let one string ring clearly");
+}
+
+function showWaiting(message) {
+  helperText.textContent = message;
+  detailsText.textContent = manualTarget ? `Target: ${manualTarget.note}` : "No stable pitch detected";
+  noteReadout.textContent = "—";
   noteReadout.className = "note note-idle";
-  setNeedle(smoothedCents * 0.9, "idle");
-  updateStringHighlight(lastStableNote, "idle");
+  setNeedle(0, "idle");
+  updateStringHighlight(manualTarget?.note, "idle");
 }
 
 function renderTuning(target, frequency, cents) {
@@ -475,7 +553,10 @@ function renderTuning(target, frequency, cents) {
   let state;
   let helper;
 
-  if (absCents <= IN_TUNE_CENTS) {
+  if (absCents > MAX_TARGET_DISTANCE_CENTS) {
+    state = "idle";
+    helper = "Far from target. Check the string and octave.";
+  } else if (absCents <= IN_TUNE_CENTS) {
     state = "in-tune";
     helper = "In tune";
   } else if (cents < 0) {
@@ -489,15 +570,28 @@ function renderTuning(target, frequency, cents) {
   noteReadout.textContent = target.note;
   noteReadout.className = `note ${state}`;
   helperText.textContent = helper;
-  detailsText.textContent = `${formatSigned(cents)} cents · ${frequency.toFixed(1)} Hz`;
-  setNeedle(cents, state);
+  const referenceA = currentTuningKey === "standard432" ? 432
+    : currentTuningKey === "standard528" ? 528 / 2 ** (3 / 12) : 440;
+  const midi = Math.round(69 + 12 * Math.log2(frequency / referenceA));
+  const detectedNote = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"][midi % 12]
+    + (Math.floor(midi / 12) - 1);
+  detailsText.textContent = `Target: ${target.note} · Detected: ${detectedNote} (${frequency.toFixed(1)} Hz) · ${formatSigned(cents)} cents`;
+  setNeedle(state === "idle" ? 0 : cents, state);
   updateStringHighlight(target.note, state);
 }
 
 function renderTuningChoices() {
   if (!stringsContainer) return;
   const tuning = TUNINGS[currentTuningKey];
-  stringsContainer.innerHTML = "";
+  stringsContainer.style.setProperty("--string-count", tuning.strings.length);
+  stringsContainer.replaceChildren();
+  if (stringSelect) {
+    stringSelect.replaceChildren(new Option("Automatic", "auto"));
+    tuning.strings.forEach((string, index) => {
+      stringSelect.add(new Option(`${tuning.strings.length - index}: ${string.note}`, String(index)));
+    });
+    playReference.disabled = true;
+  }
   tuning.strings.forEach(string => {
     const el = document.createElement("div");
     el.className = "string";
@@ -506,6 +600,35 @@ function renderTuningChoices() {
     stringsContainer.appendChild(el);
   });
   if (detailsText) detailsText.textContent = `${tuning.name}: ${tuning.label}`;
+}
+
+async function playTargetTone() {
+  const target = manualTarget;
+  try {
+    referenceContext ||= new (window.AudioContext || window.webkitAudioContext)();
+    await referenceContext.resume();
+    if (isListening || toggleButton.disabled || target !== manualTarget) return;
+    if (referenceTone) referenceTone.stop();
+    const tone = referenceContext.createOscillator();
+    const gain = referenceContext.createGain();
+    const now = referenceContext.currentTime;
+    tone.type = "triangle";
+    tone.frequency.value = target.frequency;
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.25);
+    tone.connect(gain).connect(referenceContext.destination);
+    referenceTone = tone;
+    tone.onended = () => {
+      tone.disconnect();
+      gain.disconnect();
+      if (referenceTone === tone) referenceTone = null;
+    };
+    tone.start(now);
+    tone.stop(now + 1.3);
+  } catch {
+    helperText.textContent = "Reference playback is unavailable in this browser.";
+  }
 }
 
 function setStatus(text, mode) {

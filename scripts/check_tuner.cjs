@@ -18,3 +18,54 @@ if(api.detectPitchAutocorrelation(silence,48000,api.getRMS(silence))!==null)thro
 const report={cases:rows.length,silenceRejected:true,groups:[44100,48000].flatMap(rate=>['sine','harmonics'].map(type=>({sampleRate:rate,signal:type,cases:rows.filter(r=>r.rate===rate&&r.type===type).length,maxAbsoluteCents:Math.max(...rows.filter(r=>r.rate===rate&&r.type===type).map(r=>r.error))})))};
 
 console.log(JSON.stringify(report,null,2));
+
+// Exercise the full display loop with consecutive tones and silence.
+const readout = {};
+const browser = vm.createContext({
+  document: {
+    body: {dataset: {}},
+    getElementById: id => ['noteReadout', 'detailsText', 'helperText', 'needle', 'levelBar'].includes(id)
+      ? (readout[id] = {style: {}}) : null,
+    querySelectorAll: () => []
+  },
+  location: {search: ''},
+  URLSearchParams,
+  requestAnimationFrame: () => 1
+});
+vm.runInContext(source, browser);
+vm.runInContext(`
+  isListening = true;
+  audioContext = {sampleRate: 48000};
+  buffer = new Float32Array(4096);
+  let testPitch = 85;
+  let testVolume = 0.3;
+  analyser = {getFloatTimeDomainData(samples) {
+    for (let i = 0; i < samples.length; i++) {
+      samples[i] = testVolume * Math.sin(2 * Math.PI * testPitch * i / 48000);
+    }
+  }};
+  for (let i = 0; i < 3; i++) updateLoop();
+`, browser);
+const assert = require('node:assert/strict');
+assert.match(readout.detailsText.textContent, /Target: E2/);
+vm.runInContext('testPitch = 110; updateLoop();', browser);
+assert.equal(readout.noteReadout.textContent, '—');
+assert.equal(readout.needle.style.left, '50%');
+vm.runInContext('updateLoop(); updateLoop();', browser);
+assert.match(readout.detailsText.textContent, /Target: A2 · Detected: A2 \(110.0 Hz\)/);
+assert.equal(readout.helperText.textContent, 'In tune');
+vm.runInContext('testVolume = 0; updateLoop();', browser);
+assert.equal(readout.noteReadout.textContent, '—');
+vm.runInContext('testVolume = 0.3; updateLoop();', browser);
+assert.equal(readout.noteReadout.textContent, '—');
+vm.runInContext(`
+  currentTuningKey = "sevenDropA";
+  currentStrings = TUNINGS[currentTuningKey].strings;
+  manualTarget = currentStrings[0];
+  resetDetectionState();
+  for (let i = 0; i < 3; i++) updateLoop();
+`, browser);
+assert.match(readout.detailsText.textContent, /Target: A1 · Detected: A2/);
+assert.match(readout.helperText.textContent, /Check the string and octave/);
+assert.equal(vm.runInContext('TUNINGS.sevenStandard.strings.length', browser), 7);
+console.log('Display target changes, silence recovery, and seven-string octave guard passed.');
