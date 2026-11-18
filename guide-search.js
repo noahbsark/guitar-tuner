@@ -3,6 +3,7 @@ const guideResults = document.getElementById("guideResults");
 const guideSections = [...document.querySelectorAll(".guide-group")];
 
 const searchAliases = {
+  "/bass-string-scale-length-guide": "bass strings short scale long scale winding length ball end to taper through body restring fit",
   "/bass-guitar-tuner": "four five string low b bass",
   "/microphone-not-working-online-guitar-tuner": "mic permission denied tuner cannot hear can't hear no sound no input",
   "/guitar-tuning-troubleshooter": "buzz buzzing unstable sounds wrong after tuning diagnosis",
