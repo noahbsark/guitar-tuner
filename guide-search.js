@@ -6,6 +6,7 @@ const searchAliases = {
   "/bass-string-scale-length-guide": "bass strings short scale long scale winding length ball end to taper through body restring fit",
   "/bass-guitar-tuner": "four five string low b bass",
   "/microphone-not-working-online-guitar-tuner": "mic permission denied tuner cannot hear can't hear no sound no input",
+  "/guitar-fret-buzz-guide": "fret buzz buzzing guitar string rattles rattle open fretted in tune low action capo",
   "/guitar-tuning-troubleshooter": "buzz buzzing unstable sounds wrong after tuning diagnosis",
   "/why-guitar-strings-break": "broken guitar string snapped snapping keeps breaking saddle bridge post breakage replace broken high e",
   "/guitar-tuner-shows-wrong-note": "wrong octave tuner misreads wrong pitch",
