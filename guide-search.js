@@ -17,6 +17,7 @@ const searchAliases = {
   "/guitar-intonation-checker": "sharp at the 12th fret open notes fine octave",
   "/guitar-intonation-guide": "fretted chords sound off sharp at the 12th fret",
   "/how-to-tune-a-guitar-by-ear": "no microphone no mic reference tone listen",
+  "/capo-makes-guitar-sharp": "capo makes go goes notes guitar out of tune sharp pressure clamp buzzing fret pitch",
   "/capo-transposition-chart": "capo calculator song key shapes fret transposer",
   "/guitar-retuning-planner": "which strings move lower raise change preset",
   "/guitar-string-tension-calculator": "strings too loose tight tension when retuning",
@@ -26,7 +27,7 @@ const searchAliases = {
   "/guitar-tuning-gear-guide": "buy replacement strings equipment gear",
 };
 
-const fillerWords = new Set(["a", "an", "are", "do", "does", "how", "i", "in", "is", "my", "the", "to", "what", "why"]);
+const fillerWords = new Set(["a", "an", "are", "do", "does", "how", "i", "in", "is", "my", "the", "to", "use", "what", "when", "why", "with"]);
 const searchableItems = new Map();
 for (const section of guideSections) {
   for (const link of section.querySelectorAll(".guide-list a")) {

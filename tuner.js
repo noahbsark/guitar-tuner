@@ -359,6 +359,7 @@ let smoothedFrequency = null;
 let manualTarget = null;
 let stringSelect;
 let playReference;
+let referenceShortcut;
 let referenceContext;
 let referenceTone;
 let referenceRequest = 0;
@@ -429,12 +430,16 @@ if (stringsContainer && currentTuningKey !== "chromatic") {
   toneHelp.textContent = "To tune by ear, leave the microphone off and choose a numbered string.";
   controls.append(label, stringSelect, toneHelp, playReference);
   stringsContainer.before(controls);
-  const referenceShortcut = document.createElement("button");
+  referenceShortcut = document.createElement("button");
   referenceShortcut.type = "button";
   referenceShortcut.className = "reference-shortcut";
   referenceShortcut.textContent = "Tune by ear";
   referenceShortcut.addEventListener("click", () => {
     if (isListening) stopListening();
+    if (stringSelect.value === "auto") {
+      stringSelect.value = "0";
+      stringSelect.dispatchEvent(new Event("change"));
+    }
     stringSelect.focus();
   });
   toggleButton.after(referenceShortcut);
@@ -488,7 +493,28 @@ renderRetuningPlanner();
 renderCustomEditor();
 initializeIntonationCheck();
 renderReferenceNotes();
+renderCapoPitchTargets();
 initializeSavedTuning();
+
+function renderCapoPitchTargets() {
+  const fret = document.getElementById("capoPitchFret");
+  if (!fret) return;
+
+  const rows = document.getElementById("capoPitchRows").rows;
+  const caption = document.getElementById("capoPitchCaption");
+
+  function updateTargets() {
+    const position = Number(fret.value);
+    caption.textContent = position ? `Expected notes with capo at fret ${position}` : "Expected notes without a capo";
+    STANDARD_MIDI.forEach((midi, index) => {
+      rows[index].cells[2].textContent = noteAtMidi(midi + position).note;
+    });
+  }
+
+  fret.addEventListener("change", updateTargets);
+  updateTargets();
+  document.getElementById("capoPitchControl").hidden = false;
+}
 
 function renderFrequencyLookup() {
   const lookup = document.getElementById("frequencyLookup");
@@ -640,7 +666,6 @@ async function showMicrophoneInputs(stream, track) {
 async function startListening() {
   toggleButton.disabled = true;
   if (inputSelect) inputSelect.disabled = true;
-  const referenceShortcut = document.querySelector(".reference-shortcut");
   if (referenceShortcut) referenceShortcut.disabled = true;
   if (playReference) playReference.disabled = true;
   stopReferenceTone();

@@ -7,11 +7,13 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 BASE_URL = 'https://onlineguitartuner.net'
+STYLE_PATH = '/styles.css?v=20261118f'
 UTILITY = {'index.html', '404.html', 'guides.html', 'about.html', 'contact.html', 'privacy.html', 'affiliate-disclosure.html'}
 TOOL_TASKS = {
     'guitar-retuning-planner.html': 'See which strings to raise or lower.',
     'guitar-string-tension-calculator.html': 'Estimate tension changes on the same strings.',
     'guitar-string-frequency-chart.html': 'Look up a string’s target frequency.',
+    'capo-makes-guitar-sharp.html': 'Compare fretted and capoed pitch with a built-in meter.',
     'capo-transposition-chart.html': 'Find the sounding key, chord shapes or capo fret.',
     'guitar-intonation-checker.html': 'Compare an open note with the same string at the 12th fret.',
     'custom-guitar-tuner.html': 'Set and share six note-and-octave targets.',
@@ -60,6 +62,10 @@ def normalize_links(content: str) -> str:
 
 
 def category(filename: str) -> str:
+    if filename in {'guitar-fret-buzz-guide.html', 'why-guitar-strings-break.html'}:
+        return 'troubleshooting'
+    if filename in {'bass-string-scale-length-guide.html', 'coated-vs-uncoated-acoustic-guitar-strings.html', 'pedal-tuner-guide.html'}:
+        return 'gear'
     if filename in {'guitar-tuning-gear-guide.html', 'clip-on-vs-online-guitar-tuner.html', 'best-string-gauges-for-drop-tunings.html', 'guitar-string-gauge-guide.html', 'guitar-string-tension-calculator.html'}:
         return 'gear'
     if any(word in filename for word in ('chord', 'capo', 'tunings-for', '-vs-', 'alternate', 'nashville', 'easiest')):
@@ -75,7 +81,7 @@ def normalize_page(content: str, filename: str) -> str:
     content = normalize_links(content)
     content = content.replace('class="logo" href="/">Simple Guitar Tuner</a>',
                               'class="logo" href="/">Online Guitar Tuner</a>')
-    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261118f"', content)
+    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="' + STYLE_PATH + '"', content)
     # Keep the primary action above the changing pitch readout on small screens.
     action = re.search(r'<button id="toggleButton"[^>]*>.*?</button>', content, re.S)
     if action and content.index(action.group()) > content.index('id="statusPill"'):
@@ -113,7 +119,7 @@ def normalize_page(content: str, filename: str) -> str:
     # Keep ad loading on editorial guides without a competing shopping decision.
     ad_script = r'<script\b[^>]*src="https://pagead2\.googlesyndication\.com/pagead/js/adsbygoogle\.js[^"]*"[^>]*></script>'
     utility_page = filename in UTILITY or 'id="tuningSelect"' in content
-    interactive_guide = filename in {'guitar-string-tension-calculator.html', 'guitar-tuning-troubleshooter.html', 'guitar-retuning-planner.html', 'how-to-tune-a-guitar-by-ear.html'}
+    interactive_guide = filename in {'guitar-string-tension-calculator.html', 'guitar-tuning-troubleshooter.html', 'guitar-retuning-planner.html', 'how-to-tune-a-guitar-by-ear.html', 'capo-makes-guitar-sharp.html'}
     affiliate_page = re.search(r'<a\b[^>]*href="https://www\.amazon\.com/', content) is not None
     if utility_page or interactive_guide or affiliate_page:
         ad = re.search(ad_script, content)
@@ -129,8 +135,8 @@ def normalize_page(content: str, filename: str) -> str:
     if 'id="tuningSelect"' in content and 'data-tuning="chromatic"' not in content and 'id="selectedPreset"' not in content:
         content = re.sub(r'(</select>\s*</div>)', r'\1\n        <p id="selectedPreset" role="status"></p>', content, count=1)
     tuner_script = r'<script src="/?tuner\.js(?:\?[^"]*)?"></script>'
-    if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content or 'id="tensionComparison"' in content or 'id="retuningPlanner"' in content or 'id="standardReferenceNotes"' in content:
-        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118o"></script>', content)
+    if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content or 'id="tensionComparison"' in content or 'id="retuningPlanner"' in content or 'id="standardReferenceNotes"' in content or 'id="capoPitchCheck"' in content:
+        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118p"></script>', content)
     else:
         content = re.sub(tuner_script, '', content)
     if '<footer class="footer">' in content and 'class="support-link"' not in content:
@@ -207,8 +213,8 @@ def rebuild_guides(site: Path) -> None:
             items = ''.join(items)
             groups.append(subheading + '<ul class="guide-list">' + items + '</ul>')
         sections.append('<section id="' + key + '" class="content-card guide-group"><h2>' + label + '</h2>' + ''.join(groups) + '</section>')
-    search = '<form class="content-card" role="search" hidden><div class="tuning-control"><label for="guideSearch">Find a tuner or guide</label><input id="guideSearch" type="search" placeholder="Try Drop D, mic permission or capo"></div><p id="guideResults" role="status"></p></form>'
-    content = head + '</head><body><a class="skip-link" href="#main-content">Skip to main content</a>' + header + '<main id="main-content" class="page"><section class="hero"><h1>Guitar tuning guides</h1><p class="lede">Choose a tuning, learn the basics, or find a fix for the problem you are hearing.</p></section>' + search + jump + ''.join(sections) + '</main>' + footer + '<script src="/guide-search.js?v=20261118c" defer></script></body></html>\n'
+    search = '<form class="content-card" role="search" hidden><div class="tuning-control"><label for="guideSearch">Search by tuning, instrument or problem</label><input id="guideSearch" type="search" placeholder="Try Drop D, seven-string or capo sharp"></div><p id="guideResults" role="status"></p></form>'
+    content = head + '</head><body><a class="skip-link" href="#main-content">Skip to main content</a>' + header + '<main id="main-content" class="page"><section class="hero"><h1>Guitar tuning guides</h1><p class="lede">Find the right tuner, look up a note, or search for the symptom you hear.</p></section>' + search + jump + ''.join(sections) + '</main>' + footer + '<script src="/guide-search.js?v=20261118d" defer></script></body></html>\n'
     (site / 'guides.html').write_text(normalize_page(content, 'guides.html'), encoding='utf-8')
 
 

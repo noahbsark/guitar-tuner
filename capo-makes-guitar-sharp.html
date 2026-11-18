@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-61XFFV7JZT"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61XFFV7JZT');</script>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
+  <title>Capo Makes Guitar Go Sharp? Check the Pitch and Fix It</title>
+  <meta name="description" content="Find the expected guitar notes at your capo fret, compare fretted and clamped pitch with the built-in tuner, and fix pressure or fit." />
+  <link rel="canonical" href="https://onlineguitartuner.net/capo-makes-guitar-sharp" />
+  
+  <link rel="stylesheet" href="/styles.css?v=20261118f" />
+</head>
+<body data-tuning="chromatic">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header"><nav class="nav" aria-label="Main navigation"><a class="logo" href="/">Online Guitar Tuner</a><div class="nav-links">
+        <a href="/">Tuner</a>
+        <a href="/guides">Guides</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+        <a href="/privacy">Privacy</a>
+      </div></nav></header>
+  <main id="main-content" class="page">
+    <section class="hero">
+      <h1>Why Your Guitar Goes Sharp With a Capo</h1>
+      <p class="lede">Move the capo close behind the fret and use just enough pressure for every string to ring. Compare the same note fretted by hand and under the capo to find out what changed.</p>
+    </section>
+
+    <section class="app-layout">
+      <section id="capo-meter" class="tuner-card" aria-label="Chromatic pitch meter">
+        <h2>Measure the note</h2>
+        <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
+  <div id="statusPill" class="status-pill" aria-live="polite">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="statusText">Microphone off</span>
+        </div>
+        <p id="pitchAnnouncement" class="sr-only" role="status" aria-atomic="true"></p>
+        <section class="readout">
+          <div id="noteReadout" class="note note-idle">—</div>
+          <div id="helperText" class="helper">Tap Start and pluck a string</div>
+          <div id="detailsText" class="details">Waiting for microphone</div>
+        </section>
+        <section class="meter-wrap" aria-label="Tuning meter">
+          <div class="meter-labels"><span>Flat</span><span>In tune</span><span>Sharp</span></div>
+          <div class="meter">
+            <div class="ticks" aria-hidden="true">
+              <span class="tick" style="--x: 10%"></span><span class="tick" style="--x: 20%"></span>
+              <span class="tick" style="--x: 30%"></span><span class="tick" style="--x: 40%"></span>
+              <span class="tick" style="--x: 50%"></span><span class="tick" style="--x: 60%"></span>
+              <span class="tick" style="--x: 70%"></span><span class="tick" style="--x: 80%"></span>
+              <span class="tick" style="--x: 90%"></span>
+            </div>
+            <div id="needle" class="needle"></div>
+          </div>
+        </section>
+        
+        <div class="level" aria-hidden="true"><div id="levelBar" class="level-bar"></div></div>
+        
+        <div class="small-note">Compare the note and octave with the table. The meter shows cents from the nearest note at A4 = 440 Hz.</div>
+        <noscript><p class="notice">This tuner requires JavaScript. Enable JavaScript, reload the page, and then allow microphone access.</p></noscript>
+      </section>
+      <section class="content-card" id="capoPitchCheck">
+        <h2>Find the expected notes</h2>
+        <p>For a full capo on a six-string guitar in Standard tuning. Each fret raises every string by one semitone.</p>
+        <div class="tuning-control" id="capoPitchControl" hidden>
+          <label for="capoPitchFret">Capo position</label>
+          <select id="capoPitchFret"><option value="0">No capo</option><option value="1">Fret 1</option><option value="2" selected>Fret 2</option><option value="3">Fret 3</option><option value="4">Fret 4</option><option value="5">Fret 5</option><option value="6">Fret 6</option><option value="7">Fret 7</option><option value="8">Fret 8</option><option value="9">Fret 9</option><option value="10">Fret 10</option><option value="11">Fret 11</option><option value="12">Fret 12</option></select>
+        </div>
+        <div class="table-wrap"><table class="frequency-table">
+          <caption id="capoPitchCaption">Expected notes with capo at fret 2</caption>
+          <thead><tr><th scope="col">String</th><th scope="col">Open</th><th scope="col">Target</th></tr></thead>
+          <tbody id="capoPitchRows"><tr><th scope="row">6</th><td>E2</td><td>F♯2</td></tr><tr><th scope="row">5</th><td>A2</td><td>B2</td></tr><tr><th scope="row">4</th><td>D3</td><td>E3</td></tr><tr><th scope="row">3</th><td>G3</td><td>A3</td></tr><tr><th scope="row">2</th><td>B3</td><td>C♯4</td></tr><tr><th scope="row">1</th><td>E4</td><td>F♯4</td></tr></tbody>
+        </table></div>
+        <noscript><p>The table shows fret 2. Enable JavaScript to look up other frets and use the pitch meter.</p></noscript>
+        <p>Using another tuning? Start with your <a href="/guitar-string-frequency-chart">open-string notes</a> and add one semitone per fret.</p>
+      </section>
+    </section>
+
+    <article class="content-card guide-card">
+      <p class="editorial-note">Published by Online Guitar Tuner. <a href="/about#editorial">How our guides are maintained</a> · <a href="/contact">Report a correction</a></p>
+      <h2>Compare three readings on one string</h2>
+      <ol>
+        <li>Remove the capo and tune the open string. Pick a string that sounds off with the capo on.</li>
+        <li>Play that string at the capo fret with your finger, pressing only enough to get a clean note. Let the initial attack settle, then note the pitch and cents.</li>
+        <li>Install the capo just behind that fret, on the nut side of the fret wire. Keep the pad straight across the strings. Pluck the same string without fretting it by hand and compare the two readings.</li>
+      </ol>
+      <p>For example, at fret 2 the open G3 string should sound A3. If it reads +2 cents by hand and +11 cents with the capo, the change associated with clamping is about 9 cents. Repeat the comparison before acting on a single reading.</p>
+
+      <h2>What to change based on the result</h2>
+      <div class="table-wrap"><table class="frequency-table">
+        <thead><tr><th scope="col">What you hear or measure</th><th scope="col">What to try</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Sharper only with the capo</th><td>Re-seat it close behind the fret and reduce adjustable pressure until all strings still ring. Check that the pad closes without dragging the strings sideways.</td></tr>
+          <tr><th scope="row">One edge buzzes while the other edge goes sharp</th><td>Check the fit across the fretboard at that fret. A mismatched curve or pad width can produce uneven pressure.</td></tr>
+          <tr><th scope="row">The note is sharp both by hand and with the capo</th><td>Try a lighter fretting touch. If the error repeats without the capo, <a href="/guitar-intonation-checker">check the 12th-fret octave</a> and investigate the setup separately.</td></tr>
+          <tr><th scope="row">The meter shows a different note or octave</th><td>Check the fret and string, mute the other strings, and pluck again. Compare the displayed note with the expected target before adjusting.</td></tr>
+        </tbody>
+      </table></div>
+      <p>Once the strings ring cleanly, recheck all six with the capo on. If you make a small tuning adjustment for the song, check open tuning again when you remove the capo.</p>
+
+      <h2>When a different capo may help</h2>
+      <p>Keep your current capo if repositioning or adjusting it fixes the readings. If a fixed-pressure capo repeatedly pulls notes sharp after you’ve tested placement and fit, <a href="/capo-transposition-chart#capo-fit">compare adjustable capos by neck width and fretboard curve</a>. Shubb explains how its <a href="https://shubb.com/pages/faqs">pressure adjustment and fretboard fit</a> work.</p>
+      <p><a href="/capo-transposition-chart#capoCalculator">Find the capo fret for a song key</a></p>
+    </article>
+  </main>
+  <footer class="footer">
+    <p>
+      <a href="/">Free Guitar Tuner</a> ·
+      <a href="/beginner-guitar-tuning-guide">Beginner Guide</a> ·
+      <a href="/about">About</a> ·
+      <a href="/contact">Contact</a> ·
+      <a href="/affiliate-disclosure">Affiliate Disclosure</a> ·
+      <a href="/privacy">Privacy</a>
+    </p>
+  <p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>
+</footer>
+  <script src="/tuner.js?v=20261118p"></script>
+</body>
+</html>
+
