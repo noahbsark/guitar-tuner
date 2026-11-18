@@ -72,7 +72,7 @@ def normalize_page(content: str, filename: str) -> str:
     if action and content.index(action.group()) > content.index('id="statusPill"'):
         content = content.replace(action.group(), '', 1)
         content = content.replace('<div id="statusPill"', action.group() + '\n  <div id="statusPill"', 1)
-    current = '/' if filename == 'index.html' or 'id="tuningSelect"' in content else '/guides' if filename not in UTILITY or filename == 'guides.html' else public_path(filename)
+    current = public_path(filename)
     nav = [('Tuner', '/'), ('Guides', '/guides'), ('About', '/about'), ('Contact', '/contact'), ('Privacy', '/privacy')]
     links = '\n'.join('        <a href="' + url + '"' + (' aria-current="page"' if url == current else '') + '>' + label + '</a>' for label, url in nav)
     content = re.sub(r'<div class="nav-links">.*?</div>', '<div class="nav-links">\n' + links + '\n      </div>', content, flags=re.S)
