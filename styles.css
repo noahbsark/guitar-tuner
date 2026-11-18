@@ -595,3 +595,28 @@ code { overflow-wrap: anywhere; }
   min-width: 0;
   padding: 4px;
 }
+
+.tuning-pass {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+  font-size: .9rem;
+}
+.tuning-pass button {
+  width: auto;
+  min-height: 44px;
+  padding: 6px 12px;
+  background: var(--panel-soft);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  font-size: .9rem;
+}
+.tuning-pass button:disabled { opacity: .55; cursor: default; }
+.string.was-in-tune::after {
+  content: " ✓";
+  color: var(--green);
+}

@@ -261,11 +261,14 @@ TUNINGS.sevenDropA = {
   strings: [TUNINGS.dropA.strings[0], ...TUNINGS.standard.strings]
 };
 
+TUNINGS.chromatic = {name: "Chromatic", label: "A4 = 440 Hz", strings: []};
+
 const IN_TUNE_CENTS = 5;
 const MAX_METER_CENTS = 50;
 const MAX_TARGET_DISTANCE_CENTS = 225;
 const MIN_DETECTABLE_FREQUENCY = 45;
 const MAX_DETECTABLE_FREQUENCY = 390;
+const MAX_CHROMATIC_FREQUENCY = 700;
 const MIN_RMS = 0.012;
 const MIN_CLARITY = 0.68;
 const STABLE_FRAMES_REQUIRED = 3;
@@ -306,6 +309,9 @@ let referenceTone;
 let microphoneHelp;
 let stableFrameCount = 0;
 let lastDetectedNote = null;
+let passProgress;
+let resetPass;
+const checkedNotes = new Set();
 
 if (tuningSelect) {
   tuningSelect.value = currentTuningKey;
@@ -313,6 +319,7 @@ if (tuningSelect) {
     currentTuningKey = tuningSelect.value;
     currentStrings = TUNINGS[currentTuningKey].strings;
     manualTarget = null;
+    checkedNotes.clear();
     resetDetectionState();
     renderTuningChoices();
     helperText.textContent = isListening ? "Pluck a string" : "Tap Start and pluck a string";
@@ -328,7 +335,7 @@ toggleButton?.addEventListener("click", () => {
   else startListening();
 });
 
-if (stringsContainer) {
+if (stringsContainer && currentTuningKey !== "chromatic") {
   const controls = document.createElement("div");
   controls.className = "tuning-control string-target-controls";
   const label = document.createElement("label");
@@ -349,6 +356,21 @@ if (stringsContainer) {
   playReference.addEventListener("click", playTargetTone);
   controls.append(label, stringSelect, playReference);
   stringsContainer.before(controls);
+  passProgress = document.createElement("span");
+  passProgress.setAttribute("role", "status");
+  resetPass = document.createElement("button");
+  resetPass.type = "button";
+  resetPass.textContent = "Reset tuning check";
+  resetPass.addEventListener("click", () => {
+    checkedNotes.clear();
+    resetDetectionState();
+    showWaiting(isListening ? "Pluck a string" : "Tap Start and pluck a string");
+    updatePassProgress();
+  });
+  const pass = document.createElement("div");
+  pass.className = "tuning-pass";
+  pass.append(passProgress, resetPass);
+  stringsContainer.after(pass);
 }
 if (toggleButton) {
   microphoneHelp = document.createElement("a");
@@ -368,7 +390,7 @@ function renderFrequencyLookup() {
   const select = document.getElementById("frequencyPreset");
   const targets = document.getElementById("frequencyTargets");
   for (const [key, tuning] of Object.entries(TUNINGS)) {
-    select.add(new Option(tuning.name, key));
+    if (tuning.strings.length) select.add(new Option(tuning.name, key));
   }
   function renderTargets() {
     const {strings} = TUNINGS[select.value];
@@ -501,15 +523,17 @@ function updateLoop() {
   const rms = getRMS(buffer);
   levelBar.style.width = `${Math.min(100, rms * 520)}%`;
 
-  const result = detectPitchAutocorrelation(buffer, audioContext.sampleRate, rms);
+  const chromatic = currentTuningKey === "chromatic";
+  const frequencyLimit = chromatic ? MAX_CHROMATIC_FREQUENCY : MAX_DETECTABLE_FREQUENCY;
+  const result = detectPitchAutocorrelation(buffer, audioContext.sampleRate, rms, frequencyLimit);
 
-  if (!result || result.frequency < MIN_DETECTABLE_FREQUENCY || result.frequency > MAX_DETECTABLE_FREQUENCY || result.clarity < MIN_CLARITY) {
+  if (!result || result.frequency < MIN_DETECTABLE_FREQUENCY || result.frequency > frequencyLimit || result.clarity < MIN_CLARITY) {
     handleUnstablePitch(rms);
     rafId = requestAnimationFrame(updateLoop);
     return;
   }
 
-  const nearest = manualTarget || getNearestString(result.frequency);
+  const nearest = chromatic ? getChromaticTarget(result.frequency) : manualTarget || getNearestString(result.frequency);
   const cents = frequencyToCents(result.frequency, nearest.frequency);
 
   if (!manualTarget && Math.abs(cents) > MAX_TARGET_DISTANCE_CENTS) {
@@ -572,17 +596,43 @@ function renderTuning(target, frequency, cents) {
   helperText.textContent = helper;
   const referenceA = currentTuningKey === "standard432" ? 432
     : currentTuningKey === "standard528" ? 528 / 2 ** (3 / 12) : 440;
-  const midi = Math.round(69 + 12 * Math.log2(frequency / referenceA));
-  const detectedNote = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"][midi % 12]
-    + (Math.floor(midi / 12) - 1);
-  detailsText.textContent = `Target: ${target.note} · Detected: ${detectedNote} (${frequency.toFixed(1)} Hz) · ${formatSigned(cents)} cents`;
+  const detectedNote = getChromaticTarget(frequency, referenceA).note;
+  detailsText.textContent = currentTuningKey === "chromatic"
+    ? `${frequency.toFixed(1)} Hz · ${formatSigned(cents)} cents relative to ${target.note}`
+    : `Target: ${target.note} · Detected: ${detectedNote} (${frequency.toFixed(1)} Hz) · ${formatSigned(cents)} cents`;
+  if (passProgress && state === "in-tune" && !checkedNotes.has(target.note)) {
+    checkedNotes.add(target.note);
+    updatePassProgress();
+  }
   setNeedle(state === "idle" ? 0 : cents, state);
   updateStringHighlight(target.note, state);
+}
+
+function getChromaticTarget(frequency, referenceA = 440) {
+  const midi = Math.round(69 + 12 * Math.log2(frequency / referenceA));
+  const names = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+  return {
+    note: names[midi % 12] + (Math.floor(midi / 12) - 1),
+    frequency: referenceA * 2 ** ((midi - 69) / 12)
+  };
+}
+
+function updatePassProgress() {
+  if (!passProgress) return;
+  const count = checkedNotes.size;
+  passProgress.textContent = `${count}/${currentStrings.length} target pitches heard in tune`;
+  resetPass.disabled = count === 0;
+  stringsContainer.querySelectorAll(".string").forEach(string => {
+    const checked = checkedNotes.has(string.dataset.note);
+    string.classList.toggle("was-in-tune", checked);
+    string.setAttribute("aria-label", string.dataset.note + (checked ? ", heard in tune" : ""));
+  });
 }
 
 function renderTuningChoices() {
   if (!stringsContainer) return;
   const tuning = TUNINGS[currentTuningKey];
+  if (!tuning.strings.length) return;
   stringsContainer.style.setProperty("--string-count", tuning.strings.length);
   stringsContainer.replaceChildren();
   if (stringSelect) {
@@ -599,6 +649,7 @@ function renderTuningChoices() {
     el.textContent = string.note;
     stringsContainer.appendChild(el);
   });
+  updatePassProgress();
   if (detailsText) detailsText.textContent = `${tuning.name}: ${tuning.label}`;
 }
 
@@ -687,12 +738,11 @@ function getRMS(samples) {
   return Math.sqrt(sum / samples.length);
 }
 
-function detectPitchAutocorrelation(samples, sampleRate, rms) {
+function detectPitchAutocorrelation(samples, sampleRate, rms, maxFrequency = MAX_DETECTABLE_FREQUENCY) {
   if (rms < MIN_RMS) return null;
 
   const size = samples.length;
   const minFrequency = MIN_DETECTABLE_FREQUENCY;
-  const maxFrequency = MAX_DETECTABLE_FREQUENCY;
   const minLag = Math.floor(sampleRate / maxFrequency);
   const maxLag = Math.floor(sampleRate / minFrequency);
 

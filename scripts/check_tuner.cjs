@@ -69,3 +69,32 @@ assert.match(readout.detailsText.textContent, /Target: A1 · Detected: A2/);
 assert.match(readout.helperText.textContent, /Check the string and octave/);
 assert.equal(vm.runInContext('TUNINGS.sevenStandard.strings.length', browser), 7);
 console.log('Display target changes, silence recovery, and seven-string octave guard passed.');
+
+vm.runInContext(`
+  currentTuningKey = "chromatic";
+  testPitch = 392;
+  for (let i = 0; i < 3; i++) updateLoop();
+`, browser);
+assert.equal(readout.noteReadout.textContent, 'G4');
+vm.runInContext('testPitch = 659.255; updateLoop();', browser);
+assert.equal(readout.noteReadout.textContent, '—');
+vm.runInContext('updateLoop(); updateLoop();', browser);
+assert.equal(readout.noteReadout.textContent, 'E5');
+assert.match(readout.detailsText.textContent, /659\.3 Hz.* relative to E5/);
+assert.equal(readout.helperText.textContent, 'In tune');
+console.log('Chromatic G4 and E5 detection and target transitions passed.');
+
+vm.runInContext(`
+  currentTuningKey = "standard";
+  currentStrings = TUNINGS.standard.strings;
+  passProgress = {};
+  let recordedCount = 0;
+  updatePassProgress = () => { recordedCount = checkedNotes.size; };
+  renderTuning(currentStrings[0], 82.4069, 0);
+  renderTuning(currentStrings[0], 82.4069, 0);
+  renderTuning(currentStrings[1], 109, -16);
+`, browser);
+assert.equal(vm.runInContext('recordedCount', browser), 1);
+vm.runInContext('renderTuning(currentStrings[1], 110, 0);', browser);
+assert.equal(vm.runInContext('recordedCount', browser), 2);
+console.log('Tuning-pass count ignores repeats and out-of-tune notes.');

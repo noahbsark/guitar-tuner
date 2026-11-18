@@ -64,7 +64,7 @@ def category(filename: str) -> str:
 
 def normalize_page(content: str, filename: str) -> str:
     content = normalize_links(content)
-    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261118"', content)
+    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261118b"', content)
     # Keep the primary action above the changing pitch readout on small screens.
     action = re.search(r'<button id="toggleButton"[^>]*>.*?</button>', content, re.S)
     if action and content.index(action.group()) > content.index('id="statusPill"'):
@@ -112,7 +112,7 @@ def normalize_page(content: str, filename: str) -> str:
         content = re.sub(ad_script, '', content)
     tuner_script = r'<script src="/?tuner\.js(?:\?[^"]*)?"></script>'
     if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content:
-        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118"></script>', content)
+        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118b"></script>', content)
     else:
         content = re.sub(tuner_script, '', content)
     if '<footer class="footer">' in content and 'class="support-link"' not in content:
@@ -154,6 +154,8 @@ def rebuild_guides(site: Path) -> None:
             if key == 'tuners':
                 if url == '/7-string-guitar-tuner':
                     family = 'Seven-string guitars'
+                elif url == '/chromatic-guitar-tuner':
+                    family = 'Chromatic'
                 elif 'drop' in url:
                     family = 'Drop tunings'
                 elif '/open-' in url:
