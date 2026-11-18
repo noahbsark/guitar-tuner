@@ -316,6 +316,10 @@ const statusPill = document.getElementById("statusPill");
 const statusText = document.getElementById("statusText");
 const noteReadout = document.getElementById("noteReadout");
 const helperText = document.getElementById("helperText");
+const pitchAnnouncement = document.getElementById("pitchAnnouncement");
+let lastAnnouncement = "";
+let pendingAnnouncement = "";
+let announcementTimer;
 const detailsText = document.getElementById("detailsText");
 const needle = document.getElementById("needle");
 const levelBar = document.getElementById("levelBar");
@@ -374,6 +378,8 @@ if (tuningSelect) {
 }
 
 function setCurrentTuning(key) {
+  lastAnnouncement = "";
+  cancelPitchAnnouncement();
   currentTuningKey = key;
   currentStrings = TUNINGS[key].strings;
   manualTarget = null;
@@ -400,6 +406,7 @@ if (stringsContainer && currentTuningKey !== "chromatic") {
   stringSelect = document.createElement("select");
   stringSelect.id = "stringSelect";
   stringSelect.addEventListener("change", () => {
+    lastAnnouncement = "";
     manualTarget = stringSelect.value === "auto" ? null : currentStrings[Number(stringSelect.value)];
     handleUnstablePitch(0);
     if (!isListening) helperText.textContent = "Tap Start and pluck a string";
@@ -425,12 +432,13 @@ if (stringsContainer && currentTuningKey !== "chromatic") {
   });
   toggleButton.after(referenceShortcut);
   passProgress = document.createElement("span");
-  passProgress.setAttribute("role", "status");
+
   resetPass = document.createElement("button");
   resetPass.type = "button";
   resetPass.textContent = "Reset tuning check";
   resetPass.addEventListener("click", () => {
     checkedNotes.clear();
+    lastAnnouncement = "";
     resetDetectionState();
     showWaiting(isListening ? "Pluck a string" : "Tap Start and pluck a string");
     updatePassProgress();
@@ -683,7 +691,7 @@ async function startListening() {
     } else if (error?.name === "NotFoundError") message = "No microphone was found.";
     else if (!window.isSecureContext) message = "Microphone access needs HTTPS on most phones.";
 
-    setStatus("Microphone error", "error");
+    setStatus(message, "error");
     noteReadout.textContent = "!";
     noteReadout.className = "note note-idle";
     helperText.textContent = message;
@@ -698,6 +706,9 @@ async function startListening() {
 
 function stopListening() {
   isListening = false;
+  cancelPitchAnnouncement();
+  lastAnnouncement = "";
+  if (pitchAnnouncement) pitchAnnouncement.textContent = "";
   if (rafId) cancelAnimationFrame(rafId);
   rafId = null;
 
@@ -783,7 +794,9 @@ function updateLoop() {
 
   if (!manualTarget && Math.abs(cents) > MAX_TARGET_DISTANCE_CENTS) {
     resetDetectionState();
-    showWaiting("Pitch outside this preset. Choose a string target or check the preset.");
+    const message = "Pitch outside this preset. Choose a string target or check the preset.";
+    showWaiting(message);
+    announcePitch(message);
     rafId = requestAnimationFrame(updateLoop);
     return;
   }
@@ -809,7 +822,26 @@ function handleUnstablePitch(rms) {
   showWaiting(rms < MIN_RMS ? "Pluck a string" : "Let one string ring clearly");
 }
 
+function cancelPitchAnnouncement() {
+  if (!pendingAnnouncement) return;
+  clearTimeout(announcementTimer);
+  pendingAnnouncement = "";
+}
+
+function announcePitch(message) {
+  if (!pitchAnnouncement || pendingAnnouncement === message) return;
+  cancelPitchAnnouncement();
+  if (message === lastAnnouncement) return;
+  pendingAnnouncement = message;
+  announcementTimer = setTimeout(() => {
+    pitchAnnouncement.textContent = message;
+    lastAnnouncement = message;
+    pendingAnnouncement = "";
+  }, 400);
+}
+
 function showWaiting(message) {
+  if (message !== pendingAnnouncement) cancelPitchAnnouncement();
   helperText.textContent = message;
   detailsText.textContent = manualTarget ? `Target: ${manualTarget.label || manualTarget.note}` : "No stable pitch detected";
   noteReadout.textContent = "—";
@@ -850,6 +882,14 @@ function renderTuning(target, frequency, cents) {
   if (passProgress && state === "in-tune" && !checkedNotes.has(target)) {
     checkedNotes.add(target);
     updatePassProgress();
+  }
+  if (state === "idle") {
+    announcePitch(`Target ${target.label || target.note}. Heard ${detectedNote}. Check the string and octave.`);
+  } else {
+    const direction = state === "in-tune" ? "in tune" : state === "flat" ? "flat, tune up" : "sharp, tune down";
+    const progress = state === "in-tune" && passProgress
+      ? ` ${checkedNotes.size} of ${currentStrings.length} targets checked.` : "";
+    announcePitch(`${target.label || target.note}: ${direction}.${progress}`);
   }
   setNeedle(state === "idle" ? 0 : cents, state);
   updateStringHighlight(target, state);

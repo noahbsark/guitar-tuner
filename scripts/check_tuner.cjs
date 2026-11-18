@@ -235,3 +235,30 @@ browser.navigator = {mediaDevices: {enumerateDevices: async () => [
   assert.equal(vm.runInContext('inputStatus.textContent', browser), 'Using USB interface.');
   console.log('Microphone constraints, device filtering, and stale-list protection passed.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
+
+const announcement = {textContent: ''};
+const timers = new Map();
+let timerId = 0;
+const announcementBrowser = vm.createContext({
+  document: {
+    body: {dataset: {}},
+    getElementById: id => id === 'pitchAnnouncement' ? announcement : null
+  },
+  location: {search: ''},
+  URLSearchParams,
+  setTimeout(callback, delay) { assert.equal(delay, 400); timers.set(++timerId, callback); return timerId; },
+  clearTimeout(id) { timers.delete(id); }
+});
+vm.runInContext(source, announcementBrowser);
+vm.runInContext('announcePitch("A2: flat, tune up."); announcePitch("A2: flat, tune up.");', announcementBrowser);
+assert.equal(timers.size, 1);
+assert.equal(announcement.textContent, '');
+vm.runInContext('announcePitch("A2: in tune.");', announcementBrowser);
+assert.equal(timers.size, 1);
+const callback = timers.get(timerId);
+timers.delete(timerId);
+callback();
+assert.equal(announcement.textContent, 'A2: in tune.');
+vm.runInContext('announcePitch("A2: in tune.");', announcementBrowser);
+assert.equal(timers.size, 0);
+console.log('Settled pitch announcements coalesce and skip repeated states.');

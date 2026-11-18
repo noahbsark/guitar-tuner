@@ -113,11 +113,15 @@ def normalize_page(content: str, filename: str) -> str:
             if publisher and 'name="google-adsense-account"' not in content:
                 content = content.replace('</head>', '  <meta name="google-adsense-account" content="' + publisher.group(1) + '">\n</head>', 1)
         content = re.sub(ad_script, '', content)
+    if 'id="tuningSelect"' in content:
+        content = re.sub(r'(<section class="readout") aria-live="polite"', r'\1', content)
+        if 'id="pitchAnnouncement"' not in content:
+            content = re.sub(r'(<section class="readout")', r'<p id="pitchAnnouncement" class="sr-only" role="status" aria-atomic="true"></p>\n        \1', content, count=1)
     if 'id="tuningSelect"' in content and 'data-tuning="chromatic"' not in content and 'id="selectedPreset"' not in content:
         content = re.sub(r'(</select>\s*</div>)', r'\1\n        <p id="selectedPreset" role="status"></p>', content, count=1)
     tuner_script = r'<script src="/?tuner\.js(?:\?[^"]*)?"></script>'
     if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content or 'id="tensionComparison"' in content or 'id="retuningPlanner"' in content:
-        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118k"></script>', content)
+        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118l"></script>', content)
     else:
         content = re.sub(tuner_script, '', content)
     if '<footer class="footer">' in content and 'class="support-link"' not in content:
