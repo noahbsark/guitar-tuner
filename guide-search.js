@@ -6,6 +6,7 @@ const searchAliases = {
   "/bass-guitar-tuner": "four five string low b bass",
   "/microphone-not-working-online-guitar-tuner": "mic permission denied tuner cannot hear can't hear no sound no input",
   "/guitar-tuning-troubleshooter": "buzz buzzing unstable sounds wrong after tuning diagnosis",
+  "/why-guitar-strings-break": "broken guitar string snapped snapping keeps breaking saddle bridge post breakage replace broken high e",
   "/guitar-tuner-shows-wrong-note": "wrong octave tuner misreads wrong pitch",
   "/why-does-my-guitar-keep-going-out-of-tune": "won't wont stay in tune loses pitch drifting keeps slipping",
   "/why-guitar-tuner-jumps-between-notes": "jittery bouncing unstable needle display",
