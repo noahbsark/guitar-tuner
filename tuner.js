@@ -433,6 +433,7 @@ renderTuningChoices();
 setNeedle(0, "idle");
 renderFrequencyLookup();
 renderTensionComparison();
+renderRetuningPlanner();
 
 function renderFrequencyLookup() {
   const lookup = document.getElementById("frequencyLookup");
@@ -465,11 +466,7 @@ function renderTensionComparison() {
   const from = document.getElementById("tensionFrom");
   const to = document.getElementById("tensionTo");
   const targets = document.getElementById("tensionTargets");
-  for (const [key, tuning] of Object.entries(TUNINGS)) {
-    if (tuning.strings.length !== 6) continue;
-    from.add(new Option(tuning.name, key));
-    to.add(new Option(tuning.name, key));
-  }
+  populateSixStringPresets(from, to);
   from.value = "standard";
   to.value = "dropD";
 
@@ -494,6 +491,65 @@ function renderTensionComparison() {
   to.addEventListener("change", renderComparison);
   renderComparison();
   comparison.hidden = false;
+}
+
+function renderRetuningPlanner() {
+  const planner = document.getElementById("retuningPlanner");
+  if (!planner) return;
+
+  const from = document.getElementById("retuneFrom");
+  const to = document.getElementById("retuneTo");
+  const rows = document.getElementById("retuneTargets");
+  const meterLink = document.getElementById("retuneMeter");
+  const summary = document.getElementById("retuneSummary");
+  populateSixStringPresets(from, to);
+  from.value = "standard";
+  to.value = "dadgad";
+
+  function renderPlan() {
+    const source = TUNINGS[from.value];
+    const destination = TUNINGS[to.value];
+    rows.replaceChildren();
+    let changes = 0;
+    destination.strings.forEach((target, index) => {
+      const start = source.strings[index];
+      const movement = describeRetuning(start.frequency, target.frequency);
+      const row = rows.insertRow();
+      const number = document.createElement("th");
+      number.scope = "row";
+      number.textContent = 6 - index;
+      row.appendChild(number);
+      row.insertCell().textContent = start.note;
+      row.insertCell().textContent = target.note + " · " + target.frequency.toFixed(2) + " Hz";
+      row.insertCell().textContent = movement;
+      if (movement !== "Leave as is") changes++;
+    });
+    summary.textContent = changes === 0 ? "No strings need to change."
+      : `${changes} of 6 strings change from ${source.name} to ${destination.name}.`;
+    meterLink.href = "/?tuning=" + encodeURIComponent(to.value);
+  }
+  from.addEventListener("change", renderPlan);
+  to.addEventListener("change", renderPlan);
+  renderPlan();
+  planner.hidden = false;
+}
+
+function describeRetuning(fromFrequency, toFrequency) {
+  const cents = Math.round(frequencyToCents(toFrequency, fromFrequency));
+  if (cents === 0) return "Leave as is";
+  const change = Math.abs(cents);
+  const direction = cents > 0 ? "Raise" : "Lower";
+  if (change % 100 !== 0) return `${direction} ${change} cents`;
+  const semitones = change / 100;
+  return `${direction} ${semitones} semitone${semitones === 1 ? "" : "s"}`;
+}
+
+function populateSixStringPresets(from, to) {
+  for (const [key, tuning] of Object.entries(TUNINGS)) {
+    if (tuning.strings.length !== 6) continue;
+    from.add(new Option(tuning.name, key));
+    to.add(new Option(tuning.name, key));
+  }
 }
 
 function relativeTensionChange(fromFrequency, toFrequency) {

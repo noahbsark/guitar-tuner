@@ -64,7 +64,7 @@ def category(filename: str) -> str:
 
 def normalize_page(content: str, filename: str) -> str:
     content = normalize_links(content)
-    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261118c"', content)
+    content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261118f"', content)
     # Keep the primary action above the changing pitch readout on small screens.
     action = re.search(r'<button id="toggleButton"[^>]*>.*?</button>', content, re.S)
     if action and content.index(action.group()) > content.index('id="statusPill"'):
@@ -102,7 +102,7 @@ def normalize_page(content: str, filename: str) -> str:
     # Keep ad loading on editorial guides without a competing shopping decision.
     ad_script = r'<script\b[^>]*src="https://pagead2\.googlesyndication\.com/pagead/js/adsbygoogle\.js[^"]*"[^>]*></script>'
     utility_page = filename in UTILITY or 'id="tuningSelect"' in content
-    interactive_guide = filename in {'guitar-string-tension-calculator.html', 'guitar-tuning-troubleshooter.html'}
+    interactive_guide = filename in {'guitar-string-tension-calculator.html', 'guitar-tuning-troubleshooter.html', 'guitar-retuning-planner.html'}
     affiliate_page = re.search(r'<a\b[^>]*href="https://www\.amazon\.com/', content) is not None
     if utility_page or interactive_guide or affiliate_page:
         ad = re.search(ad_script, content)
@@ -114,8 +114,8 @@ def normalize_page(content: str, filename: str) -> str:
     if 'id="tuningSelect"' in content and 'data-tuning="chromatic"' not in content and 'id="selectedPreset"' not in content:
         content = re.sub(r'(</select>\s*</div>)', r'\1\n        <p id="selectedPreset" role="status"></p>', content, count=1)
     tuner_script = r'<script src="/?tuner\.js(?:\?[^"]*)?"></script>'
-    if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content or 'id="tensionComparison"' in content:
-        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118e"></script>', content)
+    if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content or 'id="tensionComparison"' in content or 'id="retuningPlanner"' in content:
+        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118f"></script>', content)
     else:
         content = re.sub(tuner_script, '', content)
     if '<footer class="footer">' in content and 'class="support-link"' not in content:
@@ -179,7 +179,8 @@ def rebuild_guides(site: Path) -> None:
             items = ''.join('<li><a href="' + url + '">' + html.escape(title) + '</a></li>' for title, url in pages)
             groups.append(subheading + '<ul class="guide-list">' + items + '</ul>')
         sections.append('<section id="' + key + '" class="content-card guide-group"><h2>' + label + '</h2>' + ''.join(groups) + '</section>')
-    content = head + '</head><body><a class="skip-link" href="#main-content">Skip to main content</a>' + header + '<main id="main-content" class="page"><section class="hero"><h1>Guitar tuning guides</h1><p class="lede">Choose a tuning, learn the basics, or find a fix for the problem you are hearing.</p></section>' + jump + ''.join(sections) + '</main>' + footer + '</body></html>\n'
+    search = '<form class="content-card" role="search" hidden><div class="tuning-control"><label for="guideSearch">Find a tuner or guide</label><input id="guideSearch" type="search" placeholder="Try Drop D, microphone or bass"></div><p id="guideResults" role="status"></p></form>'
+    content = head + '</head><body><a class="skip-link" href="#main-content">Skip to main content</a>' + header + '<main id="main-content" class="page"><section class="hero"><h1>Guitar tuning guides</h1><p class="lede">Choose a tuning, learn the basics, or find a fix for the problem you are hearing.</p></section>' + search + jump + ''.join(sections) + '</main>' + footer + '<script src="/guide-search.js" defer></script></body></html>\n'
     (site / 'guides.html').write_text(normalize_page(content, 'guides.html'), encoding='utf-8')
 
 

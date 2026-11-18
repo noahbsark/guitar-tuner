@@ -158,3 +158,8 @@ vm.runInContext(`
 `, browser);
 assert.match(readout.helperText.textContent, /Pitch outside this preset/);
 console.log('20 low-bass sample-rate checks and out-of-preset feedback passed.');
+
+assert.equal(vm.runInContext('describeRetuning(82.4069, 73.4162)', browser), 'Lower 2 semitones');
+assert.equal(vm.runInContext('describeRetuning(329.6276, 329.6276)', browser), 'Leave as is');
+assert.equal(vm.runInContext('describeRetuning(110, 110 * 443.993 / 440)', browser), 'Raise 16 cents');
+console.log('Retuning planner directions and reference-pitch changes passed.');

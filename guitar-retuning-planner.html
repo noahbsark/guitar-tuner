@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-61XFFV7JZT"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-61XFFV7JZT');
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
+  <title>Guitar Retuning Planner | Which Strings Change?</title>
+  <meta name="description" content="Compare two six-string presets and see which strings to raise or lower, their target notes and octaves, and how far they move." />
+  <link rel="canonical" href="https://onlineguitartuner.net/guitar-retuning-planner" />
+  <link rel="stylesheet" href="/styles.css?v=20261118c" />
+</head>
+<body data-tuning="standard">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="logo" href="/">Simple Guitar Tuner</a>
+      <div class="nav-links">
+        <a href="/">Tuner</a>
+        <a href="/guides" aria-current="page">Guides</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+        <a href="/privacy">Privacy</a>
+      </div>
+    </nav>
+  </header>
+  <main id="main-content" class="page">
+    <section class="hero"><h1>Guitar Retuning Planner</h1><p class="lede">Choose your current tuning and where you want to go. See which strings change before you turn a peg.</p></section>
+    <article class="content-card">
+<p class="editorial-note">Published by Online Guitar Tuner. <a href="/about#editorial">How our guides are maintained</a> · <a href="/contact">Report a correction</a></p>
+<h2>Plan the change</h2>
+<div id="retuningPlanner" hidden>
+<div class="tuning-control"><label for="retuneFrom">Starting tuning</label><select id="retuneFrom"></select></div>
+<div class="tuning-control"><label for="retuneTo">New tuning</label><select id="retuneTo"></select></div>
+<p id="retuneSummary" role="status"></p>
+<div class="table-wrap"><table class="frequency-table"><thead><tr><th scope="col">String</th><th scope="col">Start</th><th scope="col">Target</th><th scope="col">Change</th></tr></thead><tbody id="retuneTargets"></tbody></table></div>
+<p><a id="retuneMeter" href="/">Open the tuner with this target preset</a></p>
+</div>
+<noscript><p>Enable JavaScript to compare presets. From Standard to DADGAD, lower strings 6, 2 and 1 by two semitones each.</p></noscript>
+<h2>Use the plan</h2>
+<p>Start at string 6, the thickest string. Read the target note and octave together. Move in small steps, recheck each string afterward, and repeat the full pass if your bridge floats.</p>
+<p>Some presets share the same note names while changing the reference pitch. If the table shows cents instead of semitones, use the target frequency or the preset tuner to confirm the smaller change.</p>
+<p>If the plan raises several strings, <a href="/guitar-string-tension-calculator">compare the tension change</a> and check the guitar and string maker’s guidance first. For Open E, <a href="/open-d-vs-open-e">Open D with capo 2</a> gives the same sounding pitches with the guitar tuned to Open D underneath.</p>
+</article>
+    <section class="content-card all-tunings-card" data-all-tunings><h2>Practice on your guitar</h2><p><a href="/">Open the tuner</a> · <a href="/guides#start">More tuning basics</a></p></section>
+  </main>
+
+  <footer class="footer">
+    <p>
+      <a href="/">Free Guitar Tuner</a> ·
+      <a href="/beginner-guitar-tuning-guide">Beginner Guide</a> ·
+      <a href="/about">About</a> ·
+      <a href="/contact">Contact</a> ·
+      <a href="/affiliate-disclosure">Affiliate Disclosure</a> ·
+      <a href="/privacy">Privacy</a>
+    </p>
+  <p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>
+</footer>
+<script src="/tuner.js?v=20261118f"></script>
+</body>
+</html>
+
