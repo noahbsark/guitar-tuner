@@ -103,3 +103,27 @@ assert.equal(vm.runInContext('relativeTensionChange(110, 110)', browser), 0);
 assert.equal(vm.runInContext('Math.round(relativeTensionChange(82.4069, 73.4162))', browser), -21);
 assert.equal(vm.runInContext('Math.round(relativeTensionChange(73.4162, 82.4069))', browser), 26);
 console.log('Same-string tension examples and reverse comparison passed.');
+
+vm.runInContext(`
+  currentTuningKey = TWELVE_STRING_DEFAULT;
+  currentStrings = TUNINGS[currentTuningKey].strings;
+  checkedNotes.clear();
+  manualTarget = currentStrings[7];
+  testPitch = 391.9954;
+  resetDetectionState();
+  for (let i = 0; i < 3; i++) updateLoop();
+`, browser);
+assert.match(readout.detailsText.textContent, /Course 3 octave: G4/);
+assert.equal(vm.runInContext('currentStrings.length', browser), 12);
+vm.runInContext(`
+  testPitch = 246.9417;
+  manualTarget = currentStrings[8];
+  resetDetectionState();
+  for (let i = 0; i < 3; i++) updateLoop();
+  manualTarget = currentStrings[9];
+  resetDetectionState();
+  for (let i = 0; i < 3; i++) updateLoop();
+`, browser);
+assert.match(readout.detailsText.textContent, /Course 2 second: B3/);
+assert.equal(vm.runInContext('checkedNotes.size', browser), 3);
+console.log('12-string G4 detection and separate unison targets passed.');

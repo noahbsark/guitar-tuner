@@ -263,6 +263,23 @@ TUNINGS.sevenDropA = {
 
 TUNINGS.chromatic = {name: "Chromatic", label: "A4 = 440 Hz", strings: []};
 
+const TWELVE_STRING_DEFAULT = "twelveStandard";
+TUNINGS[TWELVE_STRING_DEFAULT] = {
+  name: "12-string Standard",
+  label: "E A D G B E in six pairs",
+  strings: TUNINGS.standard.strings.flatMap((main, index) => {
+    const octave = index < 4;
+    const course = 6 - index;
+    const pair = octave
+      ? {note: main.note[0] + (Number(main.note[1]) + 1), frequency: main.frequency * 2}
+      : main;
+    return [
+      {...main, label: `Course ${course} ${octave ? "main" : "first"}: ${main.note}`},
+      {...pair, label: `Course ${course} ${octave ? "octave" : "second"}: ${pair.note}`}
+    ];
+  })
+};
+
 const IN_TUNE_CENTS = 5;
 const MAX_METER_CENTS = 50;
 const MAX_TARGET_DISTANCE_CENTS = 225;
@@ -290,6 +307,8 @@ if (!Object.hasOwn(TUNINGS, currentTuningKey) ||
   currentTuningKey = tuningSelect?.options[0]?.value || "standard";
 }
 let currentStrings = TUNINGS[currentTuningKey].strings;
+const isPairedTuning = () => currentTuningKey === TWELVE_STRING_DEFAULT;
+const selectedPreset = document.getElementById("selectedPreset");
 
 let audioContext = null;
 let analyser = null;
@@ -308,7 +327,7 @@ let referenceContext;
 let referenceTone;
 let microphoneHelp;
 let stableFrameCount = 0;
-let lastDetectedNote = null;
+let lastDetectedTarget = null;
 let passProgress;
 let resetPass;
 const checkedNotes = new Set();
@@ -571,7 +590,7 @@ function resetDetectionState() {
   smoothedFrequency = null;
   smoothedCents = 0;
   stableFrameCount = 0;
-  lastDetectedNote = null;
+  lastDetectedTarget = null;
 }
 
 function updateLoop() {
@@ -582,7 +601,12 @@ function updateLoop() {
   levelBar.style.width = `${Math.min(100, rms * 520)}%`;
 
   const chromatic = currentTuningKey === "chromatic";
-  const frequencyLimit = chromatic ? MAX_CHROMATIC_FREQUENCY : MAX_DETECTABLE_FREQUENCY;
+  if (isPairedTuning() && !manualTarget) {
+    showWaiting("Choose a course member to tune");
+    rafId = requestAnimationFrame(updateLoop);
+    return;
+  }
+  const frequencyLimit = chromatic || isPairedTuning() ? MAX_CHROMATIC_FREQUENCY : MAX_DETECTABLE_FREQUENCY;
   const result = detectPitchAutocorrelation(buffer, audioContext.sampleRate, rms, frequencyLimit);
 
   if (!result || result.frequency < MIN_DETECTABLE_FREQUENCY || result.frequency > frequencyLimit || result.clarity < MIN_CLARITY) {
@@ -600,11 +624,11 @@ function updateLoop() {
     return;
   }
 
-  if (lastDetectedNote !== nearest.note ||
+  if (lastDetectedTarget !== nearest.note ||
       (smoothedFrequency !== null && Math.abs(frequencyToCents(result.frequency, smoothedFrequency)) > 100)) {
     resetDetectionState();
     showWaiting("Waiting for a steady pitch");
-    lastDetectedNote = nearest.note;
+    lastDetectedTarget = nearest.note;
   }
   stableFrameCount += 1;
 
@@ -623,11 +647,11 @@ function handleUnstablePitch(rms) {
 
 function showWaiting(message) {
   helperText.textContent = message;
-  detailsText.textContent = manualTarget ? `Target: ${manualTarget.note}` : "No stable pitch detected";
+  detailsText.textContent = manualTarget ? `Target: ${manualTarget.label || manualTarget.note}` : "No stable pitch detected";
   noteReadout.textContent = "—";
   noteReadout.className = "note note-idle";
   setNeedle(0, "idle");
-  updateStringHighlight(manualTarget?.note, "idle");
+  updateStringHighlight(manualTarget, "idle");
 }
 
 function renderTuning(target, frequency, cents) {
@@ -657,13 +681,13 @@ function renderTuning(target, frequency, cents) {
   const detectedNote = getChromaticTarget(frequency, referenceA).note;
   detailsText.textContent = currentTuningKey === "chromatic"
     ? `${frequency.toFixed(1)} Hz · ${formatSigned(cents)} cents relative to ${target.note}`
-    : `Target: ${target.note} · Detected: ${detectedNote} (${frequency.toFixed(1)} Hz) · ${formatSigned(cents)} cents`;
-  if (passProgress && state === "in-tune" && !checkedNotes.has(target.note)) {
-    checkedNotes.add(target.note);
+    : `Target: ${target.label || target.note} · Detected: ${detectedNote} (${frequency.toFixed(1)} Hz) · ${formatSigned(cents)} cents`;
+  if (passProgress && state === "in-tune" && !checkedNotes.has(target)) {
+    checkedNotes.add(target);
     updatePassProgress();
   }
   setNeedle(state === "idle" ? 0 : cents, state);
-  updateStringHighlight(target.note, state);
+  updateStringHighlight(target, state);
 }
 
 function getChromaticTarget(frequency, referenceA = 440) {
@@ -678,12 +702,13 @@ function getChromaticTarget(frequency, referenceA = 440) {
 function updatePassProgress() {
   if (!passProgress) return;
   const count = checkedNotes.size;
-  passProgress.textContent = `${count}/${currentStrings.length} target pitches heard in tune`;
+  const description = isPairedTuning() ? "selected targets heard in tune" : "target pitches heard in tune";
+  passProgress.textContent = `${count}/${currentStrings.length} ${description}`;
   resetPass.disabled = count === 0;
   stringsContainer.querySelectorAll(".string").forEach(string => {
-    const checked = checkedNotes.has(string.dataset.note);
+    const checked = checkedNotes.has(currentStrings[Number(string.dataset.index)]);
     string.classList.toggle("was-in-tune", checked);
-    string.setAttribute("aria-label", string.dataset.note + (checked ? ", heard in tune" : ""));
+    string.setAttribute("aria-label", string.dataset.label + (checked ? ", heard in tune" : ""));
   });
 }
 
@@ -691,19 +716,21 @@ function renderTuningChoices() {
   if (!stringsContainer) return;
   const tuning = TUNINGS[currentTuningKey];
   if (!tuning.strings.length) return;
-  stringsContainer.style.setProperty("--string-count", tuning.strings.length);
+  if (selectedPreset) selectedPreset.textContent = `Selected preset: ${tuning.name} · ${tuning.label}`;
+  stringsContainer.style.setProperty("--string-count", Math.min(tuning.strings.length, 7));
   stringsContainer.replaceChildren();
   if (stringSelect) {
-    stringSelect.replaceChildren(new Option("Automatic", "auto"));
+    stringSelect.replaceChildren(new Option(isPairedTuning() ? "Choose a course member" : "Automatic", "auto"));
     tuning.strings.forEach((string, index) => {
-      stringSelect.add(new Option(`${tuning.strings.length - index}: ${string.note}`, String(index)));
+      stringSelect.add(new Option(string.label || `${tuning.strings.length - index}: ${string.note}`, String(index)));
     });
     playReference.disabled = true;
   }
-  tuning.strings.forEach(string => {
+  tuning.strings.forEach((string, index) => {
     const el = document.createElement("div");
     el.className = "string";
-    el.dataset.note = string.note;
+    el.dataset.index = index;
+    el.dataset.label = string.label || string.note;
     el.textContent = string.note;
     stringsContainer.appendChild(el);
   });
@@ -760,9 +787,9 @@ function setNeedle(cents, state) {
   else needle.style.background = "var(--red)";
 }
 
-function updateStringHighlight(note, state) {
+function updateStringHighlight(target, state) {
   document.querySelectorAll(".string").forEach(el => {
-    const active = el.dataset.note === note;
+    const active = currentStrings[Number(el.dataset.index)] === target;
     el.classList.toggle("active", active);
     el.classList.toggle("in-tune", active && state === "in-tune");
   });

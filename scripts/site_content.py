@@ -111,9 +111,11 @@ def normalize_page(content: str, filename: str) -> str:
             if publisher and 'name="google-adsense-account"' not in content:
                 content = content.replace('</head>', '  <meta name="google-adsense-account" content="' + publisher.group(1) + '">\n</head>', 1)
         content = re.sub(ad_script, '', content)
+    if 'id="tuningSelect"' in content and 'data-tuning="chromatic"' not in content and 'id="selectedPreset"' not in content:
+        content = re.sub(r'(</select>\s*</div>)', r'\1\n        <p id="selectedPreset" role="status"></p>', content, count=1)
     tuner_script = r'<script src="/?tuner\.js(?:\?[^"]*)?"></script>'
     if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content or 'id="tensionComparison"' in content:
-        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118c"></script>', content)
+        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118d"></script>', content)
     else:
         content = re.sub(tuner_script, '', content)
     if '<footer class="footer">' in content and 'class="support-link"' not in content:
@@ -156,6 +158,8 @@ def rebuild_guides(site: Path) -> None:
             if key == 'tuners':
                 if url == '/7-string-guitar-tuner':
                     family = 'Seven-string guitars'
+                elif url == '/12-string-guitar-tuner':
+                    family = '12-string guitars'
                 elif url == '/chromatic-guitar-tuner':
                     family = 'Chromatic'
                 elif 'drop' in url:
