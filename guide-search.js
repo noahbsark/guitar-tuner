@@ -22,6 +22,7 @@ const searchAliases = {
   "/guitar-string-tension-calculator": "strings too loose tight tension when retuning",
   "/clip-on-vs-online-guitar-tuner": "hardware headstock tuner background noise",
   "/pedal-tuner-guide": "pedal tuner silent tune tuning onstage stage rehearsal mute bypass bass guitar",
+  "/coated-vs-uncoated-acoustic-guitar-strings": "coated uncoated acoustic strings worth cost lifespan corrosion rust how long last",
   "/guitar-tuning-gear-guide": "buy replacement strings equipment gear",
 };
 
