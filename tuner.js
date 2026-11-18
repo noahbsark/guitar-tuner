@@ -1118,26 +1118,33 @@ function detectPitchAutocorrelation(samples, sampleRate, rms,
 
   const size = samples.length;
   const minLag = Math.floor(sampleRate / maxFrequency);
-  const maxLag = Math.floor(sampleRate / minFrequency);
+  const maxLag = Math.min(size - 1, Math.floor(sampleRate / minFrequency));
+  if (maxLag <= minLag) return null;
 
   let bestLag = -1;
   let bestCorrelation = 0;
   const correlations = new Float32Array(maxLag + 1);
 
+  // The two energy windows lose one sample apiece at each lag.
+  // Only the cross-product needs to be recomputed over the full overlap.
+  let sumA = 0;
+  let sumB = 0;
+  const firstOverlap = size - minLag;
+  for (let i = 0; i < firstOverlap; i++) {
+    sumA += samples[i] ** 2;
+    sumB += samples[i + minLag] ** 2;
+  }
+
   for (let lag = minLag; lag <= maxLag; lag++) {
     let sum = 0;
-    let sumA = 0;
-    let sumB = 0;
-
-    for (let i = 0; i < size - lag; i++) {
-      const a = samples[i];
-      const b = samples[i + lag];
-      sum += a * b;
-      sumA += a * a;
-      sumB += b * b;
+    const overlap = size - lag;
+    for (let i = 0; i < overlap; i++) {
+      sum += samples[i] * samples[i + lag];
     }
 
-    const correlation = sum / Math.sqrt(sumA * sumB || 1);
+    const correlation = sumA > 0 && sumB > 0 ? sum / Math.sqrt(sumA * sumB) : 0;
+    sumA -= samples[overlap - 1] ** 2;
+    sumB -= samples[lag] ** 2;
     correlations[lag] = correlation;
 
     if (correlation > bestCorrelation) {

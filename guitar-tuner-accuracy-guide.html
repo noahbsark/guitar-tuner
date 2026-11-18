@@ -38,7 +38,7 @@
 <p class="editorial-note">Published by Online Guitar Tuner. <a href="/about#editorial">How our guides are maintained</a> · <a href="/contact">Report a correction</a></p>
 <div class="notice"><strong>Display regression check:</strong> The automated test now switches from an off-target E2 to A2 and then to silence. It checks that the meter clears between readings and that an A2 played against a manually selected A1 prompts an octave check.</div>
       <h2>What tuner accuracy means</h2>
-      <p>Pitch error is commonly measured in <strong>cents</strong>. One semitone contains 100 cents. A reading of −5 cents is slightly flat, while +5 cents is slightly sharp. The smaller the error a tuner can detect reliably, the more precise its measurement.</p>
+      <p>Pitch error is commonly measured in <strong>cents</strong>. One semitone contains 100 cents. A reading of −5 cents is slightly flat, while +5 cents is slightly sharp. Accuracy is closeness to a known pitch. Repeatability is how closely the readings agree when you make the same measurement again.</p>
       <div class="notice">Accuracy and display resolution are not always the same. A display may show one-cent steps without the device actually producing stable one-cent measurements in real conditions.</div>
 
       <h2>How accurate do you need to be?</h2>
@@ -90,13 +90,22 @@
       <div class="grid-links"><a href="/common-guitar-tuning-mistakes">Common tuning mistakes</a><a href="/guitar-string-frequency-chart">Guitar frequency chart</a></div>
     
       <h2 id="software-checks">What this site's tuner actually measures</h2>
-      <p>The current detector looks for periodic audio between 45 and 390 Hz and compares it with the six open-string targets in your selected preset. That range covers the supplied six-string presets, including low A1 and high E4. It does not cover every possible fretted note or make this a full-range chromatic tuner. The meter turns green within ±5 cents; the display threshold is not a guarantee of microphone accuracy.</p>
+      <p>The pitch detector estimates the frequency of a repeating signal. Each mode uses a range suited to its task. The green band on a preset meter means the reading is within ±5 cents of the target.</p>
+<div class="table-wrap"><table class="frequency-table"><caption>Software detection ranges by mode</caption><thead><tr><th scope="col">Mode</th><th scope="col">Approximate range</th><th scope="col">When to use it</th></tr></thead><tbody>
+<tr><th scope="row"><a href="/">Standard and other ordinary guitar presets</a></th><td>45–390 Hz</td><td>Tuning the preset’s open strings.</td></tr>
+<tr><th scope="row"><a href="/chromatic-guitar-tuner">Chromatic</a>, <a href="/custom-guitar-tuner">Custom</a>, <a href="/12-string-guitar-tuner">12-string</a> and <a href="/guitar-intonation-checker">Intonation</a></th><td>45–700 Hz</td><td>Checking fretted notes or high octave strings.</td></tr>
+<tr><th scope="row"><a href="/bass-guitar-tuner">Bass</a></th><td>27–210 Hz</td><td>Detecting the fundamental of a low E or low B.</td></tr>
+</tbody></table></div>
+<p>A mode’s range describes the software. The microphone, instrument and sound source determine how reliably the signal reaches it.</p>
       <h2>Reproducible software checks</h2>
-      <p>On November 11, 2026, we checked the pitch-detection function with 108 generated sample buffers. Each buffer contained 4,096 samples at 44.1 or 48 kHz. We used nine pitches from 55 to 329.6276 Hz, three starting phases, and either a sine wave or a fundamental with second and third harmonics at 35% and 15% of its amplitude. A separate silent buffer was rejected.</p>
+      <p>The current regression suite checks the ordinary guitar detector with 108 generated sample buffers. Each buffer contained 4,096 samples at 44.1 or 48 kHz. We used nine pitches from 55 to 329.6276 Hz, three starting phases, and either a sine wave or a fundamental with second and third harmonics at 35% and 15% of its amplitude. A separate silent buffer was rejected.</p>
       <div class="table-wrap"><table class="frequency-table"><caption>Numerical results for ideal generated inputs</caption><thead><tr><th scope="col">Sample rate</th><th scope="col">Signal</th><th scope="col">Cases</th><th scope="col">Largest absolute error</th></tr></thead><tbody><tr><td>44100 Hz</td><td>Sine wave</td><td>27</td><td>&lt;0.01 cents</td></tr><tr><td>44100 Hz</td><td>Fundamental plus harmonics</td><td>27</td><td>&lt;0.01 cents</td></tr><tr><td>48000 Hz</td><td>Sine wave</td><td>27</td><td>&lt;0.01 cents</td></tr><tr><td>48000 Hz</td><td>Fundamental plus harmonics</td><td>27</td><td>&lt;0.01 cents</td></tr></tbody></table></div>
       <p><strong>This is a software check, not a hardware accuracy specification.</strong> It bypasses the microphone, room acoustics, device clock, browser audio processing, and the display's smoothing. Real strings have attacks, decay and noise that these ideal signals do not reproduce. The result does not mean a phone can tune a guitar to 0.01 cents.</p>
       <p>The <a href="https://github.com/noahbsark/guitar-tuner/blob/main/scripts/check_tuner.cjs">check script and its exact input frequencies</a> are public. Run it with Node.js to reproduce the calculations.</p>
-      <h2>Compare readings fairly on your own guitar</h2>
+      <h2>Check repeatability before buying a tuner</h2>
+<ol><li>Choose the preset and input you normally use. Check the same string three times with a similar attack. Read the settled pitch on each pluck.</li><li>If readings jump, mute the other strings and <a href="/microphone-not-working-online-guitar-tuner">check the input and room noise</a>, then repeat.</li><li>If you can borrow a second tuner, set the same reference pitch and compare several settled readings. A consistent difference calls for a calibration check. Wide variation calls for a signal or technique check.</li></ol>
+<p>If your measurements settle consistently in your normal playing space, keep using your current setup. <a href="/clip-on-vs-online-guitar-tuner">Compare hardware options</a> if noise or the need to tune without a microphone keeps getting in the way.</p>
+<h2>Compare readings fairly on your own guitar</h2>
       <ol><li>Set both tuners to the same reference pitch and tuning.</li><li>Mute unused strings and pluck with the same moderate force.</li><li>Compare the settled portion of several notes, rather than one moment of the attack.</li><li>If the devices disagree consistently, check calibration and the input device before adjusting the guitar's setup.</li></ol>
       <p>For example, an A string at 111 Hz is about +15.67 cents relative to a 110 Hz A2 target: <code>1200 × log2(111 / 110)</code>. A one-hertz difference has a different cent value on another string, so comparing raw hertz differences alone can mislead.</p>
 
