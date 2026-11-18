@@ -77,7 +77,7 @@ def normalize_page(content: str, filename: str) -> str:
     group = category(filename)
     if 'id="tuningSelect"' in content:
         heading = 'Keep tuning'
-        links = [('Try another preset', '/guides#tuners'), ('Fix microphone access', '/microphone-not-working-online-guitar-tuner')]
+        links = [('Try another preset', '/guides#tuners'), ('Diagnose a tuning problem', '/guitar-tuning-troubleshooter'), ('Fix microphone access', '/microphone-not-working-online-guitar-tuner')]
     elif group == 'gear':
         heading = 'Compare your options'
         links = [('Tuning gear by problem', '/guitar-tuning-gear-guide'), ('Try the free tuner', '/')]
@@ -86,7 +86,7 @@ def normalize_page(content: str, filename: str) -> str:
         links = [('Open the tuner', '/'), ('More setup and string guides', '/guides#strings')]
     elif group == 'troubleshooting':
         heading = 'Narrow down the problem'
-        links = [('More tuning fixes', '/guides#troubleshooting'), ('Try the tuner again', '/')]
+        links = [('Diagnose a tuning problem', '/guitar-tuning-troubleshooter'), ('More tuning fixes', '/guides#troubleshooting'), ('Try the tuner again', '/')]
     elif group == 'music':
         heading = 'Try the tuning on your guitar'
         links = [('Choose a tuning preset', '/guides#tuners'), ('More chord and tuning guides', '/guides#music')]
@@ -102,8 +102,9 @@ def normalize_page(content: str, filename: str) -> str:
     # Keep ad loading on editorial guides without a competing shopping decision.
     ad_script = r'<script\b[^>]*src="https://pagead2\.googlesyndication\.com/pagead/js/adsbygoogle\.js[^"]*"[^>]*></script>'
     utility_page = filename in UTILITY or 'id="tuningSelect"' in content
+    interactive_guide = filename in {'guitar-string-tension-calculator.html', 'guitar-tuning-troubleshooter.html'}
     affiliate_page = re.search(r'<a\b[^>]*href="https://www\.amazon\.com/', content) is not None
-    if utility_page or affiliate_page:
+    if utility_page or interactive_guide or affiliate_page:
         ad = re.search(ad_script, content)
         if filename == 'index.html' and ad:
             publisher = re.search(r'client=(ca-pub-\d+)', ad.group())
@@ -139,6 +140,7 @@ def rebuild_guides(site: Path) -> None:
         title = re.sub('<[^>]+>', '', match.group(1)) if match else page.stem.replace('-', ' ')
         group = 'tuners' if 'id="tuningSelect"' in body else category(page.name)
         grouped[group].append((html.unescape(title), public_path(page.name)))
+    grouped['troubleshooting'].sort(key=lambda page: page[1] != '/guitar-tuning-troubleshooter')
     grouped['tuners'].insert(0, ('Standard guitar tuner — E A D G B E', '/'))
     jump_labels = {
         'tuners': 'Tune now',
