@@ -40,7 +40,16 @@
       <h2>How a capo changes pitch</h2>
       <p>A capo shortens all strings at the same fret. Each fret raises the sounding pitch by one semitone while letting you use familiar open-position shapes. For example, an open G shape with a capo at fret 2 sounds as A.</p>
 
-      <h2>Capo transposition chart</h2>
+      <section id="capoCalculator" hidden>
+<h2>Capo calculator</h2>
+<div class="tuning-control"><label for="capoMode">What do you want to find?</label><select id="capoMode"><option value="song">Sounding key</option><option value="shape">Chord shapes to play</option><option value="fret">Capo fret</option></select></div>
+<div class="tuning-control"><label for="capoShape">Chord shape key</label><select id="capoShape"></select></div>
+<div class="tuning-control"><label for="capoFret">Capo position</label><select id="capoFret"></select></div>
+<div class="tuning-control"><label for="capoSong">Sounding key</label><select id="capoSong"></select></div>
+<p id="capoResult" class="notice" role="status"></p>
+<p>Use the root note of the key. The change preserves whether the song is major or minor. This calculator assumes the guitar starts in Standard tuning and uses a full capo.</p>
+</section>
+<h2>Capo transposition chart</h2>
       <div class="table-wrap"><table class="frequency-table wide-table"><thead><tr><th>Shape</th><th>Capo 1</th><th>Capo 2</th><th>Capo 3</th><th>Capo 4</th><th>Capo 5</th></tr></thead><tbody>
       <tr><td>C</td><td>Db</td><td>D</td><td>Eb</td><td>E</td><td>F</td></tr>
       <tr><td>D</td><td>Eb</td><td>E</td><td>F</td><td>Gb</td><td>G</td></tr>
@@ -79,6 +88,7 @@
     </p>
   <p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>
 </footer>
+<script src="/capo-calculator.js" defer></script>
 </body>
 </html>
 

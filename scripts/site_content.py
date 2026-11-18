@@ -185,8 +185,8 @@ def rebuild_guides(site: Path) -> None:
             items = ''.join('<li><a href="' + url + '">' + html.escape(title) + '</a></li>' for title, url in pages)
             groups.append(subheading + '<ul class="guide-list">' + items + '</ul>')
         sections.append('<section id="' + key + '" class="content-card guide-group"><h2>' + label + '</h2>' + ''.join(groups) + '</section>')
-    search = '<form class="content-card" role="search" hidden><div class="tuning-control"><label for="guideSearch">Find a tuner or guide</label><input id="guideSearch" type="search" placeholder="Try Drop D, microphone or bass"></div><p id="guideResults" role="status"></p></form>'
-    content = head + '</head><body><a class="skip-link" href="#main-content">Skip to main content</a>' + header + '<main id="main-content" class="page"><section class="hero"><h1>Guitar tuning guides</h1><p class="lede">Choose a tuning, learn the basics, or find a fix for the problem you are hearing.</p></section>' + search + jump + ''.join(sections) + '</main>' + footer + '<script src="/guide-search.js" defer></script></body></html>\n'
+    search = '<form class="content-card" role="search" hidden><div class="tuning-control"><label for="guideSearch">Find a tuner or guide</label><input id="guideSearch" type="search" placeholder="Try Drop D, mic permission or capo"></div><p id="guideResults" role="status"></p></form>'
+    content = head + '</head><body><a class="skip-link" href="#main-content">Skip to main content</a>' + header + '<main id="main-content" class="page"><section class="hero"><h1>Guitar tuning guides</h1><p class="lede">Choose a tuning, learn the basics, or find a fix for the problem you are hearing.</p></section>' + search + jump + ''.join(sections) + '</main>' + footer + '<script src="/guide-search.js?v=20261118b" defer></script></body></html>\n'
     (site / 'guides.html').write_text(normalize_page(content, 'guides.html'), encoding='utf-8')
 
 
