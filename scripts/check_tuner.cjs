@@ -262,3 +262,45 @@ assert.equal(announcement.textContent, 'A2: in tune.');
 vm.runInContext('announcePitch("A2: in tune.");', announcementBrowser);
 assert.equal(timers.size, 0);
 console.log('Settled pitch announcements coalesce and skip repeated states.');
+
+(async () => {
+  const notes = [];
+  const voiceBrowser = vm.createContext({
+    document: {body: {dataset: {}}, getElementById: () => null},
+    location: {search: ''},
+    URLSearchParams,
+    window: {AudioContext: class {
+      currentTime = 0;
+      async resume() {}
+      createOscillator() {
+        const voice = {frequency: {}, stops: [], start() {},
+          stop(time) { this.stops.push(time); },
+          connect(gain) { return gain; }, disconnect() {}};
+        notes.push(voice);
+        return voice;
+      }
+      createGain() {
+        return {gain: {setValueAtTime(){}, exponentialRampToValueAtTime(){}, linearRampToValueAtTime(){}},
+          connect(){}, disconnect(){}};
+      }
+    }}
+  });
+  vm.runInContext(source, voiceBrowser);
+  const button = {textContent: 'Play A2'};
+  const status = {};
+  voiceBrowser.button = button;
+  voiceBrowser.status = status;
+  await vm.runInContext('playReferenceTone({note:"A2",frequency:110},button,status)', voiceBrowser);
+  assert.equal(button.textContent, 'Stop reference tone: A2');
+  assert.equal(notes[0].frequency.value, 110);
+  assert.equal(notes[0].stops[0], 5.02);
+  await vm.runInContext('playReferenceTone({note:"A2",frequency:110},button,status)', voiceBrowser);
+  assert.equal(button.textContent, 'Play A2');
+  assert.equal(notes[0].stops[1], 0.04);
+  await vm.runInContext('playReferenceTone({note:"A2",frequency:110},button,status)', voiceBrowser);
+  notes[0].onended();
+  assert.equal(button.textContent, 'Stop reference tone: A2');
+  notes[1].onended();
+  assert.equal(button.textContent, 'Play A2');
+  console.log('Five-second reference playback, early stop, and replacement cleanup passed.');
+})().catch(error => { console.error(error); process.exitCode = 1; });

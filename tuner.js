@@ -357,6 +357,7 @@ let stringSelect;
 let playReference;
 let referenceContext;
 let referenceTone;
+let referenceRequest = 0;
 let microphoneHelp;
 let inputControl;
 let inputSelect;
@@ -378,6 +379,7 @@ if (tuningSelect) {
 }
 
 function setCurrentTuning(key) {
+  stopReferenceTone();
   lastAnnouncement = "";
   cancelPitchAnnouncement();
   currentTuningKey = key;
@@ -406,6 +408,7 @@ if (stringsContainer && currentTuningKey !== "chromatic") {
   stringSelect = document.createElement("select");
   stringSelect.id = "stringSelect";
   stringSelect.addEventListener("change", () => {
+    stopReferenceTone();
     lastAnnouncement = "";
     manualTarget = stringSelect.value === "auto" ? null : currentStrings[Number(stringSelect.value)];
     handleUnstablePitch(0);
@@ -480,6 +483,7 @@ renderTensionComparison();
 renderRetuningPlanner();
 renderCustomEditor();
 initializeIntonationCheck();
+renderReferenceNotes();
 
 function renderFrequencyLookup() {
   const lookup = document.getElementById("frequencyLookup");
@@ -634,7 +638,7 @@ async function startListening() {
   const referenceShortcut = document.querySelector(".reference-shortcut");
   if (referenceShortcut) referenceShortcut.disabled = true;
   if (playReference) playReference.disabled = true;
-  if (referenceTone) referenceTone.stop();
+  stopReferenceTone();
   if (microphoneHelp) microphoneHelp.hidden = true;
   try {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -1059,32 +1063,79 @@ function renderTuningChoices() {
   if (detailsText) detailsText.textContent = `${tuning.name}: ${tuning.label}`;
 }
 
-async function playTargetTone() {
-  const target = manualTarget;
+function playTargetTone() {
+  if (manualTarget && !isListening && !toggleButton.disabled) {
+    void playReferenceTone(manualTarget, playReference, helperText);
+  }
+}
+
+function renderReferenceNotes() {
+  const controls = document.getElementById("standardReferenceNotes");
+  if (!controls) return;
+  const status = document.getElementById("standardReferenceStatus");
+  TUNINGS.standard.strings.forEach((target, index) => {
+    const button = document.createElement("button");
+    button.className = "reference-shortcut";
+    button.type = "button";
+    button.textContent = `Play string ${6 - index}: ${target.note}`;
+    button.addEventListener("click", () => void playReferenceTone(target, button, status));
+    controls.append(button);
+  });
+  controls.hidden = false;
+}
+
+function stopReferenceTone() {
+  referenceRequest++;
+  if (!referenceTone) return;
+  const current = referenceTone;
+  referenceTone = null;
+  current.control.textContent = current.originalLabel;
+  current.status.textContent = "Reference tone stopped.";
+  const now = referenceContext.currentTime;
+  current.gain.gain.cancelAndHoldAtTime?.(now);
+  current.gain.gain.linearRampToValueAtTime(0, now + 0.03);
+  current.tone.stop(now + 0.04);
+}
+
+async function playReferenceTone(target, control, status) {
+  if (referenceTone?.control === control) {
+    stopReferenceTone();
+    return;
+  }
+  stopReferenceTone();
+  const request = referenceRequest;
   try {
     referenceContext ||= new (window.AudioContext || window.webkitAudioContext)();
     await referenceContext.resume();
-    if (isListening || toggleButton.disabled || target !== manualTarget) return;
-    if (referenceTone) referenceTone.stop();
+    if (request !== referenceRequest || isListening || toggleButton?.disabled) return;
+
     const tone = referenceContext.createOscillator();
     const gain = referenceContext.createGain();
     const now = referenceContext.currentTime;
     tone.type = "triangle";
     tone.frequency.value = target.frequency;
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.04);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.25);
+    gain.gain.exponentialRampToValueAtTime(0.14, now + 0.04);
+    gain.gain.setValueAtTime(0.14, now + 4.8);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 5);
     tone.connect(gain).connect(referenceContext.destination);
-    referenceTone = tone;
+
+    const playback = {tone, gain, control, status, originalLabel: control.textContent};
+    referenceTone = playback;
     tone.onended = () => {
       tone.disconnect();
       gain.disconnect();
-      if (referenceTone === tone) referenceTone = null;
+      if (referenceTone !== playback) return;
+      referenceTone = null;
+      control.textContent = playback.originalLabel;
+      status.textContent = "Reference tone finished.";
     };
     tone.start(now);
-    tone.stop(now + 1.3);
+    tone.stop(now + 5.02);
+    control.textContent = `Stop reference tone: ${target.note}`;
+    status.textContent = `Playing ${target.note}.`;
   } catch {
-    helperText.textContent = "Reference playback is unavailable in this browser.";
+    status.textContent = "Reference playback is unavailable in this browser.";
   }
 }
 

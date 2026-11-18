@@ -104,7 +104,7 @@ def normalize_page(content: str, filename: str) -> str:
     # Keep ad loading on editorial guides without a competing shopping decision.
     ad_script = r'<script\b[^>]*src="https://pagead2\.googlesyndication\.com/pagead/js/adsbygoogle\.js[^"]*"[^>]*></script>'
     utility_page = filename in UTILITY or 'id="tuningSelect"' in content
-    interactive_guide = filename in {'guitar-string-tension-calculator.html', 'guitar-tuning-troubleshooter.html', 'guitar-retuning-planner.html'}
+    interactive_guide = filename in {'guitar-string-tension-calculator.html', 'guitar-tuning-troubleshooter.html', 'guitar-retuning-planner.html', 'how-to-tune-a-guitar-by-ear.html'}
     affiliate_page = re.search(r'<a\b[^>]*href="https://www\.amazon\.com/', content) is not None
     if utility_page or interactive_guide or affiliate_page:
         ad = re.search(ad_script, content)
@@ -120,8 +120,8 @@ def normalize_page(content: str, filename: str) -> str:
     if 'id="tuningSelect"' in content and 'data-tuning="chromatic"' not in content and 'id="selectedPreset"' not in content:
         content = re.sub(r'(</select>\s*</div>)', r'\1\n        <p id="selectedPreset" role="status"></p>', content, count=1)
     tuner_script = r'<script src="/?tuner\.js(?:\?[^"]*)?"></script>'
-    if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content or 'id="tensionComparison"' in content or 'id="retuningPlanner"' in content:
-        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118l"></script>', content)
+    if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content or 'id="tensionComparison"' in content or 'id="retuningPlanner"' in content or 'id="standardReferenceNotes"' in content:
+        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118m"></script>', content)
     else:
         content = re.sub(tuner_script, '', content)
     if '<footer class="footer">' in content and 'class="support-link"' not in content:
