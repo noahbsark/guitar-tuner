@@ -163,3 +163,11 @@ assert.equal(vm.runInContext('describeRetuning(82.4069, 73.4162)', browser), 'Lo
 assert.equal(vm.runInContext('describeRetuning(329.6276, 329.6276)', browser), 'Leave as is');
 assert.equal(vm.runInContext('describeRetuning(110, 110 * 443.993 / 440)', browser), 'Raise 16 cents');
 console.log('Retuning planner directions and reference-pitch changes passed.');
+
+assert.equal(vm.runInContext('parseCustomNotes("38,45,50,55,57,62").join(",")', browser), '38,45,50,55,57,62');
+for (const bad of ['32,45,50,55,59,64', '40,45,50,55,59,77', '40,45', '40,45,50,55,59,64<script>']) {
+  assert.equal(vm.runInContext(`parseCustomNotes(${JSON.stringify(bad)})`, browser), null);
+}
+assert.equal(vm.runInContext('createCustomTuning([38,45,50,55,57,62]).label', browser), 'D2 A2 D3 G3 A3 D4');
+assert.equal(vm.runInContext('createCustomTuning([40,45,50,55,59,76]).strings[5].note', browser), 'E5');
+console.log('Custom tuning link validation and exact note targets passed.');

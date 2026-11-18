@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-61XFFV7JZT"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-61XFFV7JZT');</script>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
+  <title>Custom Guitar Tuner | Build and Share Your Tuning</title><meta name="description" content="Choose a note and octave for each of six guitar strings, tune with your microphone or reference tones, and copy a link to reuse the setup."> />
+  <link rel="canonical" href="https://onlineguitartuner.net/custom-guitar-tuner" />
+  
+  <link rel="stylesheet" href="/styles.css?v=20261118f" />
+</head>
+<body data-tuning="custom">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header"><nav class="nav" aria-label="Main navigation"><a class="logo" href="/">Simple Guitar Tuner</a><div class="nav-links">
+        <a href="/" aria-current="page">Tuner</a>
+        <a href="/guides">Guides</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+        <a href="/privacy">Privacy</a>
+      </div></nav></header>
+  <main id="main-content" class="page">
+    <section class="hero"><h1>Custom Guitar Tuner</h1><p class="lede">Set a note and octave for each string, then tune to those targets and copy a link for next time.</p></section>
+    <section class="content-card" id="customEditor" hidden><h2>Set the six string targets</h2><p>Start with string 6, the thickest. Use the note and octave from the arrangement you are following.</p>
+<div class="grid-links"><div class="tuning-control"><label for="customString6">String 6</label><select id="customString6"></select></div><div class="tuning-control"><label for="customString5">String 5</label><select id="customString5"></select></div><div class="tuning-control"><label for="customString4">String 4</label><select id="customString4"></select></div><div class="tuning-control"><label for="customString3">String 3</label><select id="customString3"></select></div><div class="tuning-control"><label for="customString2">String 2</label><select id="customString2"></select></div><div class="tuning-control"><label for="customString1">String 1</label><select id="customString1"></select></div></div>
+<p id="customHigher" class="notice" hidden>One or more targets are higher than Standard for that string. Check your instrument and string maker’s guidance before raising tension.</p>
+<div class="tuning-control"><label for="customShare">Link to these notes</label><input id="customShare" type="url" readonly></div>
+<button id="copyCustomLink" class="reference-shortcut" type="button">Copy tuning link</button><p id="customShareStatus" role="status"></p></section>
+    <section class="app-layout">
+      <section class="tuner-card" aria-label="Custom guitar tuner">
+        <div hidden><select id="tuningSelect" aria-label="Tuning mode"><option value="custom">Custom tuning</option></select></div>
+        <p id="selectedPreset" role="status"></p>
+        <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
+  <div id="statusPill" class="status-pill" aria-live="polite">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="statusText">Microphone off</span>
+        </div>
+        <section class="readout" aria-live="polite">
+          <div id="noteReadout" class="note note-idle">—</div>
+          <div id="helperText" class="helper">Tap Start and pluck a string</div>
+          <div id="detailsText" class="details">Waiting for microphone</div>
+        </section>
+        <section class="meter-wrap" aria-label="Tuning meter">
+          <div class="meter-labels"><span>Flat</span><span>In tune</span><span>Sharp</span></div>
+          <div class="meter">
+            <div class="ticks" aria-hidden="true">
+              <span class="tick" style="--x: 10%"></span><span class="tick" style="--x: 20%"></span>
+              <span class="tick" style="--x: 30%"></span><span class="tick" style="--x: 40%"></span>
+              <span class="tick" style="--x: 50%"></span><span class="tick" style="--x: 60%"></span>
+              <span class="tick" style="--x: 70%"></span><span class="tick" style="--x: 80%"></span>
+              <span class="tick" style="--x: 90%"></span>
+            </div>
+            <div id="needle" class="needle"></div>
+          </div>
+        </section>
+        <section id="strings" class="strings" aria-label="Selected guitar tuning"></section>
+        <div class="level" aria-hidden="true"><div id="levelBar" class="level-bar"></div></div>
+        
+        <div class="small-note">Pluck one string at a time. Left means tune up. Right means tune down.</div>
+        <noscript><p class="notice">This tuner requires JavaScript. Enable JavaScript, reload the page, and then allow microphone access.</p></noscript>
+      </section>
+      <article class="content-card">
+<p class="editorial-note">Published by Online Guitar Tuner. <a href="/about#editorial">How our guides are maintained</a> · <a href="/contact">Report a correction</a></p>
+<h2>Tune to the targets you entered</h2>
+<p>Choose a numbered string in the tuner and pluck it alone. Verify the detected octave before turning the peg. Select Tune by ear if you want to play a reference tone instead.</p>
+<p>The tuner uses A4 = 440 Hz and supports targets from A1 through E5. Those are the tool’s limits; the usable range of each physical string depends on the guitar and strings. Copy the link and bookmark it to keep your setup. The link contains your six target pitches.</p>
+<p>If your tuning already exists on the site, the <a href="/guitar-retuning-planner">retuning planner</a> can compare it with the preset you are starting from. If you need to identify a pitch before choosing a target, use the <a href="/chromatic-guitar-tuner">chromatic tuner</a>.</p>
+</article>
+    </section>
+    <section class="content-card all-tunings-card" data-all-tunings><h2>Keep tuning</h2><p><a href="/guides#tuners">Try another preset</a> · <a href="/guitar-tuning-troubleshooter">Diagnose a tuning problem</a> · <a href="/microphone-not-working-online-guitar-tuner">Fix microphone access</a></p></section>
+  </main>
+
+  <footer class="footer">
+    <p>
+      <a href="/">Free Guitar Tuner</a> ·
+      <a href="/beginner-guitar-tuning-guide">Beginner Guide</a> ·
+      <a href="/about">About</a> ·
+      <a href="/contact">Contact</a> ·
+      <a href="/affiliate-disclosure">Affiliate Disclosure</a> ·
+      <a href="/privacy">Privacy</a>
+    </p>
+  <p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>
+</footer>
+  <script src="/tuner.js?v=20261118g"></script>
+</body>
+</html>
+

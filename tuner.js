@@ -295,6 +295,9 @@ TUNINGS.bass5 = {
 };
 const MIN_BASS_FREQUENCY = 27;
 const MAX_BASS_FREQUENCY = 210;
+const CUSTOM_MIN_NOTE = 33;
+const CUSTOM_MAX_NOTE = 76;
+const STANDARD_MIDI = [40, 45, 50, 55, 59, 64];
 
 const IN_TUNE_CENTS = 5;
 const MAX_METER_CENTS = 50;
@@ -317,7 +320,13 @@ const detailsText = document.getElementById("detailsText");
 const needle = document.getElementById("needle");
 const levelBar = document.getElementById("levelBar");
 
-let currentTuningKey = document.body.dataset.tuning || new URLSearchParams(location.search).get("tuning") || "standard";
+const query = new URLSearchParams(location.search);
+const isCustomPage = document.body.dataset.tuning === "custom";
+if (isCustomPage) {
+  TUNINGS.custom = createCustomTuning(parseCustomNotes(query.get("notes")) || STANDARD_MIDI);
+}
+
+let currentTuningKey = document.body.dataset.tuning || query.get("tuning") || "standard";
 if (!Object.hasOwn(TUNINGS, currentTuningKey) ||
     (tuningSelect && !Array.from(tuningSelect.options).some(option => option.value === currentTuningKey))) {
   currentTuningKey = tuningSelect?.options[0]?.value || "standard";
@@ -353,19 +362,20 @@ const checkedNotes = new Set();
 
 if (tuningSelect) {
   tuningSelect.value = currentTuningKey;
-  tuningSelect.addEventListener("change", () => {
-    currentTuningKey = tuningSelect.value;
-    currentStrings = TUNINGS[currentTuningKey].strings;
-    manualTarget = null;
-    checkedNotes.clear();
-    resetDetectionState();
-    renderTuningChoices();
-    helperText.textContent = isListening ? "Pluck a string" : "Tap Start and pluck a string";
-    detailsText.textContent = `${TUNINGS[currentTuningKey].name}: ${TUNINGS[currentTuningKey].label}`;
-    noteReadout.textContent = "—";
-    noteReadout.className = "note note-idle";
-    setNeedle(0, "idle");
-  });
+  tuningSelect.addEventListener("change", () => setCurrentTuning(tuningSelect.value));
+}
+
+function setCurrentTuning(key) {
+  currentTuningKey = key;
+  currentStrings = TUNINGS[key].strings;
+  manualTarget = null;
+  checkedNotes.clear();
+  resetDetectionState();
+  renderTuningChoices();
+  helperText.textContent = isListening ? "Pluck a string" : "Tap Start and pluck a string";
+  noteReadout.textContent = "—";
+  noteReadout.className = "note note-idle";
+  setNeedle(0, "idle");
 }
 
 toggleButton?.addEventListener("click", () => {
@@ -434,6 +444,7 @@ setNeedle(0, "idle");
 renderFrequencyLookup();
 renderTensionComparison();
 renderRetuningPlanner();
+renderCustomEditor();
 
 function renderFrequencyLookup() {
   const lookup = document.getElementById("frequencyLookup");
@@ -442,7 +453,7 @@ function renderFrequencyLookup() {
   const select = document.getElementById("frequencyPreset");
   const targets = document.getElementById("frequencyTargets");
   for (const [key, tuning] of Object.entries(TUNINGS)) {
-    if (tuning.strings.length) select.add(new Option(tuning.name, key));
+    if (key !== "custom" && tuning.strings.length) select.add(new Option(tuning.name, key));
   }
   function renderTargets() {
     const {strings} = TUNINGS[select.value];
@@ -546,7 +557,7 @@ function describeRetuning(fromFrequency, toFrequency) {
 
 function populateSixStringPresets(from, to) {
   for (const [key, tuning] of Object.entries(TUNINGS)) {
-    if (tuning.strings.length !== 6) continue;
+    if (key === "custom" || tuning.strings.length !== 6) continue;
     from.add(new Option(tuning.name, key));
     to.add(new Option(tuning.name, key));
   }
@@ -679,14 +690,14 @@ function updateLoop() {
   levelBar.style.width = `${Math.min(100, rms * 520)}%`;
 
   const chromatic = currentTuningKey === "chromatic";
-  if (isPairedTuning() && !manualTarget) {
-    showWaiting("Choose a course member to tune");
+  if ((isPairedTuning() || isCustomPage) && !manualTarget) {
+    showWaiting(isPairedTuning() ? "Choose a course member to tune" : "Choose a string target to tune");
     rafId = requestAnimationFrame(updateLoop);
     return;
   }
   const minimum = isBassTuning() ? MIN_BASS_FREQUENCY : MIN_DETECTABLE_FREQUENCY;
   const frequencyLimit = isBassTuning() ? MAX_BASS_FREQUENCY
-    : chromatic || isPairedTuning() ? MAX_CHROMATIC_FREQUENCY : MAX_DETECTABLE_FREQUENCY;
+    : chromatic || isPairedTuning() || isCustomPage ? MAX_CHROMATIC_FREQUENCY : MAX_DETECTABLE_FREQUENCY;
   let samples = buffer;
   let sampleRate = audioContext.sampleRate;
   if (bassSamples) {
@@ -779,7 +790,10 @@ function renderTuning(target, frequency, cents) {
 }
 
 function getChromaticTarget(frequency, referenceA = 440) {
-  const midi = Math.round(69 + 12 * Math.log2(frequency / referenceA));
+  return noteAtMidi(Math.round(69 + 12 * Math.log2(frequency / referenceA)), referenceA);
+}
+
+function noteAtMidi(midi, referenceA = 440) {
   const names = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
   return {
     note: names[midi % 12] + (Math.floor(midi / 12) - 1),
@@ -787,10 +801,70 @@ function getChromaticTarget(frequency, referenceA = 440) {
   };
 }
 
+function parseCustomNotes(value) {
+  if (!value || !/^\d{2}(,\d{2}){5}$/.test(value)) return null;
+  const notes = value.split(",").map(Number);
+  return notes.every(note => note >= CUSTOM_MIN_NOTE && note <= CUSTOM_MAX_NOTE) ? notes : null;
+}
+
+function createCustomTuning(notes) {
+  const strings = notes.map(midi => ({...noteAtMidi(midi), midi}));
+  return {name: "Custom tuning", label: strings.map(string => string.note).join(" "), strings};
+}
+
+function renderCustomEditor() {
+  if (!isCustomPage) return;
+  const editor = document.getElementById("customEditor");
+  const selects = [...editor.querySelectorAll("select")];
+  const output = document.getElementById("customShare");
+  const status = document.getElementById("customShareStatus");
+  const copy = document.getElementById("copyCustomLink");
+  const warning = document.getElementById("customHigher");
+  if (query.has("notes") && !parseCustomNotes(query.get("notes"))) {
+    status.textContent = "This link has invalid notes. Showing Standard as a starting point.";
+  }
+
+  selects.forEach((select, index) => {
+    for (let midi = CUSTOM_MIN_NOTE; midi <= CUSTOM_MAX_NOTE; midi++) {
+      select.add(new Option(noteAtMidi(midi).note, String(midi)));
+    }
+    select.value = TUNINGS.custom.strings[index].midi;
+    select.addEventListener("change", () => {
+      const notes = selects.map(field => Number(field.value));
+      TUNINGS.custom = createCustomTuning(notes);
+      setCurrentTuning("custom");
+      status.textContent = "";
+      updateShareLink(notes);
+    });
+  });
+
+  function updateShareLink(notes) {
+    const url = new URL("/custom-guitar-tuner", location.origin);
+    url.searchParams.set("notes", notes.join(","));
+    output.value = url.href;
+    warning.hidden = !notes.some((note, index) => note > STANDARD_MIDI[index]);
+    copy.textContent = "Copy tuning link";
+  }
+
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(output.value);
+      status.textContent = "Tuning link copied.";
+    } catch {
+      output.focus();
+      output.select();
+      status.textContent = "Tuning link selected. Copy it using your device.";
+    }
+  });
+
+  updateShareLink(TUNINGS.custom.strings.map(string => string.midi));
+  editor.hidden = false;
+}
+
 function updatePassProgress() {
   if (!passProgress) return;
   const count = checkedNotes.size;
-  const description = isPairedTuning() ? "selected targets heard in tune" : "target pitches heard in tune";
+  const description = isPairedTuning() || isCustomPage ? "selected targets heard in tune" : "target pitches heard in tune";
   passProgress.textContent = `${count}/${currentStrings.length} ${description}`;
   resetPass.disabled = count === 0;
   stringsContainer.querySelectorAll(".string").forEach(string => {
@@ -808,7 +882,7 @@ function renderTuningChoices() {
   stringsContainer.style.setProperty("--string-count", Math.min(tuning.strings.length, 7));
   stringsContainer.replaceChildren();
   if (stringSelect) {
-    stringSelect.replaceChildren(new Option(isPairedTuning() ? "Choose a course member" : "Automatic", "auto"));
+    stringSelect.replaceChildren(new Option(isPairedTuning() ? "Choose a course member" : isCustomPage ? "Choose a string" : "Automatic", "auto"));
     tuning.strings.forEach((string, index) => {
       stringSelect.add(new Option(string.label || `${tuning.strings.length - index}: ${string.note}`, String(index)));
     });
