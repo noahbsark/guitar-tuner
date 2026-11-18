@@ -14,6 +14,7 @@ GROUPS = {
     'troubleshooting': 'Fix a tuning or microphone problem',
     'strings': 'Strings, setup and maintenance',
     'music': 'Chords, styles and alternate tunings',
+    'gear': 'Gear and buying guides',
 }
 
 
@@ -50,6 +51,8 @@ def normalize_links(content: str) -> str:
 
 
 def category(filename: str) -> str:
+    if filename in {'guitar-tuning-gear-guide.html', 'clip-on-vs-online-guitar-tuner.html', 'best-string-gauges-for-drop-tunings.html', 'guitar-string-gauge-guide.html'}:
+        return 'gear'
     if any(word in filename for word in ('chord', 'capo', 'tunings-for', '-vs-', 'alternate', 'nashville', 'easiest')):
         return 'music'
     if any(word in filename for word in ('string-gauge', 'change-', 'stretch-', 'nut-', 'bridge', 'saddle', 'tremolo', 'floyd', 'humidity', 'locking', 'winding', 'wraps', 'neck-relief', 'pickup-height', 'intonation', 'old-guitar-strings')):
@@ -71,11 +74,42 @@ def normalize_page(content: str, filename: str) -> str:
     nav = [('Tuner', '/'), ('Guides', '/guides'), ('About', '/about'), ('Contact', '/contact'), ('Privacy', '/privacy')]
     links = '\n'.join('        <a href="' + url + '"' + (' aria-current="page"' if url == current else '') + '>' + label + '</a>' for label, url in nav)
     content = re.sub(r'<div class="nav-links">.*?</div>', '<div class="nav-links">\n' + links + '\n      </div>', content, flags=re.S)
-    compact = '<section class="content-card all-tunings-card" data-all-tunings><h2>Find your next step</h2><p><a href="/guides#tuners">Browse all tuning presets</a> · <a href="/guides">Explore the guitar guides</a> · <a href="/microphone-not-working-online-guitar-tuner">Microphone help</a></p></section>'
+    group = category(filename)
+    if 'id="tuningSelect"' in content:
+        heading = 'Keep tuning'
+        links = [('Try another preset', '/guides#tuners'), ('Fix microphone access', '/microphone-not-working-online-guitar-tuner')]
+    elif group == 'gear':
+        heading = 'Compare your options'
+        links = [('Tuning gear by problem', '/guitar-tuning-gear-guide'), ('Try the free tuner', '/')]
+    elif group == 'strings':
+        heading = 'Check tuning after setup'
+        links = [('Open the tuner', '/'), ('More setup and string guides', '/guides#strings')]
+    elif group == 'troubleshooting':
+        heading = 'Narrow down the problem'
+        links = [('More tuning fixes', '/guides#troubleshooting'), ('Try the tuner again', '/')]
+    elif group == 'music':
+        heading = 'Try the tuning on your guitar'
+        links = [('Choose a tuning preset', '/guides#tuners'), ('More chord and tuning guides', '/guides#music')]
+    else:
+        heading = 'Practice on your guitar'
+        links = [('Open the tuner', '/'), ('More tuning basics', '/guides#start')]
+    items = ' · '.join('<a href="' + url + '">' + label + '</a>' for label, url in links if url != public_path(filename))
+    compact = '<section class="content-card all-tunings-card" data-all-tunings><h2>' + heading + '</h2><p>' + items + '</p></section>'
     content = re.sub(r'<section class="content-card all-tunings-card" data-all-tunings>.*?</section>', compact, content, flags=re.S)
     if filename not in UTILITY and 'class="editorial-note"' not in content:
         note = '<p class="editorial-note">Published by Online Guitar Tuner. <a href="/about#editorial">How our guides are maintained</a> · <a href="/contact">Report a correction</a></p>'
         content = re.sub(r'(<article\b[^>]*>)', lambda m: m.group(1) + '\n' + note, content, count=1)
+    # Keep ad loading on editorial guides without a competing shopping decision.
+    ad_script = r'<script\b[^>]*src="https://pagead2\.googlesyndication\.com/pagead/js/adsbygoogle\.js[^"]*"[^>]*></script>'
+    utility_page = filename in UTILITY or 'id="tuningSelect"' in content
+    affiliate_page = re.search(r'<a\b[^>]*href="https://www\.amazon\.com/', content) is not None
+    if utility_page or affiliate_page:
+        ad = re.search(ad_script, content)
+        if filename == 'index.html' and ad:
+            publisher = re.search(r'client=(ca-pub-\d+)', ad.group())
+            if publisher and 'name="google-adsense-account"' not in content:
+                content = content.replace('</head>', '  <meta name="google-adsense-account" content="' + publisher.group(1) + '">\n</head>', 1)
+        content = re.sub(ad_script, '', content)
     tuner_script = r'<script src="/?tuner\.js(?:\?[^"]*)?"></script>'
     if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content:
         content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118"></script>', content)
@@ -83,9 +117,7 @@ def normalize_page(content: str, filename: str) -> str:
         content = re.sub(tuner_script, '', content)
     if '<footer class="footer">' in content and 'class="support-link"' not in content:
         content = re.sub(r'(<footer class="footer">.*?)(</footer>)', lambda m: m.group(1) + '<p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>\n' + m.group(2), content, count=1, flags=re.S)
-    content = re.sub(r'<section class="content-card support-card".*?</section>', '', content, flags=re.S)
-    if 'src="/support.js' not in content:
-        content = content.replace('</body>', '<script src="/support.js?v=20261111" defer></script>\n</body>')
+    content = re.sub(r'\s*<script src="/?support\.js(?:\?[^"]*)?"[^>]*></script>', '', content)
     return content
 
 
@@ -95,6 +127,7 @@ def rebuild_guides(site: Path) -> None:
     head = re.sub(r'<title>.*?</title>', '<title>Guitar Tuning Guides and Tuners | Online Guitar Tuner</title>', head, flags=re.S)
     head = re.sub(r'<meta name="description" content="[^"]*"\s*/?>', '<meta name="description" content="Find a tuning preset, learn the basics, troubleshoot microphone problems, or choose strings and setup guidance for your guitar.">', head)
     head = re.sub(r'<link rel="canonical"[^>]+>', '<link rel="canonical" href="' + public_url('guides.html') + '">', head)
+    head = re.sub(r'^ *<meta name="google-adsense-account"[^>]*>\n?', '', head, flags=re.M)
     header = re.search(r'<header class="site-header">.*?</header>', template, re.S).group()
     footer = re.search(r'<footer class="footer">.*?</footer>', template, re.S).group()
     grouped = {key: [] for key in GROUPS}
