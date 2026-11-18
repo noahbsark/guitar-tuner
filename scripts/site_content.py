@@ -130,7 +130,7 @@ def normalize_page(content: str, filename: str) -> str:
         content = re.sub(r'(</select>\s*</div>)', r'\1\n        <p id="selectedPreset" role="status"></p>', content, count=1)
     tuner_script = r'<script src="/?tuner\.js(?:\?[^"]*)?"></script>'
     if 'id="tuningSelect"' in content or 'id="frequencyLookup"' in content or 'id="tensionComparison"' in content or 'id="retuningPlanner"' in content or 'id="standardReferenceNotes"' in content:
-        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118n"></script>', content)
+        content = re.sub(tuner_script, '<script src="/tuner.js?v=20261118o"></script>', content)
     else:
         content = re.sub(tuner_script, '', content)
     if '<footer class="footer">' in content and 'class="support-link"' not in content:

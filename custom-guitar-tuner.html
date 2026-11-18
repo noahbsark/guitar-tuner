@@ -24,6 +24,8 @@
   <main id="main-content" class="page">
     <section class="hero"><h1>Custom Guitar Tuner</h1><p class="lede">Set a note and octave for each string, then tune to those targets and copy a link for next time.</p></section>
     <section class="content-card" id="customEditor" hidden><h2>Set the six string targets</h2><p>Start with string 6, the thickest. Use the note and octave from the arrangement you are following.</p>
+<div class="tuning-control"><label for="customA4">A4 reference pitch (Hz)</label><input id="customA4" type="number" min="415" max="460" step="0.001" value="440" inputmode="decimal"></div>
+<p>Keep 440 unless the recording, ensemble or instrument you’re matching uses a different reference.</p>
 <div class="grid-links"><div class="tuning-control"><label for="customString6">String 6</label><select id="customString6"></select></div><div class="tuning-control"><label for="customString5">String 5</label><select id="customString5"></select></div><div class="tuning-control"><label for="customString4">String 4</label><select id="customString4"></select></div><div class="tuning-control"><label for="customString3">String 3</label><select id="customString3"></select></div><div class="tuning-control"><label for="customString2">String 2</label><select id="customString2"></select></div><div class="tuning-control"><label for="customString1">String 1</label><select id="customString1"></select></div></div>
 <p id="customHigher" class="notice" hidden>One or more targets are higher than Standard for that string. Check your instrument and string maker’s guidance before raising tension.</p>
 <div class="tuning-control"><label for="customShare">Link to these notes</label><input id="customShare" type="url" readonly></div>
@@ -66,7 +68,7 @@
 <p class="editorial-note">Published by Online Guitar Tuner. <a href="/about#editorial">How our guides are maintained</a> · <a href="/contact">Report a correction</a></p>
 <h2>Tune to the targets you entered</h2>
 <p>Choose a numbered string in the tuner and pluck it alone. Verify the detected octave before turning the peg. Select Tune by ear if you want to play a reference tone instead.</p>
-<p>The tuner uses A4 = 440 Hz and supports targets from A1 through E5. Those are the tool’s limits; the usable range of each physical string depends on the guitar and strings. Copy the link and bookmark it to keep your setup. The link contains your six target pitches.</p>
+<p>The tuner defaults to A4 = 440 Hz and supports calibration from 415 to 460 Hz. You can choose notes from A1 through E5. Those are the tool’s limits; the usable range of each physical string depends on the guitar and strings. Copy the link and bookmark it to keep your setup. The link contains your six target notes and the calibration you chose.</p>
 <p>If your tuning already exists on the site, the <a href="/guitar-retuning-planner">retuning planner</a> can compare it with the preset you are starting from. If you need to identify a pitch before choosing a target, use the <a href="/chromatic-guitar-tuner">chromatic tuner</a>.</p>
 </article>
     </section>
@@ -84,7 +86,7 @@
     </p>
   <p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>
 </footer>
-  <script src="/tuner.js?v=20261118n"></script>
+  <script src="/tuner.js?v=20261118o"></script>
 </body>
 </html>
 

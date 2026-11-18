@@ -297,6 +297,8 @@ const MIN_BASS_FREQUENCY = 27;
 const MAX_BASS_FREQUENCY = 210;
 const CUSTOM_MIN_NOTE = 33;
 const CUSTOM_MAX_NOTE = 76;
+const CUSTOM_MIN_A4 = 415;
+const CUSTOM_MAX_A4 = 460;
 const STANDARD_MIDI = [40, 45, 50, 55, 59, 64];
 
 const IN_TUNE_CENTS = 5;
@@ -328,7 +330,8 @@ const savedTuningKey = "online-guitar-tuner.saved-preset.v1";
 const query = new URLSearchParams(location.search);
 const isCustomPage = document.body.dataset.tuning === "custom";
 if (isCustomPage) {
-  TUNINGS.custom = createCustomTuning(parseCustomNotes(query.get("notes")) || STANDARD_MIDI);
+  TUNINGS.custom = createCustomTuning(parseCustomNotes(query.get("notes")) || STANDARD_MIDI,
+    parseCustomReference(query.get("a4")) ?? 440);
 }
 
 let currentTuningKey = document.body.dataset.tuning || query.get("tuning") || "standard";
@@ -880,7 +883,7 @@ function renderTuning(target, frequency, cents) {
   noteReadout.className = `note ${state}`;
   helperText.textContent = helper;
   const referenceA = currentTuningKey === "standard432" ? 432
-    : currentTuningKey === "standard528" ? 528 / 2 ** (3 / 12) : 440;
+    : currentTuningKey === "standard528" ? 528 / 2 ** (3 / 12) : TUNINGS[currentTuningKey].referenceA ?? 440;
   const detectedNote = getChromaticTarget(frequency, referenceA).note;
   detailsText.textContent = currentTuningKey === "chromatic"
     ? `${frequency.toFixed(1)} Hz · ${formatSigned(cents)} cents relative to ${target.note}`
@@ -919,9 +922,20 @@ function parseCustomNotes(value) {
   return notes.every(note => note >= CUSTOM_MIN_NOTE && note <= CUSTOM_MAX_NOTE) ? notes : null;
 }
 
-function createCustomTuning(notes) {
-  const strings = notes.map(midi => ({...noteAtMidi(midi), midi}));
-  return {name: "Custom tuning", label: strings.map(string => string.note).join(" "), strings};
+function parseCustomReference(value) {
+  if (!value || !/^\d{3}(?:\.\d{1,3})?$/.test(value)) return null;
+  const reference = Number(value);
+  return reference >= CUSTOM_MIN_A4 && reference <= CUSTOM_MAX_A4 ? reference : null;
+}
+
+function createCustomTuning(notes, referenceA = 440) {
+  const strings = notes.map(midi => ({...noteAtMidi(midi, referenceA), midi}));
+  return {
+    name: "Custom tuning",
+    label: strings.map(string => string.note).join(" ") + ` · A4 = ${referenceA} Hz`,
+    strings,
+    referenceA
+  };
 }
 
 function renderCustomEditor() {
@@ -932,6 +946,12 @@ function renderCustomEditor() {
   const status = document.getElementById("customShareStatus");
   const copy = document.getElementById("copyCustomLink");
   const warning = document.getElementById("customHigher");
+  const calibration = document.getElementById("customA4");
+  calibration.value = TUNINGS.custom.referenceA;
+  if (query.has("a4") && parseCustomReference(query.get("a4")) === null) {
+    status.textContent = "This link has an invalid reference pitch. Using A4 = 440 Hz.";
+  }
+  calibration.addEventListener("change", updateTuning);
   if (query.has("notes") && !parseCustomNotes(query.get("notes"))) {
     status.textContent = "This link has invalid notes. Showing Standard as a starting point.";
   }
@@ -941,20 +961,31 @@ function renderCustomEditor() {
       select.add(new Option(noteAtMidi(midi).note, String(midi)));
     }
     select.value = TUNINGS.custom.strings[index].midi;
-    select.addEventListener("change", () => {
-      const notes = selects.map(field => Number(field.value));
-      TUNINGS.custom = createCustomTuning(notes);
-      setCurrentTuning("custom");
-      status.textContent = "";
-      updateShareLink(notes);
-    });
+    select.addEventListener("change", updateTuning);
   });
 
-  function updateShareLink(notes) {
+  function updateTuning() {
+    const reference = parseCustomReference(calibration.value);
+    if (reference === null) {
+      calibration.value = TUNINGS.custom.referenceA;
+      status.textContent = "Enter an A4 reference from 415 to 460 Hz, with up to three decimal places.";
+      return;
+    }
+    const notes = selects.map(field => Number(field.value));
+    TUNINGS.custom = createCustomTuning(notes, reference);
+    setCurrentTuning("custom");
+    status.textContent = "";
+    updateShareLink();
+  }
+
+  function updateShareLink() {
+    const tuning = TUNINGS.custom;
     const url = new URL("/custom-guitar-tuner", location.origin);
-    url.searchParams.set("notes", notes.join(","));
+    url.searchParams.set("notes", tuning.strings.map(string => string.midi).join(","));
+    if (tuning.referenceA !== 440) url.searchParams.set("a4", String(tuning.referenceA));
     output.value = url.href;
-    warning.hidden = !notes.some((note, index) => note > STANDARD_MIDI[index]);
+    warning.hidden = !tuning.strings.some((string, index) =>
+      string.frequency > noteAtMidi(STANDARD_MIDI[index]).frequency * 1.00001);
     copy.textContent = "Copy tuning link";
   }
 
@@ -969,7 +1000,7 @@ function renderCustomEditor() {
     }
   });
 
-  updateShareLink(TUNINGS.custom.strings.map(string => string.midi));
+  updateShareLink();
   editor.hidden = false;
 }
 

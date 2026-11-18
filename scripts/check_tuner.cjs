@@ -168,7 +168,7 @@ assert.equal(vm.runInContext('parseCustomNotes("38,45,50,55,57,62").join(",")', 
 for (const bad of ['32,45,50,55,59,64', '40,45,50,55,59,77', '40,45', '40,45,50,55,59,64<script>']) {
   assert.equal(vm.runInContext(`parseCustomNotes(${JSON.stringify(bad)})`, browser), null);
 }
-assert.equal(vm.runInContext('createCustomTuning([38,45,50,55,57,62]).label', browser), 'D2 A2 D3 G3 A3 D4');
+assert.equal(vm.runInContext('createCustomTuning([38,45,50,55,57,62]).label', browser), 'D2 A2 D3 G3 A3 D4 · A4 = 440 Hz');
 assert.equal(vm.runInContext('createCustomTuning([40,45,50,55,59,76]).strings[5].note', browser), 'E5');
 console.log('Custom tuning link validation and exact note targets passed.');
 
@@ -335,3 +335,14 @@ savedFields.saveCurrentTuning.handlers.click[0]();
 assert.equal(savedPreset, 'dropD');
 assert.equal(savedFields.saveCurrentTuning.disabled, true);
 console.log('Saved presets require explicit recall and support forgetting and direct links.');
+
+for (const entered of ['415','432','443.993','460']) {
+  assert.equal(vm.runInContext(`parseCustomReference(${JSON.stringify(entered)})`, browser), Number(entered));
+}
+for (const invalid of ['414.999','460.001','443.9933','1e2','Infinity','432hz']) {
+  assert.equal(vm.runInContext(`parseCustomReference(${JSON.stringify(invalid)})`, browser), null);
+}
+assert.equal(vm.runInContext('createCustomTuning(STANDARD_MIDI, 432).strings[1].frequency', browser), 108);
+assert.ok(vm.runInContext('Math.abs(noteAtMidi(72,443.993).frequency - 528) < 0.001', browser));
+assert.equal(vm.runInContext('getChromaticTarget(108, 432).note', browser), 'A2');
+console.log('Custom calibration range, precision, and generated note targets passed.');
