@@ -64,6 +64,8 @@ def category(filename: str) -> str:
 
 def normalize_page(content: str, filename: str) -> str:
     content = normalize_links(content)
+    content = content.replace('class="logo" href="/">Simple Guitar Tuner</a>',
+                              'class="logo" href="/">Online Guitar Tuner</a>')
     content = re.sub(r'href="/?styles\.css(?:\?[^"]*)?"', 'href="/styles.css?v=20261118f"', content)
     # Keep the primary action above the changing pitch readout on small screens.
     action = re.search(r'<button id="toggleButton"[^>]*>.*?</button>', content, re.S)
