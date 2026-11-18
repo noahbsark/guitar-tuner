@@ -79,6 +79,19 @@
           </select>
 </div>
         <p id="selectedPreset" role="status"></p>
+        <div id="savedTuningSettings" hidden>
+          <button id="resumeSavedTuning" class="reference-shortcut" type="button" hidden></button>
+          <details>
+            <summary>Save or share this tuning</summary>
+            <p>Save one preset in this browser for next time, or bookmark a link that opens it directly.</p>
+            <div class="grid-links">
+              <button id="saveCurrentTuning" class="reference-shortcut" type="button">Save this tuning</button>
+              <button id="forgetSavedTuning" class="reference-shortcut" type="button" hidden>Forget saved tuning</button>
+            </div>
+            <p><a id="selectedTuningLink" href="/">Link to the selected tuning</a></p>
+          </details>
+          <p id="savedTuningStatus" class="reference-tone-help" role="status"></p>
+        </div>
 
   <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
   <div id="statusPill" class="status-pill" aria-live="polite">
@@ -187,7 +200,7 @@
   <p><a class="support-link" href="https://ko-fi.com/adragerty" target="_blank" rel="noopener noreferrer">Buy me a coffee <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></p>
 </footer>
 
-  <script src="/tuner.js?v=20261118m"></script>
+  <script src="/tuner.js?v=20261118n"></script>
 </body>
 </html>
 

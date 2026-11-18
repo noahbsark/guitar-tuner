@@ -324,6 +324,7 @@ const detailsText = document.getElementById("detailsText");
 const needle = document.getElementById("needle");
 const levelBar = document.getElementById("levelBar");
 
+const savedTuningKey = "online-guitar-tuner.saved-preset.v1";
 const query = new URLSearchParams(location.search);
 const isCustomPage = document.body.dataset.tuning === "custom";
 if (isCustomPage) {
@@ -484,6 +485,7 @@ renderRetuningPlanner();
 renderCustomEditor();
 initializeIntonationCheck();
 renderReferenceNotes();
+initializeSavedTuning();
 
 function renderFrequencyLookup() {
   const lookup = document.getElementById("frequencyLookup");
@@ -1067,6 +1069,72 @@ function playTargetTone() {
   if (manualTarget && !isListening && !toggleButton.disabled) {
     void playReferenceTone(manualTarget, playReference, helperText);
   }
+}
+
+function initializeSavedTuning() {
+  const settings = document.getElementById("savedTuningSettings");
+  if (!settings || !tuningSelect) return;
+
+  const resume = document.getElementById("resumeSavedTuning");
+  const save = document.getElementById("saveCurrentTuning");
+  const forget = document.getElementById("forgetSavedTuning");
+  const status = document.getElementById("savedTuningStatus");
+  const link = document.getElementById("selectedTuningLink");
+  const allowedKeys = new Set([...tuningSelect.options].map(option => option.value));
+  let saved = null;
+  try {
+    const stored = localStorage.getItem(savedTuningKey);
+    if (allowedKeys.has(stored)) saved = stored;
+  } catch {
+    // Sharing and tuning still work when storage is unavailable.
+  }
+
+  function renderControls() {
+    resume.hidden = !saved || saved === currentTuningKey;
+    if (saved) resume.textContent = `Use saved tuning: ${TUNINGS[saved].name}`;
+    forget.hidden = !saved;
+    save.disabled = currentTuningKey === saved;
+    save.textContent = save.disabled ? `${TUNINGS[currentTuningKey].name} is saved`
+      : `Save ${TUNINGS[currentTuningKey].name} on this device`;
+    link.href = "/?tuning=" + encodeURIComponent(currentTuningKey);
+  }
+
+  resume.addEventListener("click", () => {
+    if (!saved) return;
+    tuningSelect.value = saved;
+    setCurrentTuning(saved);
+    renderControls();
+    tuningSelect.focus();
+    status.textContent = `Switched to ${TUNINGS[saved].name}.`;
+  });
+  save.addEventListener("click", () => {
+    try {
+      localStorage.setItem(savedTuningKey, currentTuningKey);
+      saved = currentTuningKey;
+      status.textContent = `${TUNINGS[saved].name} saved on this device.`;
+      renderControls();
+    } catch {
+      status.textContent = "This browser cannot save the preset. Bookmark the selected tuning link instead.";
+    }
+  });
+  forget.addEventListener("click", () => {
+    try {
+      localStorage.removeItem(savedTuningKey);
+      saved = null;
+      status.textContent = "Saved tuning cleared.";
+      renderControls();
+      save.focus();
+    } catch {
+      status.textContent = "The browser could not clear the saved tuning.";
+    }
+  });
+  tuningSelect.addEventListener("change", () => {
+    status.textContent = "";
+    renderControls();
+  });
+
+  renderControls();
+  settings.hidden = false;
 }
 
 function renderReferenceNotes() {

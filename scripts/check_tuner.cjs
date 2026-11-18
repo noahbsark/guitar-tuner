@@ -304,3 +304,34 @@ console.log('Settled pitch announcements coalesce and skip repeated states.');
   assert.equal(button.textContent, 'Play A2');
   console.log('Five-second reference playback, early stop, and replacement cleanup passed.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
+
+const savedFields = Object.fromEntries([
+  'tuningSelect','savedTuningSettings','resumeSavedTuning','saveCurrentTuning',
+  'forgetSavedTuning','savedTuningStatus','selectedTuningLink','helperText','noteReadout'
+].map(id => [id, {handlers: {}, focus() {}, addEventListener(type, fn) { (this.handlers[type] ||= []).push(fn); }}]));
+savedFields.tuningSelect.options = [{value:'standard'}, {value:'dropD'}];
+let savedPreset = 'dropD';
+const storage = {
+  getItem() { return savedPreset; },
+  setItem(key, value) { savedPreset = value; },
+  removeItem() { savedPreset = null; }
+};
+const saveBrowser = vm.createContext({
+  document: {body: {dataset: {}}, getElementById: id => savedFields[id] || null},
+  location: {search: ''},
+  URLSearchParams,
+  localStorage: storage
+});
+vm.runInContext(source, saveBrowser);
+assert.equal(savedFields.tuningSelect.value, 'standard');
+assert.equal(savedFields.resumeSavedTuning.hidden, false);
+savedFields.resumeSavedTuning.handlers.click[0]();
+assert.equal(savedFields.tuningSelect.value, 'dropD');
+assert.match(savedFields.selectedTuningLink.href, /tuning=dropD/);
+savedFields.forgetSavedTuning.handlers.click[0]();
+assert.equal(savedPreset, null);
+assert.equal(savedFields.resumeSavedTuning.hidden, true);
+savedFields.saveCurrentTuning.handlers.click[0]();
+assert.equal(savedPreset, 'dropD');
+assert.equal(savedFields.saveCurrentTuning.disabled, true);
+console.log('Saved presets require explicit recall and support forgetting and direct links.');
