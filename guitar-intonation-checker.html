@@ -24,7 +24,21 @@
     <section class="hero"><h1>Guitar Intonation Checker</h1><p class="lede">Measure an open string and the same string fretted at the 12th fret. See how close the fretted note is to the expected octave.</p></section>
     <section class="app-layout">
       <section class="tuner-card" aria-label="Intonation pitch meter">
-        <div hidden><select id="tuningSelect" aria-label="Tuning mode"><option value="chromatic">Chromatic, A4 = 440 Hz</option></select></div>
+        <div hidden><select id="tuningSelect" aria-label="Tuning mode"><option value="chromatic">Chromatic, A4 = 440 Hz</option>
+<option value="openA">Open A — E A E A C# E</option>
+
+<option value="openB">Open B — B F# B F# B D#</option>
+
+<option value="openC6">Open C6 — C A C G C E</option>
+
+<option value="dropB">Drop B — B F# B E G# C#</option>
+
+<option value="dropA">Drop A — A E A D F# B</option>
+
+<option value="cStandard">C Standard — C F Bb Eb G C</option>
+
+<option value="bStandard">B Standard — B E A D F# B</option>
+</select></div>
         <button id="toggleButton" type="button" aria-pressed="false">Start listening</button>
   <div id="statusPill" class="status-pill" aria-live="polite">
           <span class="dot" aria-hidden="true"></span>
