@@ -22,7 +22,7 @@ const presetsUI=[
 const preset=$("preset"),tiles=$("presetTiles");
 for(const [i,opt] of [...preset.options].entries()){
  const [name,sub,icon,bg,color]=presetsUI[i]||[opt.textContent,"Preset","♪","#254438","#a9e6bd"];
- const b=document.createElement("button");b.type="button";b.className="preset-tile";b.dataset.preset=opt.value;b.setAttribute("aria-label",name+" "+sub);b.setAttribute("aria-pressed","false");b.style.setProperty("--tile-bg",bg);b.style.setProperty("--tile-color",color);
+ const b=document.createElement("button");b.type="button";b.className="preset-tile";b.dataset.preset=opt.value;b.setAttribute("aria-pressed","false");b.style.setProperty("--tile-bg",bg);b.style.setProperty("--tile-color",color);
  const mark=document.createElement("span");mark.className="preset-icon";mark.textContent=icon;mark.setAttribute("aria-hidden","true");
  const title=document.createElement("span");title.className="preset-name";title.textContent=name;const detail=document.createElement("span");detail.className="preset-sub";detail.textContent=sub;title.append(detail);b.append(mark,title);
  b.addEventListener("click",()=>{preset.value=opt.value;preset.dispatchEvent(new Event("change",{bubbles:true}));sync()});tiles.append(b);
@@ -74,7 +74,7 @@ function timelineSync(){
  $("waveLoop").hidden=!selected;if(selected){$("waveLoop").style.left=Math.max(0,Math.min(100,a/duration*100))+"%";$("waveLoop").style.width=Math.max(0,Math.min(100-a/duration*100,(b-a)/duration*100))+"%"}
 }
 async function loadWave(){
- timelineSync();const url=fileURL;if(!url||url===waveURL)return;waveURL=url;const token=++waveGeneration;peaks=null;drawWave();loading=true;$("waveStatus").textContent="Preparing waveform…";
+ timelineSync();const url=fileURL;if(!url||url===waveURL||!ctx||!Number.isFinite(player.duration)||player.duration<=0)return;waveURL=url;const token=++waveGeneration;peaks=null;drawWave();loading=true;$("waveStatus").textContent="Preparing waveform…";
  try{
   if(!ctx||!Number.isFinite(player.duration)||player.duration>180)throw Error("Waveform preview is limited to recordings up to three minutes.");
   const blob=await(await fetch(url)).blob();if(blob.size>40000000)throw Error("Waveform preview is limited to 40 MB.");
