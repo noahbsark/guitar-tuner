@@ -204,3 +204,55 @@ test('bundled MIT neural captures load without uploads and switch back safely',a
  await expect(page.locator('#namDistorted')).toHaveAttribute('aria-pressed','false');
  expect(errors).toEqual([]);
 });
+
+test('camera permission is optional and a performance video contains processed audio',async({page},testInfo)=>{
+ await page.addInitScript(()=>{
+  if(!navigator.mediaDevices)return;
+  window.__cameraRequests=[];window.__rejectCamera=true;
+  navigator.mediaDevices.getUserMedia=async constraints=>{
+   window.__cameraRequests.push({audio:!!constraints.audio,video:!!constraints.video});
+   if(constraints.video){
+    if(window.__rejectCamera)throw new DOMException('Test camera permission denied','NotAllowedError');
+    const canvas=document.createElement('canvas');canvas.width=320;canvas.height=240;const p=canvas.getContext('2d');let i=0;
+    const draw=()=>{p.fillStyle='#234635';p.fillRect(0,0,320,240);p.fillStyle='#f4c477';p.fillRect(i++%250,80,50,60)};draw();
+    window.__cameraTimer=setInterval(draw,40);
+    const stream=canvas.captureStream(24);window.__cameraTrack=stream.getVideoTracks()[0];return stream;
+   }
+   const ac=window.__testCaptureContext=new (window.AudioContext||window.webkitAudioContext)();
+   const output=ac.createMediaStreamDestination(),osc=ac.createOscillator(),gain=ac.createGain();osc.frequency.value=220;gain.gain.value=.06;osc.connect(gain);gain.connect(output);osc.start();
+   window.__testCaptureTrack=output.stream.getAudioTracks()[0];ac.resume().catch(()=>{});return output.stream;
+  };
+  // Observe the native recorder inputs without replacing its encoder.
+  if(window.MediaRecorder){const Native=window.MediaRecorder;window.__recorderTracks=[];window.MediaRecorder=new Proxy(Native,{construct(target,args){window.__recorderTracks.push({audio:args[0].getAudioTracks().map(t=>t.id),video:args[0].getVideoTracks().length});return Reflect.construct(target,args)}})}
+ });
+ await page.goto('/guitar-amp.html');
+ test.skip(!(await page.evaluate(()=>!!window.MediaRecorder&&!!navigator.mediaDevices&&!!HTMLCanvasElement.prototype.captureStream&&['video/webm;codecs=vp8,opus','video/webm','video/mp4'].some(t=>MediaRecorder.isTypeSupported(t)))),'Video capture or recorder unavailable');
+ await expect(page.locator('#cameraStart')).toBeDisabled();
+ await page.locator('#mic').click();await expect(page.locator('#cameraStart')).toBeEnabled({timeout:15000});
+ await page.locator('#cameraStart').click();await expect(page.locator('#cameraStatus')).toContainText('Camera unavailable');
+ await expect(page.locator('#recordLive')).toBeEnabled();
+ await page.evaluate(()=>{window.__rejectCamera=false});
+ await page.locator('#cameraStart').click();await expect(page.locator('#cameraFrame')).toBeVisible();
+ await expect(page.locator('#cameraStatus')).toContainText('Camera ready');
+ await page.locator('#cameraStop').click();
+ await expect(page.locator('#cameraFrame')).toBeHidden();
+ await expect.poll(()=>page.evaluate(()=>window.__cameraTrack.readyState)).toBe('ended');
+ await page.evaluate(()=>clearInterval(window.__cameraTimer));
+ await page.locator('#cameraStart').click();await expect(page.locator('#cameraFrame')).toBeVisible();
+ await page.locator('#recordLive').click();await expect(page.locator('#takeStatus')).toContainText('Recording video, original and amplified');
+ await expect(page.locator('#takeTimer')).not.toHaveText('00:00',{timeout:5000});
+ await page.locator('#stopLive').click();
+ await expect(page.locator('#saveVideo')).toBeEnabled({timeout:15000});
+ await expect(page.locator('#takeVideoPreview')).toBeVisible();
+ await expect.poll(()=>page.locator('#takeVideoPreview').evaluate(v=>v.videoWidth),{timeout:10000}).toBeGreaterThan(0);
+ await expect.poll(()=>page.evaluate(()=>[window.__cameraTrack.readyState,window.__testCaptureTrack.readyState])).toEqual(['ended','ended']);
+ const capture=await page.evaluate(()=>({requests:window.__cameraRequests,recorders:window.__recorderTracks,processed:g.record.stream.getAudioTracks()[0].id}));
+ expect(capture.requests.filter(r=>r.video).every(r=>!r.audio)).toBe(true);
+ expect(capture.recorders.find(r=>r.video===1)?.audio).toEqual([capture.processed]);
+ const dl=page.waitForEvent('download');await page.locator('#saveVideo').click();const file=await dl;
+ expect(file.suggestedFilename()).toMatch(/performance\.(webm|mp4)$/);
+ expect(await file.failure()).toBeNull();expect(require('node:fs').statSync(await file.path()).size).toBeGreaterThan(1000);
+ await expect(page.locator('#saveWet')).toBeEnabled();await expect(page.locator('#saveDry')).toBeEnabled();
+ await page.screenshot({path:testInfo.outputPath('performance-video.png'),fullPage:true});
+ await page.evaluate(()=>{clearInterval(window.__cameraTimer);window.__testCaptureContext?.close()});
+});
