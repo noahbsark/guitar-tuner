@@ -147,3 +147,38 @@ test('NAM lab rejects malformed captures without starting playback',async({page}
  await expect(page.locator('#namPlay')).toBeDisabled();
  await expect(page.locator('#namStatus')).toContainText('Invalid or unsupported NAM model file.');
 });
+
+test('studio neural capture replaces the amp, processes a signal and restores the built-in route',async({page},testInfo)=>{
+ await page.goto('/guitar-amp.html');const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ test.skip(!(await page.evaluate(()=>!!window.AudioWorkletNode&&!!window.WebAssembly)),'AudioWorklet or WebAssembly unavailable');
+ const rate=await page.evaluate(()=>{const C=window.AudioContext||window.webkitAudioContext;const a=new C();const rate=a.sampleRate;a.close().catch(()=>{});return rate});
+ const model={version:'0.5.4',architecture:'Linear',config:{receptive_field:1,bias:false},weights:[0.5],sample_rate:rate,metadata:{name:'Synthetic half-gain test fixture'}};
+ await page.locator('#namControls summary').click();
+ await page.locator('#studioNamFile').setInputFiles({name:'linear-test.nam',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(model))});
+ await page.locator('#studioNamLoad').click();
+ await expect(page.locator('#studioNamStatus')).toContainText('linear-test.nam active',{timeout:35000});
+ await expect(page.locator('#ampName')).toHaveText('Neural capture');
+ await expect(page.locator('#gain')).toBeDisabled();
+ await expect(page.locator('#cab')).toBeDisabled();
+ const frames=rate*4,buf=Buffer.alloc(44+frames*2);
+ buf.write('RIFF',0);buf.writeUInt32LE(buf.length-8,4);buf.write('WAVEfmt ',8);buf.writeUInt32LE(16,16);buf.writeUInt16LE(1,20);buf.writeUInt16LE(1,22);buf.writeUInt32LE(rate,24);buf.writeUInt32LE(rate*2,28);buf.writeUInt16LE(2,32);buf.writeUInt16LE(16,34);buf.write('data',36);buf.writeUInt32LE(frames*2,40);
+ for(let i=0;i<frames;i++)buf.writeInt16LE(Math.round(Math.sin(i*2*Math.PI*220/rate)*3500),44+i*2);
+ await page.locator('#file').setInputFiles({name:'test.wav',mimeType:'audio/wav',buffer:buf});
+ await expect(page.locator('#waveSeek')).toBeEnabled();
+ await page.locator('#guitar').selectOption('direct');
+ await page.locator('#input').fill('0');await page.locator('#bass').fill('0');
+ await page.evaluate(()=>{window.__namIn=ctx.createAnalyser();window.__namOut=ctx.createAnalyser();g.ampIn.connect(window.__namIn);g.bass.connect(window.__namOut)});
+ await page.locator('#play').click();
+ await expect.poll(()=>page.evaluate(()=>{
+  const rms=node=>{const samples=new Float32Array(node.fftSize);node.getFloatTimeDomainData(samples);return Math.sqrt(samples.reduce((sum,x)=>sum+x*x,0)/samples.length)};
+  const input=rms(window.__namIn),output=rms(window.__namOut);return input>.005&&output/input>.3&&output/input<.7;
+ }),{timeout:7000}).toBe(true);
+ await page.locator('#play').click();await expect(page.locator('#studioNamClear')).toBeEnabled();
+ await page.locator('.workspace-link[data-view="practice"]').click();
+ await expect(page.locator('#namWavNotice')).toBeVisible();await expect(page.locator('#wavExport')).toBeDisabled();
+ await page.locator('.workspace-link[data-view="studio"]').click();await page.screenshot({path:testInfo.outputPath('studio-neural.png'),fullPage:true});
+ await page.locator('#studioNamClear').click();await expect(page.locator('#gain')).toBeEnabled();
+ await expect(page.locator('#studioNamStatus')).toContainText('Built-in amplifier restored');
+ await page.locator('.workspace-link[data-view="practice"]').click();await expect(page.locator('#namWavNotice')).toBeHidden();await expect(page.locator('#wavExport')).toBeEnabled();
+ expect(errors).toEqual([]);
+});
