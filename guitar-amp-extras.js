@@ -127,5 +127,78 @@ let customIR=null,irNodes=null,irLoad=0;
 function ensureIR(){if(irNodes)return;const conv=ctx.createConvolver(),wet=ctx.createGain(),dry=ctx.createGain(),sum=ctx.createGain();wet.gain.value=0;dry.gain.value=1;g.cabLP.disconnect(g.modSum);g.cabLP.disconnect(g.modDelay);g.cabLP.connect(dry);g.cabLP.connect(conv);conv.connect(wet);dry.connect(sum);wet.connect(sum);sum.connect(g.modSum);sum.connect(g.modDelay);irNodes={conv,wet,dry}}
 el("irFile").addEventListener("change",async()=>{const token=++irLoad;try{const f=el("irFile").files[0];if(!f||f.size>10000000)throw Error("Choose an impulse response under 10 MB.");build();const b=await ctx.decodeAudioData(await f.arrayBuffer());if(token!==irLoad)return;if(b.duration>2||b.numberOfChannels>2)throw Error("Use a mono or stereo speaker IR of two seconds or less.");ensureIR();customIR=b;irNodes.conv.buffer=b;irNodes.wet.gain.setTargetAtTime(1,ctx.currentTime,.03);irNodes.dry.gain.setTargetAtTime(0,ctx.currentTime,.03);el("irStatus").textContent="Custom IR active (not included in shared or saved rigs).";el("clearIR").disabled=false}catch(e){if(token===irLoad)el("irStatus").textContent="IR unavailable: "+e.message}finally{el("irFile").value=""}});
 el("clearIR").addEventListener("click",()=>{irLoad++;if(irNodes){irNodes.wet.gain.setTargetAtTime(0,ctx.currentTime,.03);irNodes.dry.gain.setTargetAtTime(1,ctx.currentTime,.03)}customIR=null;el("clearIR").disabled=true;el("irStatus").textContent="Using the built-in cabinet voicing."});
+
+// Studio workflow: bounded local history, explicit recovery, A/B snapshots and tone suggestions.
+const sessionKey="ogt.amp.session.v1",shoppingKey="ogt.amp.shopping.v1";
+const toneSnapshot=()=>{const v=snapshot();delete v.volume;return v};
+const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+let past=[],future=[],current=toneSnapshot(),historyTimer=0,restoring=false,slots={A:null,B:null},activeSlot=null,measurements={A:null,B:null},matchTrim=1,measurementJob=null,outputAnalyser=null;
+function historyUI(){
+ el("undoTone").disabled=!past.length;el("redoTone").disabled=!future.length;
+ for(const slot of ["A","B"]){el("load"+slot).disabled=!slots[slot];el("measure"+slot).disabled=!slots[slot]||activeSlot!==slot||mode!=="file"||media.paused||!!rec||!!measurementJob;el("slot"+slot).textContent=slots[slot]?(activeSlot===slot?"Selected":"Saved")+(measurements[slot]!==null?" · "+measurements[slot].toFixed(1)+" dBFS":""):"Empty"}
+ el("levelMatch").disabled=measurements.A===null||measurements.B===null;
+}
+function saveSession(){try{localStorage.setItem(sessionKey,JSON.stringify({v:1,settings:toneSnapshot(),name:el("rigName").value.slice(0,60)}))}catch{}}
+function flushHistory(){clearTimeout(historyTimer);historyTimer=0;if(restoring)return;const next=toneSnapshot();if(equal(next,current))return;past.push(current);if(past.length>80)past.shift();current=next;future=[];activeSlot=null;matchTrim=1;apply();saveSession();historyUI()}
+function scheduleHistory(){if(restoring)return;clearTimeout(historyTimer);historyTimer=setTimeout(flushHistory,180)}
+function applyTone(vals){
+ restoring=true;const safe=cleanSettings(vals);
+ for(const [id,v] of Object.entries(safe)){if(id==="volume")continue;if(id==="input"&&mode==="mic"){el(id).value=Math.min(n("input"),v);continue}if(typeof v==="boolean")el(id).checked=v;else el(id).value=v}
+ el("preset").value="";showValues();apply();renderGear();restoring=false;
+}
+function navigateHistory(from,to){flushHistory();if(!from.length)return;to.push(current);const next=from.pop();activeSlot=null;matchTrim=1;applyTone(next);current=toneSnapshot();saveSession();historyUI()}
+el("undoTone").addEventListener("click",()=>navigateHistory(past,future));
+el("redoTone").addEventListener("click",()=>navigateHistory(future,past));
+const priorApply=apply;apply=function(){priorApply();if(g&&matchTrim<1)g.volume.gain.setTargetAtTime(n("volume")/100*.8*matchTrim,ctx.currentTime,.02);if(!restoring)scheduleHistory()};
+for(const id of fields)if(id!=="volume")el(id).addEventListener(el(id).type==="range"?"change":"change",scheduleHistory);
+el("rigName").addEventListener("change",saveSession);
+function matchedGain(slot){return on("levelMatch")&&measurements.A!==null&&measurements.B!==null?Math.max(.1,Math.min(1,db(Math.min(measurements.A,measurements.B)-measurements[slot]))):1}
+function selectSlot(slot){flushHistory();if(!slots[slot])return;const before=current;activeSlot=slot;matchTrim=matchedGain(slot);applyTone(slots[slot]);current=toneSnapshot();if(!equal(before,current)){past.push(before);if(past.length>80)past.shift();future=[]}saveSession();historyUI();el("compareStatus").textContent="Loaded tone "+slot+(matchTrim<1?" with "+(20*Math.log10(matchTrim)).toFixed(1)+" dB level trim.":".")}
+for(const slot of ["A","B"]){
+ el("save"+slot).addEventListener("click",()=>{flushHistory();slots[slot]=toneSnapshot();measurements[slot]=null;activeSlot=slot;matchTrim=1;apply();historyUI();el("compareStatus").textContent="Captured tone "+slot+"."});
+ el("load"+slot).addEventListener("click",()=>selectSlot(slot));
+ el("measure"+slot).addEventListener("click",()=>{
+ if(!g||mode!=="file"||media.paused||rec||activeSlot!==slot||measurementJob)return;
+ if(!outputAnalyser){outputAnalyser=ctx.createAnalyser();outputAnalyser.fftSize=2048;g.safety.connect(outputAnalyser)}
+ const job={slot,started:performance.now(),sum:0,count:0,samples:0};measurementJob=job;historyUI();const a=new Float32Array(outputAnalyser.fftSize);
+ const run=()=>{if(measurementJob!==job)return;if(mode!=="file"||media.paused||activeSlot!==slot||rec||document.hidden){measurementJob=null;historyUI();el("compareStatus").textContent="Measurement interrupted. Replay the same excerpt and try again.";return}
+ outputAnalyser.getFloatTimeDomainData(a);let sum=0;for(const x of a)sum+=x*x;if(sum/a.length>1e-7){job.sum+=sum;job.count+=a.length;job.samples++}
+ if(performance.now()-job.started<2400){setTimeout(run,65);return}
+ measurementJob=null;if(job.samples<8){el("compareStatus").textContent="Not enough audible signal to measure."}else{measurements[slot]=20*Math.log10(Math.sqrt(job.sum/job.count));matchTrim=matchedGain(slot);apply();el("compareStatus").textContent="Measured tone "+slot+". Replay the same excerpt for the other tone."}historyUI()};run();
+ });
+}
+el("levelMatch").addEventListener("change",()=>{matchTrim=activeSlot?matchedGain(activeSlot):1;apply();el("compareStatus").textContent=on("levelMatch")?"Comparison attenuates the louder measured tone; output never boosts above your volume setting.":"Level matching off."});
+let recovery=null;try{const x=JSON.parse(localStorage.getItem(sessionKey)||"null");if(x?.v===1&&x.settings&&typeof x.settings==="object")recovery=x}catch{}
+el("restoreSession").hidden=!recovery;el("discardSession").hidden=!recovery;
+el("restoreSession").addEventListener("click",()=>{if(!recovery)return;const before=current;applyTone(recovery.settings);el("rigName").value=typeof recovery.name==="string"?recovery.name.slice(0,60):"";current=toneSnapshot();if(!equal(before,current))past.push(before);future=[];activeSlot=null;matchTrim=1;el("restoreSession").hidden=el("discardSession").hidden=true;saveSession();historyUI();msg("Previous session restored. Microphone and files are never reopened automatically.")});
+el("discardSession").addEventListener("click",()=>{recovery=null;try{localStorage.removeItem(sessionKey)}catch{}el("restoreSession").hidden=el("discardSession").hidden=true;msg("Previous session discarded.")});
+window.addEventListener("pagehide",()=>{flushHistory();if(!recovery||el("restoreSession").hidden)saveSession()});
+const previousUI2=ui;ui=function(){previousUI2();historyUI()};
+media.addEventListener("pause",historyUI);media.addEventListener("playing",historyUI);
+setInterval(()=>{if(!ctx){el("latencyEstimate").textContent="—";return}const vals=[ctx.baseLatency,ctx.outputLatency].filter(x=>Number.isFinite(x)&&x>=0);el("latencyEstimate").textContent=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)*1000)+" ms (reported output path only)":"Not reported by browser";historyUI()},500);
+document.addEventListener("keydown",e=>{if(!e.altKey||e.ctrlKey||e.metaKey||e.repeat||e.target?.matches("input,textarea,select,button,[contenteditable]"))return;if(e.key.toLowerCase()==="a"&&slots.A){e.preventDefault();selectSlot("A")}else if(e.key.toLowerCase()==="b"&&slots.B){e.preventDefault();selectSlot("B")}else if(e.key.toLowerCase()==="x"){e.preventDefault();el("bypass").checked=!on("bypass");apply();renderGear()}});
+// Rule-based tone finder: local matching, no remote AI or data transmission.
+const genrePreset={rock:"Classic rock — AC/DC inspired",metal:"Metal — Metallica inspired",blues:"Blues breakup",indie:"Grunge — Nirvana inspired",country:"Clean studio",jazz:"Clean studio",ambient:"Ambient lead — Pink Floyd inspired"};
+const vibePreset={clean:"Clean studio",warm:"Blues breakup",crunch:"Classic rock — AC/DC inspired",heavy:"Metal — Metallica inspired",space:"Dreamy chorus",fuzz:"Vintage fuzz — Hendrix inspired",lead:"Brown lead — Van Halen inspired"};
+function chooseTone(genre,vibe,request){
+ const t=request.toLowerCase();
+ const rules=[[/metallica|thrash|high[ -]?gain|heavy metal|80s metal|1980s metal/,"Metal — Metallica inspired"],[/van halen|brown (sound|tone)/,"Brown lead — Van Halen inspired"],[/hendrix|fuzz/,"Vintage fuzz — Hendrix inspired"],[/pink floyd|gilmour/,"Ambient lead — Pink Floyd inspired"],[/nirvana|grunge/,"Grunge — Nirvana inspired"],[/ac\/?dc|classic rock|crunch/,"Classic rock — AC/DC inspired"],[/ambient|dreamy|space|shimmer|chorus/,"Dreamy chorus"],[/blues|warm|breakup/,"Blues breakup"],[/clean|jazz|country/,"Clean studio"],[/metal|heavy|distort/,"Metal — Metallica inspired"]];
+ const hit=rules.find(([re])=>re.test(t));return hit?hit[1]:vibePreset[vibe]||genrePreset[genre]||"Clean studio";
+}
+el("findTone").addEventListener("click",()=>{flushHistory();const text=el("toneRequest").value.trim(),name=chooseTone(el("toneGenre").value,el("toneVibe").value,text);if(!Object.hasOwn(presets,name))return;el("preset").value=name;el("guitar").value=el("toneGuitar").value;el("bypass").checked=false;loadPreset();const budget=el("toneBudget").value;if(tiers.includes(budget)){state.tier=budget;el("gearTier").value=budget;persist()}el("real-gear").hidden=budget==="virtual";renderGear();flushHistory();el("toneResult").textContent="Applied "+name+". "+(text?"Matched local keywords or selected style; not a generative AI model. ":"")+"Fine-tune the amp and pedals below."});
+el("showGear").addEventListener("click",()=>{el("real-gear").hidden=false;el("real-gear").scrollIntoView({block:"start",behavior:"smooth"})});
+// Shopping list separate from wishlist. One selected product per rig role by default.
+let shopping=[];try{shopping=unique(JSON.parse(localStorage.getItem(shoppingKey)||"[]"))}catch{}
+function persistShopping(){try{localStorage.setItem(shoppingKey,JSON.stringify(shopping))}catch{msg("Shopping list could not be persisted on this device.")}}
+const cableNotes={amp:"Check mains voltage and speaker/load requirements. Amplifier heads require a compatible cabinet or load; never run a tube head unloaded.",drive:"Check pedal voltage, polarity and current requirements.",comp:"Check pedal power requirements.",gate:"Check power requirements and signal-chain placement.",mod:"Check mono/stereo wiring and power.",delay:"Check power requirements and mono/stereo wiring.",verb:"Check power requirements and mono/stereo wiring.",multi:"Check headphone/output compatibility; may replace separate pedals and an amplifier for silent practice.",accessory:"Check device, operating system and cable compatibility."};
+function renderShopping(){const list=el("shoppingList");list.replaceChildren();if(!shopping.length)list.append(make("p","Add a suggested rig or select individual products below.","muted"));for(const id of shopping){const p=byId.get(id),card=make("article",undefined,"gear-item");card.append(make("h3",p.name),make("p",kinds[p.kind]+" · "+p.tier,"muted small"),make("p",cableNotes[p.kind],"small"));const actions=make("div",undefined,"actions");actions.append(link("Amazon (paid link)",amazon(p),true),link("Reverb (not affiliated)",reverb(p),false),button("Remove",()=>{shopping=shopping.filter(x=>x!==id);persistShopping();renderShopping();renderGear()}));card.append(actions);list.append(card)}}
+const previousGearCard=gearCard;gearCard=function(p){const card=previousGearCard(p);const controls=card.querySelector(".actions:last-child");if(controls)controls.append(button(shopping.includes(p.id)?"Remove from build":"Add to build",()=>{shopping=shopping.includes(p.id)?shopping.filter(x=>x!==p.id):[...shopping,p.id];persistShopping();renderShopping();renderGear()}));return card};
+el("buildRig").addEventListener("click",()=>{const chosen=new Map();for(const p of recommend()){if(p.kind==="multi"||state.owned.includes(p.id)||chosen.has(p.kind))continue;chosen.set(p.kind,p.id)}shopping=unique([...shopping,...chosen.values()]);persistShopping();renderShopping();renderGear()});
+el("buildMulti").addEventListener("click",()=>{const p=recommend().find(p=>p.kind==="multi"&&!state.owned.includes(p.id));if(!p)return;shopping=unique([...shopping,p.id]);persistShopping();renderShopping();renderGear()});
+el("clearBuild").addEventListener("click",()=>{shopping=[];persistShopping();renderShopping();renderGear()});
+el("printBuild").addEventListener("click",()=>{if(!shopping.length){msg("Add equipment to your build first.");return}document.body.classList.add("print-build");try{window.print()}finally{document.body.classList.remove("print-build")}});
+el("downloadBuild").addEventListener("click",()=>{const lines=["My guitar gear build","",...shopping.flatMap(id=>{const p=byId.get(id);return [p.name+" ("+kinds[p.kind]+", "+p.tier+")",cableNotes[p.kind],""]}),"Check exact model, compatibility, pricing and stock with the retailer."];download(new Blob([lines.join("\n")],{type:"text/plain"}),"guitar-gear-list.txt")});
+renderShopping();renderGear();historyUI();
+
 ui();
 })();
