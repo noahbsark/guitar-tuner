@@ -108,7 +108,10 @@ test('record both versions of a take, stop input and download or reamp',async({p
   expect(await file.failure()).toBeNull();
   const fs=require('node:fs');expect(fs.statSync(await file.path()).size).toBeGreaterThan(100);
  }
+ await page.locator('#takeName').fill('Recorded browser take');await page.locator('#renameTake').click();
+ await page.locator('#persistTake').click();await expect(page.locator('#persistTake')).toHaveText('Saved on this device');
  await page.screenshot({path:testInfo.outputPath('take-review.png'),fullPage:true});
+ await page.reload();await expect(page.locator('#takeSelect')).toContainText('Recorded browser take');await expect(page.locator('#persistTake')).toHaveText('Saved on this device');
  await page.locator('#reampTake').click();await expect(page.locator('#status')).toContainText('Original take loaded',{timeout:15000});await expect(page.locator('#play')).toBeEnabled();
  await page.evaluate(()=>window.__testCaptureContext?.close());
 });
@@ -184,6 +187,7 @@ test('studio neural capture replaces the amp, processes a signal and restores th
 });
 
 test('bundled MIT neural captures load without uploads and switch back safely',async({page},testInfo)=>{
+ test.setTimeout(100000);
  await page.goto('/guitar-amp.html');
  test.skip(!(await page.evaluate(()=>!!window.AudioWorkletNode&&!!window.WebAssembly)),'AudioWorklet or WebAssembly unavailable');
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -198,10 +202,13 @@ test('bundled MIT neural captures load without uploads and switch back safely',a
  await expect.poll(()=>page.locator('#media').evaluate(el=>el.currentTime),{timeout:12000}).toBeGreaterThan(.1);
  await page.locator('#play').click();
  await expect(page.locator('#namStarterClear')).toBeEnabled();
+ await page.locator('#namCrunch').click();await expect(page.locator('#namStarterStatus')).toContainText('ToneTinkerer Crunch active',{timeout:35000});await expect(page.locator('#cab')).toBeEnabled();
+ await page.locator('#namLead').click();await expect(page.locator('#namStarterStatus')).toContainText('ToneTinkerer Lead active',{timeout:35000});await expect(page.locator('#cab')).toBeEnabled();
  await page.screenshot({path:testInfo.outputPath('starter-captures.png'),fullPage:true});
  await page.locator('#namStarterClear').click();
  await expect(page.locator('#ampName')).not.toHaveText('Neural capture');
  await expect(page.locator('#namDistorted')).toHaveAttribute('aria-pressed','false');
+ await expect(page.locator('#namLead')).toHaveAttribute('aria-pressed','false');
  expect(errors).toEqual([]);
 });
 
@@ -255,4 +262,48 @@ test('camera permission is optional and a performance video contains processed a
  await expect(page.locator('#saveWet')).toBeEnabled();await expect(page.locator('#saveDry')).toBeEnabled();
  await page.screenshot({path:testInfo.outputPath('performance-video.png'),fullPage:true});
  await page.evaluate(()=>{clearInterval(window.__cameraTimer);window.__testCaptureContext?.close()});
+});
+
+test('saved recording survives reload and non-destructive editor creates valid trimmed WAV',async({page},testInfo)=>{
+ await page.goto('/guitar-amp.html');
+ test.skip(!(await page.evaluate(()=>!!window.indexedDB&&!!window.AudioContext)),'Local storage or Web Audio unavailable');
+ await expect(page.locator('#libraryStatus')).toContainText('0 of 10 saved');
+ await page.evaluate(async()=>{
+  const rate=16000,frames=rate*4,ab=new ArrayBuffer(44+frames*2),d=new DataView(ab);
+  const str=(i,s)=>{for(let j=0;j<s.length;j++)d.setUint8(i+j,s.charCodeAt(j))};str(0,'RIFF');d.setUint32(4,ab.byteLength-8,true);str(8,'WAVEfmt ');d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,1,true);d.setUint32(24,rate,true);d.setUint32(28,rate*2,true);d.setUint16(32,2,true);d.setUint16(34,16,true);str(36,'data');d.setUint32(40,frames*2,true);
+  for(let i=0;i<frames;i++)d.setInt16(44+i*2,Math.round(Math.sin(i*2*Math.PI*220/rate)*5000),true);
+  const blob=new Blob([ab],{type:'audio/wav'});
+  await new Promise((resolve,reject)=>{const open=indexedDB.open('ogt-guitar-recordings',1);open.onerror=()=>reject(open.error);open.onsuccess=()=>{const db=open.result,tx=db.transaction('takes','readwrite');tx.objectStore('takes').put({id:'test-persisted-take',name:'Library fixture',seconds:4,saved:true,wet:blob,dry:blob,video:null});tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>reject(tx.error)}});
+ });
+ await page.reload();await expect(page.locator('#takeSelect')).toContainText('Library fixture');await expect(page.locator('#persistTake')).toHaveText('Saved on this device');
+ await page.locator('#takeName').fill('Edited test take');await page.locator('#renameTake').click();await expect(page.locator('#takeSelect')).toContainText('Edited test take');
+ await page.locator('#takeEditor summary').click();
+ await page.locator('#editStart').fill('1');await page.locator('#editEnd').fill('3');await page.locator('#editFadeIn').fill('0.1');await page.locator('#editFadeOut').fill('0.1');await page.locator('#editNormalize').check();
+ const dl=page.waitForEvent('download');await page.locator('#editRender').click();const file=await dl;
+ const bytes=require('node:fs').readFileSync(await file.path()),rate=bytes.readUInt32LE(24),channels=bytes.readUInt16LE(22),frames=bytes.readUInt32LE(40)/(channels*2);
+ expect(bytes.toString('ascii',0,4)).toBe('RIFF');expect(frames/rate).toBeCloseTo(2,2);
+ expect(Math.abs(bytes.readInt16LE(44))).toBeLessThan(3);
+ expect(Math.abs(bytes.readInt16LE(bytes.length-2))).toBeLessThan(3);
+ await expect(page.locator('#editStatus')).toContainText('Original unchanged');
+ await page.screenshot({path:testInfo.outputPath('local-library-editor.png'),fullPage:true});
+ await page.reload();await expect(page.locator('#takeSelect')).toContainText('Edited test take');await expect(page.locator('#saveWet')).toBeEnabled();
+ page.once('dialog',d=>d.accept());await page.locator('#deleteTake').click();await expect(page.locator('#takeReview')).toBeHidden();
+ await page.reload();await expect(page.locator('#libraryStatus')).toContainText('0 of 10 saved');await expect(page.locator('#takeReview')).toBeHidden();
+});
+test('offline echo experiment gives an explicitly synthetic result and WAV download',async({page})=>{
+ await page.goto('/guitar-echo-lab.html');
+ await page.locator('#filterDemo').click();await expect(page.locator('#filterStatus')).toContainText('Synthetic room: delay 20.0 ms');
+ await expect(page.locator('#filterReview')).toBeVisible();await expect(page.locator('#filterDownload')).toBeEnabled();
+ const dl=page.waitForEvent('download');await page.locator('#filterDownload').click();const file=await dl;
+ const bytes=require('node:fs').readFileSync(await file.path());expect(bytes.readUInt32LE(24)).toBe(16000);expect(bytes.readUInt16LE(22)).toBe(1);
+});
+test('responsive studio controls fit 360, 390, 768 and 1440 pixels',async({page},testInfo)=>{
+ test.skip(testInfo.project.name!=='chromium-desktop','Viewport matrix runs once in desktop Chromium');
+ await page.goto('/guitar-amp.html');
+ for(const width of [360,390,768,1440]){
+  await page.setViewportSize({width,height:900});
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await expect(page.locator('#mic')).toBeVisible();await expect(page.locator('#panicAudio')).toBeVisible();
+  await page.screenshot({path:testInfo.outputPath('responsive-'+width+'.png'),fullPage:true});
+ }
 });
