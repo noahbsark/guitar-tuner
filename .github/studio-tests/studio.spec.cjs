@@ -44,5 +44,36 @@ test('demo starts only after the user presses play',async({page})=>{
  await expect(page.locator('#media')).toBeHidden();
  await page.locator('#demo').click();
  await expect(page.locator('#media')).toBeVisible();
+ await expect.poll(()=>page.locator('#media').evaluate(el=>el.currentTime),{timeout:12000}).toBeGreaterThan(0.1);
  await expect(page.locator('#status')).toContainText(/generated|playing/i);
+});
+
+test('amp knob supports pointer drag and native keyboard adjustment',async({page})=>{
+ await page.goto('/guitar-amp.html');
+ const gain=page.locator('#gain');await gain.focus();const initial=Number(await gain.inputValue());
+ await gain.press('ArrowRight');await expect.poll(async()=>Number(await gain.inputValue())).toBeGreaterThan(initial);
+ const dial=page.locator('label[for="gain"] .dial-display');await dial.scrollIntoViewIfNeeded();
+ const r=await dial.boundingBox();expect(r).not.toBeNull();
+ const before=Number(await gain.inputValue());
+ await page.mouse.move(r.x+r.width/2,r.y+r.height/2);await page.mouse.down();await page.mouse.move(r.x+r.width/2,r.y+r.height/2-35,{steps:5});await page.mouse.up();
+ await expect.poll(async()=>Number(await gain.inputValue())).toBeGreaterThan(before);
+});
+test('local waveform supports seeking and loop selection',async({page},testInfo)=>{
+ // Original generated test signal, no third-party assets or network upload.
+ const rate=16000,frames=rate*8,buf=Buffer.alloc(44+2*frames);
+ buf.write('RIFF',0);buf.writeUInt32LE(buf.length-8,4);buf.write('WAVEfmt ',8);buf.writeUInt32LE(16,16);buf.writeUInt16LE(1,20);buf.writeUInt16LE(1,22);buf.writeUInt32LE(rate,24);buf.writeUInt32LE(rate*2,28);buf.writeUInt16LE(2,32);buf.writeUInt16LE(16,34);buf.write('data',36);buf.writeUInt32LE(frames*2,40);
+ for(let i=0;i<frames;i++)buf.writeInt16LE(Math.round(Math.sin(i*2*Math.PI*220/rate)*6000),44+i*2);
+ await page.goto('/guitar-amp.html');
+ await page.locator('#file').setInputFiles({name:'test-guitar.wav',mimeType:'audio/wav',buffer:buf});
+ await expect(page.locator('#recordingTimeline')).toBeVisible();
+ await expect(page.locator('#waveSeek')).toBeEnabled({timeout:15000});
+ await expect(page.locator('#waveStatus')).toContainText('Original recording waveform',{timeout:15000});
+ const seek=page.locator('#waveSeek');await seek.fill('250');
+ await expect.poll(()=>page.locator('#media').evaluate(el=>el.currentTime)).toBeCloseTo(2,0);
+ await page.locator('#waveA').click();await seek.fill('750');
+ await expect.poll(()=>page.locator('#media').evaluate(el=>el.currentTime)).toBeCloseTo(6,0);
+ await page.locator('#waveB').click();await expect(page.locator('#waveLoop')).toBeVisible();
+ await expect(page.locator('#waveToggle')).toBeEnabled();await page.locator('#waveToggle').click();
+ await expect(page.locator('#waveToggle')).toHaveText('Stop looping');
+ await page.screenshot({path:testInfo.outputPath('waveform.png'),fullPage:true});
 });
