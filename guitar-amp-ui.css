@@ -47,3 +47,5 @@ details{border-top:1px solid #354251;padding-top:6px;margin-top:14px}summary{col
 /* Compact touch-friendly studio layouts */
 @media(max-width:420px){.studio-input,.panel{min-width:0}.input-card .actions button,.take-studio .actions button{min-height:44px}.take-heading{flex-wrap:wrap}.take-clock{font-size:18px}.neural-starter-grid{gap:6px}.neural-starter-heading{flex-wrap:wrap}#takeEditor .grid{grid-template-columns:repeat(2,minmax(0,1fr))}#takeStudio input[type=text],#takeEditor input[type=number]{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.dial-display,.preset-tile,.neural-starter{transition:none!important;animation:none!important}}
+
+#panicAudio:not(:disabled){background:#69333a;border-color:#a15b63;color:#fff3f4}#guardStatus{flex:1;min-width:180px}#focusKnobs{display:grid;gap:10px}#measureNoise{min-height:44px}
