@@ -326,7 +326,7 @@ async function editVideo(job,blob,seconds){
  job.stop=stop;
  await v.play();checkEdit(job);
  function frame(){if(job.cancelled||document.hidden||v.ended||v.currentTime>=o.end){stop();return}const t=Math.max(0,v.currentTime-o.start),factor=Math.min(1,o.fi?t/o.fi:1,o.fo?(o.end-v.currentTime)/o.fo:1);gain.gain.setTargetAtTime(Math.max(0,factor),ac.currentTime,.01);p.drawImage(v,0,0,canvas.width,canvas.height);el("editStatus").textContent="Rendering video "+takeTime(t)+" / "+takeTime(o.end-o.start)+"…";job.frame=requestAnimationFrame(frame)}
- job.timer=setTimeout(()=>{job.cancelled=true;stop()},(o.end-o.start+15)*1000);frame();return await done;
+ job.timer=setTimeout(()=>{job.cancelled=true;stop()},(o.end-o.start+15)*1000);frame();let deadline;try{return await Promise.race([done,new Promise((_,reject)=>{deadline=setTimeout(()=>reject(Error("Video encoder did not finish.")),(o.end-o.start+20)*1000)})])}finally{clearTimeout(deadline)}
 }
 function cleanupEdit(job){clearTimeout(job.timer);if(job.frame)cancelAnimationFrame(job.frame);if(job.recorder&&job.recorder.state!=="inactive")try{job.recorder.stop()}catch{}if(job.player){job.player.pause();job.player.removeAttribute("src");job.player.load()}if(job.url)URL.revokeObjectURL(job.url);job.visuals?.getTracks().forEach(t=>t.stop());job.destination?.stream.getTracks().forEach(t=>t.stop());job.ac?.close().catch(()=>{})}
 function cancelEdit(){if(!editJob)return;editJob.cancelled=true;try{editJob.stop?.()}catch{}el("editStatus").textContent="Cancelling edit…"}
