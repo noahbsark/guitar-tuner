@@ -30,19 +30,21 @@ const gear=[
 ["hx","Line 6 HX Stomp","multi","premium","Compact amp and effects modeling",[]],
 ["scarlett","Focusrite Scarlett Solo","accessory","value","Direct guitar input for cleaner recordings; not required",[]],
 ["irig","IK Multimedia iRig HD X","accessory","value","Portable guitar interface; check device compatibility",[]],
-["headphones","Sony MDR-7506","accessory","value","Wired monitoring headphones",[]]
+["headphones","Sony MDR-7506","accessory","value","Wired monitoring headphones",[]],
+["crybaby","Dunlop GCB95 Cry Baby Wah","wah","value","Manual sweep wah pedal",[]],
+["trem","Boss TR-2 Tremolo","trem","value","Adjustable amplitude modulation",[]]
 ].map(([id,name,kind,tier,description,matches])=>({id,name,kind,tier,description,matches}));
 const byId=new Map(gear.map(p=>[p.id,p]));
 const tiers=["budget","value","premium"];
-const kinds={amp:"Amplifier",drive:"Drive / fuzz",comp:"Compressor",gate:"Noise gate",mod:"Modulation",delay:"Delay",verb:"Reverb",multi:"All-in-one alternative",accessory:"Optional recording accessories"};
+const kinds={wah:"Wah",trem:"Tremolo",amp:"Amplifier",drive:"Drive / fuzz",comp:"Compressor",gate:"Noise gate",mod:"Modulation",delay:"Delay",verb:"Reverb",multi:"All-in-one alternative",accessory:"Optional recording accessories"};
 const key="ogt.amp.rigs.v1", maxRigs=100;
-const fields=[...Object.values(specs).flat().map(x=>x[0]),...toggles,"guitar","amp","cab","driveType","modType","bypass"];
+const fields=[...Object.values(specs).flat().map(x=>x[0]),...toggles,"guitar","amp","cab","driveType","modType","bypass","pickup","hum","preOrder","postOrder"];
 const unique=a=>Array.from(new Set(Array.isArray(a)?a.filter(x=>typeof x==="string"&&byId.has(x)):[]));
 function cleanSettings(o){
  const out={}; if(!o||typeof o!=="object")return out;
  for(const group of Object.values(specs))for(const [id,,min,max] of group)if(typeof o[id]==="number"&&Number.isFinite(o[id]))out[id]=Math.round(Math.max(min,Math.min(max,o[id])));
  for(const id of [...toggles,"bypass"])if(typeof o[id]==="boolean")out[id]=o[id];
- for(const id of ["guitar","amp","cab","driveType","modType"])if(typeof o[id]==="string"&&Array.from(el(id).options).some(x=>x.value===o[id]))out[id]=o[id];
+ for(const id of ["guitar","amp","cab","driveType","modType","pickup","hum","preOrder","postOrder"])if(typeof o[id]==="string"&&Array.from(el(id).options).some(x=>x.value===o[id]))out[id]=o[id];
  return out;
 }
 function cleanRig(r){
@@ -63,7 +65,7 @@ function restore(r){const c=cleanRig(r);if(!c)return;
  msg("Rig loaded. Output never increases automatically; input gain is limited during live monitoring.");
 }
 function recommend(){
- const s=snapshot(),active=[["amp",s.amp],...(s.driveOn?[["drive",s.driveType]]:[]),...(s.compOn?[["comp",""]]:[]),...(s.gateOn?[["gate",""]]:[]),...(s.modOn?[["mod",s.modType]]:[]),...(s.delayOn?[["delay",""]]:[]),...(s.verbOn?[["verb",""]]:[]),["multi",""]];
+ const s=snapshot(),active=[["amp",s.amp],...(s.driveOn?[["drive",s.driveType]]:[]),...(s.compOn?[["comp",""]]:[]),...(s.gateOn?[["gate",""]]:[]),...(s.modOn?[["mod",s.modType]]:[]),...(s.delayOn?[["delay",""]]:[]),...(s.verbOn?[["verb",""]]:[]),...(s.wahOn?[["wah",""]]:[]),...(s.tremOn?[["trem",""]]:[]),["multi",""]];
  const rank=p=>Math.abs(tiers.indexOf(p.tier)-tiers.indexOf(state.tier));
  return active.flatMap(([kind,match])=>gear.filter(p=>p.kind===kind&&(!match||p.matches.includes(match))).sort((a,b)=>rank(a)-rank(b)).slice(0,2));
 }
@@ -124,7 +126,7 @@ el("calibrate").addEventListener("click",()=>{if(mode!=="mic"||calibration)retur
  const sample=()=>{if(calibration!==job||mode!=="mic")return;g.analyser.getFloatTimeDomainData(a);let sum=0,peak=0;for(const x of a){sum+=x*x;peak=Math.max(peak,Math.abs(x))}const rms=20*Math.log10(Math.max(1e-8,Math.sqrt(sum/a.length)));if(rms>-65)samples.push({rms,peak});if(performance.now()-started<3000){job.timer=setTimeout(sample,60);return}calibration=null;if(samples.length<5){status("Input too quiet. Move microphone closer and try again.")}else{samples.sort((a,b)=>a.rms-b.rms);const typical=samples[Math.floor(samples.length*.75)].rms,peak=Math.max(...samples.map(x=>x.peak));const delta=Math.min(6,-26-typical,20*Math.log10(.7/Math.max(.001,peak)));el("input").value=Math.max(0,Math.min(24,Math.round(n("input")+delta)));showValues();apply();status("Calibration complete. Input gain "+n("input")+" dB. Repeat if needed.")}ui()};sample()});
 // Custom user-supplied speaker IR, with filtered cabinet path retained as fallback.
 let customIR=null,irNodes=null,irLoad=0;
-function ensureIR(){if(irNodes)return;const conv=ctx.createConvolver(),wet=ctx.createGain(),dry=ctx.createGain(),sum=ctx.createGain();wet.gain.value=0;dry.gain.value=1;g.cabLP.disconnect(g.modSum);g.cabLP.disconnect(g.modDelay);g.cabLP.connect(dry);g.cabLP.connect(conv);conv.connect(wet);dry.connect(sum);wet.connect(sum);sum.connect(g.modSum);sum.connect(g.modDelay);irNodes={conv,wet,dry}}
+function ensureIR(){if(irNodes)return;const conv=ctx.createConvolver(),wet=ctx.createGain(),dry=ctx.createGain(),sum=ctx.createGain();wet.gain.value=0;dry.gain.value=1;g.cabLP.disconnect(g.cabOut);g.cabLP.connect(dry);g.cabLP.connect(conv);conv.connect(wet);dry.connect(sum);wet.connect(sum);sum.connect(g.cabOut);irNodes={conv,wet,dry}}
 el("irFile").addEventListener("change",async()=>{const token=++irLoad;try{const f=el("irFile").files[0];if(!f||f.size>10000000)throw Error("Choose an impulse response under 10 MB.");build();const b=await ctx.decodeAudioData(await f.arrayBuffer());if(token!==irLoad)return;if(b.duration>2||b.numberOfChannels>2)throw Error("Use a mono or stereo speaker IR of two seconds or less.");ensureIR();customIR=b;irNodes.conv.buffer=b;irNodes.wet.gain.setTargetAtTime(1,ctx.currentTime,.03);irNodes.dry.gain.setTargetAtTime(0,ctx.currentTime,.03);el("irStatus").textContent="Custom IR active (not included in shared or saved rigs).";el("clearIR").disabled=false}catch(e){if(token===irLoad)el("irStatus").textContent="IR unavailable: "+e.message}finally{el("irFile").value=""}});
 el("clearIR").addEventListener("click",()=>{irLoad++;if(irNodes){irNodes.wet.gain.setTargetAtTime(0,ctx.currentTime,.03);irNodes.dry.gain.setTargetAtTime(1,ctx.currentTime,.03)}customIR=null;el("clearIR").disabled=true;el("irStatus").textContent="Using the built-in cabinet voicing."});
 
@@ -190,7 +192,7 @@ el("showGear").addEventListener("click",()=>{el("real-gear").hidden=false;el("re
 // Shopping list separate from wishlist. One selected product per rig role by default.
 let shopping=[];try{shopping=unique(JSON.parse(localStorage.getItem(shoppingKey)||"[]"))}catch{}
 function persistShopping(){try{localStorage.setItem(shoppingKey,JSON.stringify(shopping))}catch{msg("Shopping list could not be persisted on this device.")}}
-const cableNotes={amp:"Check mains voltage and speaker/load requirements. Amplifier heads require a compatible cabinet or load; never run a tube head unloaded.",drive:"Check pedal voltage, polarity and current requirements.",comp:"Check pedal power requirements.",gate:"Check power requirements and signal-chain placement.",mod:"Check mono/stereo wiring and power.",delay:"Check power requirements and mono/stereo wiring.",verb:"Check power requirements and mono/stereo wiring.",multi:"Check headphone/output compatibility; may replace separate pedals and an amplifier for silent practice.",accessory:"Check device, operating system and cable compatibility."};
+const cableNotes={wah:"Check pedal power and cable requirements.",trem:"Check pedal power and cable requirements.",amp:"Check mains voltage and speaker/load requirements. Amplifier heads require a compatible cabinet or load; never run a tube head unloaded.",drive:"Check pedal voltage, polarity and current requirements.",comp:"Check pedal power requirements.",gate:"Check power requirements and signal-chain placement.",mod:"Check mono/stereo wiring and power.",delay:"Check power requirements and mono/stereo wiring.",verb:"Check power requirements and mono/stereo wiring.",multi:"Check headphone/output compatibility; may replace separate pedals and an amplifier for silent practice.",accessory:"Check device, operating system and cable compatibility."};
 function renderShopping(){const list=el("shoppingList");list.replaceChildren();if(!shopping.length)list.append(make("p","Add a suggested rig or select individual products below.","muted"));for(const id of shopping){const p=byId.get(id),card=make("article",undefined,"gear-item");card.append(make("h3",p.name),make("p",kinds[p.kind]+" · "+p.tier,"muted small"),make("p",cableNotes[p.kind],"small"));const actions=make("div",undefined,"actions");actions.append(link("Amazon (paid link)",amazon(p),true),link("Reverb (not affiliated)",reverb(p),false),button("Remove",()=>{shopping=shopping.filter(x=>x!==id);persistShopping();renderShopping();renderGear()}));card.append(actions);list.append(card)}}
 const previousGearCard=gearCard;gearCard=function(p){const card=previousGearCard(p);const controls=card.querySelector(".actions:last-child");if(controls)controls.append(button(shopping.includes(p.id)?"Remove from build":"Add to build",()=>{shopping=shopping.includes(p.id)?shopping.filter(x=>x!==p.id):[...shopping,p.id];persistShopping();renderShopping();renderGear()}));return card};
 el("buildRig").addEventListener("click",()=>{const chosen=new Map();for(const p of recommend()){if(p.kind==="multi"||state.owned.includes(p.id)||chosen.has(p.kind))continue;chosen.set(p.kind,p.id)}shopping=unique([...shopping,...chosen.values()]);persistShopping();renderShopping();renderGear()});
@@ -199,6 +201,64 @@ el("clearBuild").addEventListener("click",()=>{shopping=[];persistShopping();ren
 el("printBuild").addEventListener("click",()=>{if(!shopping.length){msg("Add equipment to your build first.");return}document.body.classList.add("print-build");try{window.print()}finally{document.body.classList.remove("print-build")}});
 el("downloadBuild").addEventListener("click",()=>{const lines=["My guitar gear build","",...shopping.flatMap(id=>{const p=byId.get(id);return [p.name+" ("+kinds[p.kind]+", "+p.tier+")",cableNotes[p.kind],""]}),"Check exact model, compatibility, pricing and stock with the retailer."];download(new Blob([lines.join("\n")],{type:"text/plain"}),"guitar-gear-list.txt")});
 renderShopping();renderGear();historyUI();
+
+
+// Practice tools and offline audio rendering. None of these tools upload audio.
+let wavBusy=false,loopA=null,loopB=null,loopActive=false,metroTimer=null,metroGain=null,metroNext=0,metroBeat=0;
+const setPractice=s=>el("practiceStatus").textContent=s;
+function practiceUI(){
+ const usable=!!fileURL&&mode!=="mic"&&!rec&&!busy&&!wavBusy&&Number.isFinite(media.duration)&&media.duration>0;
+ for(const id of ["loopStart","loopEnd","loopEnable","speed"])el(id).disabled=!usable;
+ el("loopEnable").disabled=!usable||loopA===null||loopB===null||loopB-loopA<.2;
+ el("loopEnable").textContent=loopActive?"Stop looping":"Loop selection";
+ el("loopPoints").textContent=loopA===null&&loopB===null?"No loop selected.":(loopA===null?"—":loopA.toFixed(2)+" s")+" → "+(loopB===null?"—":loopB.toFixed(2)+" s");
+ el("wavExport").disabled=!usable||!window.OfflineAudioContext;
+ el("metroStop").disabled=metroTimer===null;
+ el("metroStart").disabled=metroTimer!==null||!!rec||wavBusy;
+}
+const previousUI3=ui;ui=function(){previousUI3();practiceUI();if(wavBusy){for(const id of ["mic","stop","file","play","demo","export","recordLive","irFile","clearIR"])el(id).disabled=true}};
+const disconnect3=disconnect;disconnect=function(){loopActive=false;loopA=loopB=null;media.playbackRate=1;el("speed").value="1";disconnect3();practiceUI()};
+el("loopStart").addEventListener("click",()=>{loopA=media.currentTime;if(loopB!==null&&loopB<=loopA+.2)loopB=null;loopActive=false;practiceUI()});
+el("loopEnd").addEventListener("click",()=>{loopB=media.currentTime;if(loopA!==null&&loopB<=loopA+.2){loopA=null;setPractice("Set a loop start at least 0.2 seconds before the end.")}loopActive=false;practiceUI()});
+el("loopEnable").addEventListener("click",()=>{if(loopA===null||loopB===null||loopB-loopA<.2)return;loopActive=!loopActive;if(loopActive)media.currentTime=loopA;practiceUI()});
+el("speed").addEventListener("change",()=>{media.playbackRate=Number(el("speed").value);if("preservesPitch"in media)media.preservesPitch=true;setPractice("Playback speed "+media.playbackRate+"×. Pitch preservation depends on browser.")});
+media.addEventListener("timeupdate",()=>{if(loopActive&&!rec&&!busy&&loopA!==null&&loopB!==null&&media.currentTime>=loopB)media.currentTime=loopA});
+media.addEventListener("loadedmetadata",practiceUI);media.addEventListener("ended",()=>{if(loopActive&&!rec&&loopA!==null){media.currentTime=loopA;media.play().catch(()=>{})}});
+el("export").addEventListener("click",()=>{loopActive=false;media.playbackRate=1;el("speed").value="1";stopMetro();practiceUI()},true);
+function stopMetro(){if(metroTimer!==null){clearInterval(metroTimer);metroTimer=null}if(metroGain&&ctx){metroGain.gain.cancelScheduledValues(ctx.currentTime);metroGain.gain.setValueAtTime(0,ctx.currentTime)}el("metroBeat").textContent="—";practiceUI()}
+el("metroStart").addEventListener("click",async()=>{if(metroTimer!==null||rec||wavBusy)return;try{if(!on("headphones"))throw Error("Confirm headphones first to prevent microphone feedback.");build();await ctx.resume();if(!on("headphones")||rec||wavBusy)return;metroGain=ctx.createGain();metroGain.gain.value=.10;metroGain.connect(ctx.destination);metroNext=ctx.currentTime+.04;metroBeat=0;const schedule=()=>{if(!on("headphones")||rec||document.hidden){stopMetro();return}const bpm=Math.max(40,Math.min(240,Number(el("bpm").value)||100)),beats=Number(el("beats").value)||4;while(metroNext<ctx.currentTime+.12){if(metroNext<ctx.currentTime-.1){metroNext=ctx.currentTime+.04;continue}const o=ctx.createOscillator(),env=ctx.createGain(),accent=metroBeat%beats===0;o.frequency.value=accent?1400:950;env.gain.setValueAtTime(.001,metroNext);env.gain.exponentialRampToValueAtTime(accent?.6:.35,metroNext+.004);env.gain.exponentialRampToValueAtTime(.001,metroNext+.055);o.connect(env);env.connect(metroGain);o.start(metroNext);o.stop(metroNext+.06);o.onended=()=>{o.disconnect();env.disconnect()};el("metroBeat").textContent=String(metroBeat%beats+1)+"/"+beats;metroBeat++;metroNext+=60/bpm}};metroTimer=setInterval(schedule,30);schedule();practiceUI();setPractice("Metronome plays through headphones only, outside the recording signal chain.")}catch(e){setPractice(e.message)}});
+el("metroStop").addEventListener("click",stopMetro);el("headphones").addEventListener("change",()=>{if(!on("headphones"))stopMetro()});document.addEventListener("visibilitychange",()=>{if(document.hidden)stopMetro()});window.addEventListener("pagehide",stopMetro);
+function pitchEstimate(data,sr){
+ let power=0;for(const x of data)power+=x*x;if(power/data.length<1e-7)return null;
+ const min=Math.floor(sr/500),max=Math.min(Math.floor(sr/65),Math.floor(data.length/2)-2),vals=new Float32Array(max+1);
+ for(let lag=min;lag<=max;lag++){let xy=0,xx=0,yy=0;const size=data.length-max;for(let i=0;i<size;i++){const x=data[i],y=data[i+lag];xy+=x*y;xx+=x*x;yy+=y*y}vals[lag]=xy/Math.sqrt(Math.max(1e-20,xx*yy))}
+ let best=-1,score=.75;for(let lag=min+1;lag<max;lag++){if(vals[lag]>score&&vals[lag]>=vals[lag-1]&&vals[lag]>=vals[lag+1]){best=lag;score=vals[lag];if(score>.94)break}}if(best<0)return null;
+ const a=vals[best-1],b=vals[best],c=vals[best+1],den=2*(a-2*b+c),shift=den?Math.max(-.5,Math.min(.5,(a-c)/den)):0;return sr/(best+shift);
+}
+let pitchBuf=null;
+setInterval(()=>{if(!on("tunerOn")||!g||mode==="none"||mode==="file"&&media.paused){el("practicePitch").textContent="—";return}if(!pitchBuf)pitchBuf=new Float32Array(g.raw.fftSize);g.raw.getFloatTimeDomainData(pitchBuf);const f=pitchEstimate(pitchBuf,ctx.sampleRate);if(!f){el("practicePitch").textContent="Play one string";return}const midi=Math.round(69+12*Math.log2(f/440)),cents=Math.round(1200*Math.log2(f/(440*2**((midi-69)/12))));const notes=["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];el("practicePitch").textContent=notes[(midi%12+12)%12]+(Math.floor(midi/12)-1)+" · "+(cents>0?"+":"")+cents+" cents · "+f.toFixed(1)+" Hz"},200);
+// Offline PCM export using the same graph and settings, independent of playback speed.
+function encodeWav(buffer,bits){
+ const channels=Math.min(2,buffer.numberOfChannels),frames=buffer.length,bps=bits/8,bytes=frames*channels*bps;
+ const ab=new ArrayBuffer(44+bytes),v=new DataView(ab);const str=(i,x)=>{for(let j=0;j<x.length;j++)v.setUint8(i+j,x.charCodeAt(j))};
+ str(0,"RIFF");v.setUint32(4,36+bytes,true);str(8,"WAVE");str(12,"fmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,channels,true);v.setUint32(24,buffer.sampleRate,true);v.setUint32(28,buffer.sampleRate*channels*bps,true);v.setUint16(32,channels*bps,true);v.setUint16(34,bits,true);str(36,"data");v.setUint32(40,bytes,true);
+ const arrays=Array.from({length:channels},(_,i)=>buffer.getChannelData(i));let p=44;
+ for(let i=0;i<frames;i++)for(let c=0;c<channels;c++){const x=Math.max(-1,Math.min(1,arrays[c][i])),val=Math.round(x*(x<0?2**(bits-1):2**(bits-1)-1));if(bits===16)v.setInt16(p,val,true);else{v.setUint8(p,val&255);v.setUint8(p+1,(val>>8)&255);v.setUint8(p+2,(val>>16)&255)}p+=bps}return new Blob([ab],{type:"audio/wav"});
+}
+function offlineGate(buffer,graph,ac){
+ if(!on("gateOn")&&!on("adaptiveGate"))return;
+ // Approximate envelope from unfiltered source for offline gate; live analyser measures post-input EQ.
+ const a=buffer.getChannelData(0),block=Math.max(1,Math.floor(buffer.sampleRate*.02)),boost=n("input");let floor=-75,open=true;
+ graph.gate.gain.cancelScheduledValues(0);for(let i=0;i<a.length;i+=block){let sum=0,end=Math.min(a.length,i+block);for(let j=i;j<end;j++)sum+=a[j]*a[j];const rms=10*Math.log10(Math.max(1e-14,sum/(end-i)))+boost;if(on("adaptiveGate")&&rms<floor+8)floor=Math.max(-90,Math.min(-35,floor*.98+rms*.02));const threshold=Math.max(on("gateOn")?n("gate"):-90,on("adaptiveGate")?Math.min(-32,floor+10):-90);const next=open?rms>threshold-5:rms>threshold;if(i===0||next!==open)graph.gate.gain.setTargetAtTime(next?1:.015,i/buffer.sampleRate,next?.008:.06);open=next}
+}
+el("wavExport").addEventListener("click",async()=>{if(!fileURL||wavBusy||rec||mode==="mic")return;const url=fileURL;wavBusy=true;media.pause();loopActive=false;stopMetro();ui();try{
+ const Offline=window.OfflineAudioContext;if(!Offline)throw Error("Offline WAV export is not supported.");if(media.duration>180)throw Error("Offline WAV beta supports recordings up to three minutes.");
+ build();const response=await fetch(url),blob=await response.blob();if(blob.size>80000000)throw Error("Choose a recording under 80 MB.");setPractice("Decoding recording…");const decoded=await ctx.decodeAudioData(await blob.arrayBuffer());if(decoded.duration>180)throw Error("Choose a recording up to three minutes.");const rate=48000,tail=on("bypass")?0:on("verbOn")||on("delayOn")?3:.12;const ac=new Offline(2,Math.ceil((decoded.duration+tail)*rate),rate),graph=createGraph(ac);
+ configureGraph(graph,ac,true);offlineGate(decoded,graph,ac);if(customIR){const conv=ac.createConvolver();conv.buffer=customIR;graph.cabLP.disconnect(graph.cabOut);graph.cabLP.connect(conv);conv.connect(graph.cabOut)}
+ // Keep selected output volume, never automatically boost beyond it.
+ const src=ac.createBufferSource();src.buffer=decoded;src.connect(graph.input);graph.volume.connect(ac.destination);src.start();setPractice("Rendering offline at 48 kHz…");const rendered=await ac.startRendering();download(encodeWav(rendered,Number(el("wavBits").value)),"guitar-studio.wav");setPractice("WAV saved. Offline gate is an approximation of the live gate; comparison trim and playback speed are excluded.");
+ }catch(e){setPractice("WAV export unavailable: "+e.message+". Try a supported WAV or MP3 file, or use real-time export.")}finally{wavBusy=false;el("irFile").disabled=false;el("clearIR").disabled=!customIR;ui()}});
+practiceUI();
 
 ui();
 })();
