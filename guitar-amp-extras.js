@@ -114,7 +114,7 @@ function demoWav(){
  for(const [time,f] of notes){const length=Math.round(sr/f),buf=Float32Array.from({length},rnd),start=Math.round(time*sr);let idx=0;for(let i=0;i<sr*1.7&&start+i<arr.length;i++){const next=(idx+1)%length,v=buf[idx];buf[idx]=.997*(v+buf[next])*.5;idx=next;arr[start+i]+=v*.19*Math.min(1,i/100)*Math.exp(-i/(sr*1.4))}}
  const ab=new ArrayBuffer(44+arr.length*2),v=new DataView(ab);const str=(offset,s)=>{for(let i=0;i<s.length;i++)v.setUint8(offset+i,s.charCodeAt(i))};str(0,"RIFF");v.setUint32(4,ab.byteLength-8,true);str(8,"WAVE");str(12,"fmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);str(36,"data");v.setUint32(40,arr.length*2,true);for(let i=0;i<arr.length;i++)v.setInt16(44+2*i,Math.round(Math.max(-1,Math.min(1,arr[i]))*32767),true);return new Blob([ab],{type:"audio/wav"});
 }
-el("demo").addEventListener("click",async()=>{if(busy||rec)return;try{disconnect();if(fileURL)URL.revokeObjectURL(fileURL);fileURL=URL.createObjectURL(demoWav());media.src=fileURL;media.hidden=false;media.load();build();await ctx.resume();attachMedia();el("guitar").value="direct";apply();await media.play();status("Playing a generated plucked-string demo (not a real guitar recording).")}catch(e){status("Demo unavailable: "+e.message)}ui()});
+el("demo").addEventListener("click",async()=>{if(busy||rec||liveRec)return;busy=true;ui();status("Loading generated guitar demo…");let timer;try{disconnect();if(fileURL)URL.revokeObjectURL(fileURL);fileURL=URL.createObjectURL(demoWav());media.src=fileURL;media.hidden=false;media.load();build();attachMedia();el("guitar").value="direct";apply();const started=Promise.all([ctx.resume(),media.play()]);await Promise.race([started,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error("Playback did not start. Press Play to retry.")),5000)})]);status("Playing a generated plucked-string demo (not a real guitar recording).")}catch(e){media.pause();status("Demo loaded; "+e.message)}finally{clearTimeout(timer);busy=false;ui()}});
 // Local live recording; stop safely on mic disconnection, input switch or hidden tab.
 let liveRec=null,calibration=null;
 const previousUI=ui;ui=function(){previousUI();el("demo").disabled=busy||!!rec||!!liveRec;el("recordLive").disabled=busy||!!rec||!!liveRec||mode!=="mic"||!window.MediaRecorder;el("stopLive").disabled=!liveRec;el("calibrate").disabled=busy||!!rec||!!liveRec||!!calibration||mode!=="mic";if(liveRec){el("file").disabled=true;el("export").disabled=true}};
@@ -211,6 +211,7 @@ function practiceUI(){
  for(const id of ["loopStart","loopEnd","loopEnable","speed"])el(id).disabled=!usable;
  el("loopEnable").disabled=!usable||loopA===null||loopB===null||loopB-loopA<.2;
  el("loopEnable").textContent=loopActive?"Stop looping":"Loop selection";
+ if(el("loopPoints").dataset){el("loopPoints").dataset.start=loopA===null?"":String(loopA);el("loopPoints").dataset.end=loopB===null?"":String(loopB)}
  el("loopPoints").textContent=loopA===null&&loopB===null?"No loop selected.":(loopA===null?"—":loopA.toFixed(2)+" s")+" → "+(loopB===null?"—":loopB.toFixed(2)+" s");
  el("wavExport").disabled=!usable||!window.OfflineAudioContext;
  el("metroStop").disabled=metroTimer===null;
