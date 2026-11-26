@@ -3,7 +3,8 @@
 (()=>{
 const el=id=>document.getElementById(id),runtime="/vendor/nam-runtime/dist/engine/";
 let active=null,loading=false,epoch=0;
-const starters={clean:{name:"RiffSmith Clean",url:"/vendor/nam-models/riffsmith-clean.nam"},distorted:{name:"RiffSmith Distorted",url:"/vendor/nam-models/riffsmith-distorted.nam"}};
+const starters={clean:{name:"RiffSmith Clean",url:"/vendor/nam-models/riffsmith-clean.nam",cab:"full",slim:true},distorted:{name:"RiffSmith Distorted",url:"/vendor/nam-models/riffsmith-distorted.nam",cab:"full",slim:true},crunch:{name:"ToneTinkerer Crunch",url:"/vendor/nam-models/tonetinkerer-crunch.nam",cab:"amp"},lead:{name:"ToneTinkerer Lead",url:"/vendor/nam-models/tonetinkerer-lead.nam",cab:"amp"}};
+const starterButtons=[["namClean","clean"],["namDistorted","distorted"],["namCrunch","crunch"],["namLead","lead"]];
 const tell=s=>{el("studioNamStatus").textContent=s;el("namStarterStatus").textContent=s};
 const timeout=(p,ms,msg)=>{let timer;return Promise.race([p,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(msg)),ms)})]).finally(()=>clearTimeout(timer))};
 function canSwitch(){return !loading&&!busy&&!rec&&mode!=="mic"&&media.paused&&!g?.offlineBusy&&!g?.liveCaptureBusy}
@@ -12,7 +13,7 @@ function sync(){
  el("studioNamFile").disabled=!allowed;el("studioNamCab").disabled=!allowed;
  el("studioNamLoad").disabled=!allowed||!el("studioNamFile").files.length;
  el("studioNamClear").disabled=!allowed||!active;el("namStarterClear").hidden=!active;el("namStarterClear").disabled=!allowed;
- for(const [id,key] of [["namClean","clean"],["namDistorted","distorted"]]){el(id).disabled=!allowed;el(id).setAttribute("aria-pressed",String(active?.key===key))}
+ for(const [id,key] of starterButtons){el(id).disabled=!allowed;el(id).setAttribute("aria-pressed",String(active?.key===key))}
  el("namControls").dataset.active=String(!!active);
  el("amp").disabled=!!active;el("gain").disabled=!!active;el("cab").disabled=!!active&&active.cab==="full";
  el("namWavNotice").hidden=!active;el("namReferenceNotice").hidden=!active;el("namGearNotice").hidden=!active;
@@ -54,7 +55,7 @@ el("studioNamCab").addEventListener("change",sync);
 for(const ev of ["play","pause","ended","emptied"])media.addEventListener(ev,()=>{if(loading&&ev==="play")media.pause();sync()});
 async function loadCapture({file=null,key=null,cab="full"}){
  if(!canSwitch()||(!file&&!starters[key]))return;
- const starter=key?starters[key]:null,name=starter?.name||file.name,token=++epoch;let candidate=null;
+ const starter=key?starters[key]:null,name=starter?.name||file.name,token=++epoch;if(starter)cab=starter.cab;let candidate=null;
  loading=true;busy=true;ui();tell("Loading neural amp…");
  try{
   if(!window.AudioWorkletNode||!window.WebAssembly)throw Error("Neural audio requires HTTPS or localhost and AudioWorklet support.");
@@ -72,19 +73,18 @@ async function loadCapture({file=null,key=null,cab="full"}){
   let NamEngine;try{({NamEngine}=await import(runtime+"index.js"))}catch{throw Error("Neural runtime not prepared on this host. The built-in amp is still available.");}
   const engine=await timeout(NamEngine.attach(ctx,{assetBaseUrl:new URL(runtime,location.href)}),20000,"Neural engine did not initialize.");
   candidate=await timeout(engine.createNode(),20000,"Neural node did not respond.");
-  const info=await timeout(candidate.loadModel(json,starter?{slimSize:.25}:undefined),20000,"Model could not load.");
+  const info=await timeout(candidate.loadModel(json,starter?.slim?{slimSize:.25}:undefined),20000,"Model could not load.");
   if(info.expectedSampleRate>0&&info.expectedSampleRate!==ctx.sampleRate)throw Error("The capture requires a different audio sample rate.");
   if(token!==epoch||document.hidden||!media.paused||mode==="mic"||rec)throw Error("Loading cancelled.");
   const loaded=candidate;loaded.addEventListener("processorerror",()=>emergency(loaded));
   setRoute({node:loaded,name,cab,key});candidate=null;
-  tell(name+" active · "+ctx.sampleRate+" Hz · "+(cab==="full"?"cabinet included":"studio cabinet active")+(starter?" · Lite":"")+". Presets adjust effects and EQ, not the capture. Start at low output.");
+  tell(name+" active · "+ctx.sampleRate+" Hz · "+(cab==="full"?"cabinet included":"studio cabinet active")+(starter?.slim?" · Lite":starter?" · Virtual circuit":"")+". Presets adjust effects and EQ, not the capture. Start at low output.");
   status("Neural amp ready. Play a recording or start the microphone.");
  }catch(e){release(candidate);tell((active?"Previous neural capture retained. ":"Built-in amplifier available. ")+(e.message||"Model failed to load."))}
  finally{loading=false;busy=false;ui()}
 }
 el("studioNamLoad").addEventListener("click",()=>loadCapture({file:el("studioNamFile").files[0],cab:el("studioNamCab").value}));
-el("namClean").addEventListener("click",()=>loadCapture({key:"clean"}));
-el("namDistorted").addEventListener("click",()=>loadCapture({key:"distorted"}));
+for(const [id,key] of starterButtons)el(id).addEventListener("click",()=>loadCapture({key}));
 function clearCapture(){if(!active||!canSwitch())return;setRoute(null);tell("Built-in amplifier restored.");status("Built-in amplifier ready.");ui()}
 el("studioNamClear").addEventListener("click",clearCapture);el("namStarterClear").addEventListener("click",clearCapture);
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&loading)epoch++});
