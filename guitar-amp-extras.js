@@ -139,6 +139,7 @@ function takeUI(){
  for(const [id,key] of [["saveWet","wet"],["saveDry","dry"],["reampTake","dry"]])el(id).disabled=blocked||!t?.[key];
  el("deleteTake").disabled=blocked||!t;el("takeSelect").disabled=blocked;el("takeVersion").disabled=blocked;
  if(blocked&&takeURL)unloadPreview();else if(!blocked&&t&&!takeURL)previewTake();
+ if(g)g.liveCaptureBusy=!!liveRec;
  if(el("takeStudio").dataset)el("takeStudio").dataset.recording=String(!!liveRec&&!liveRec.stopping);
 }
 const previousUI=ui;ui=function(){previousUI();el("demo").disabled=busy||!!rec||!!liveRec;el("recordLive").disabled=busy||!!rec||!!liveRec||mode!=="mic"||!window.MediaRecorder||takes.length>=5;el("stopLive").disabled=!liveRec||!!liveRec.stopping;el("calibrate").disabled=busy||!!rec||!!liveRec||!!calibration||mode!=="mic";if(liveRec){el("file").disabled=true;el("export").disabled=true}takeUI()};
