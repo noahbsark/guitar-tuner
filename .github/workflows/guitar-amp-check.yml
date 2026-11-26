@@ -4,6 +4,9 @@ on:
     paths:
       - guitar-amp.html
       - guitar-amp-extras.js
+      - guitar-amp-ui.js
+      - guitar-amp-ui.css
+      - guitar-echo-lab.html
       - scripts/guitar-amp-smoke.cjs
       - .github/workflows/guitar-amp-check.yml
 permissions:
@@ -16,4 +19,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: node --check guitar-amp-ui.js
       - run: node scripts/guitar-amp-smoke.cjs
