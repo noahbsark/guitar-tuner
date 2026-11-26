@@ -7,6 +7,7 @@ on:
       - 'guitar-nam-lab*'
       - 'scripts/prepare-nam-engine.cjs'
       - 'vendor/nam-runtime/**'
+      - 'vendor/nam-models/**'
       - '.github/studio-tests/**'
       - '.github/workflows/guitar-studio-browser.yml'
   workflow_dispatch:
@@ -27,6 +28,13 @@ jobs:
       - run: npx --no-install playwright install --with-deps chromium firefox webkit
       - run: node scripts/prepare-nam-engine.cjs
         working-directory: .
+      - name: Prepare virtual audio output for headless browsers
+        run: |
+          pulseaudio --check || pulseaudio --start --exit-idle-time=-1
+          pactl info
+          pactl load-module module-null-sink sink_name=studio_ci sink_properties=device.description=StudioCI
+          pactl set-default-sink studio_ci
+          pactl list short sinks
       - run: npm test
       - uses: actions/upload-artifact@v4
         if: always()
