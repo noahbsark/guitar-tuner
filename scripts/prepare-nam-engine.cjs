@@ -5,7 +5,8 @@ const version='3.0.7',spec='neural-amp-modeler-wasm@'+version,tmp=fs.mkdtempSync
 try{
  const npm=process.platform==='win32'?'npm.cmd':'npm';
  const result=JSON.parse(execFileSync(npm,['pack',spec,'--ignore-scripts','--json','--pack-destination',tmp],{encoding:'utf8',shell:process.platform==='win32'}))[0];
- if(result.version!==version||result.name!=='neural-amp-modeler-wasm'||!result.integrity)throw Error('Unexpected package metadata');
+ const expectedIntegrity='sha512-y0grDbAtr+im9eJP+KjDbcLhbYR8NM1mvjd8u7o4NeUC2f5SlU3E2jLTLmWqCZJ5gbzGBlT03DLCPCRHY9OEiw==';
+ if(result.version!==version||result.name!=='neural-amp-modeler-wasm'||result.integrity!==expectedIntegrity)throw Error('Unexpected package metadata');
  execFileSync('tar',['-xf',path.join(tmp,result.filename),'-C',tmp]);
  const pkg=path.join(tmp,'package'),dist=path.join(pkg,'dist'),target=path.join(dest,'dist');
  for(const file of ['engine/index.js','engine/nam-worklet.js','engine/nam-engine.wasm'])if(!fs.existsSync(path.join(dist,file)))throw Error('Missing engine asset: '+file);
