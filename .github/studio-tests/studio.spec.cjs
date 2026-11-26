@@ -85,7 +85,7 @@ test('record both versions of a take, stop input and download or reamp',async({p
   navigator.mediaDevices.getUserMedia=async()=>{
    const ac=window.__testCaptureContext=new (window.AudioContext||window.webkitAudioContext)();
    const output=ac.createMediaStreamDestination(),osc=ac.createOscillator(),gain=ac.createGain();osc.frequency.value=220;gain.gain.value=.06;osc.connect(gain);gain.connect(output);osc.start();
-   window.__testCaptureTrack=output.stream.getAudioTracks()[0];await ac.resume();return output.stream;
+   window.__testCaptureTrack=output.stream.getAudioTracks()[0];ac.resume().catch(()=>{});return output.stream;
   };
  });
  await page.goto('/guitar-amp.html');
@@ -151,7 +151,7 @@ test('NAM lab rejects malformed captures without starting playback',async({page}
 test('studio neural capture replaces the amp, processes a signal and restores the built-in route',async({page},testInfo)=>{
  await page.goto('/guitar-amp.html');const errors=[];page.on('pageerror',e=>errors.push(e.message));
  test.skip(!(await page.evaluate(()=>!!window.AudioWorkletNode&&!!window.WebAssembly)),'AudioWorklet or WebAssembly unavailable');
- const rate=await page.evaluate(()=>{const C=window.AudioContext||window.webkitAudioContext;const a=new C();const rate=a.sampleRate;a.close().catch(()=>{});return rate});
+ const rate=await page.evaluate(()=>{const C=window.AudioContext||window.webkitAudioContext;let a;try{a=new C({sampleRate:48000})}catch{a=new C()}const rate=a.sampleRate;a.close().catch(()=>{});return rate});
  const model={version:'0.5.4',architecture:'Linear',config:{receptive_field:1,bias:false},weights:[0.5],sample_rate:rate,metadata:{name:'Synthetic half-gain test fixture'}};
  await page.locator('#namControls summary').click();
  await page.locator('#studioNamFile').setInputFiles({name:'linear-test.nam',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(model))});
@@ -180,5 +180,27 @@ test('studio neural capture replaces the amp, processes a signal and restores th
  await page.locator('#studioNamClear').click();await expect(page.locator('#gain')).toBeEnabled();
  await expect(page.locator('#studioNamStatus')).toContainText('Built-in amplifier restored');
  await page.locator('.workspace-link[data-view="practice"]').click();await expect(page.locator('#namWavNotice')).toBeHidden();await expect(page.locator('#wavExport')).toBeEnabled();
+ expect(errors).toEqual([]);
+});
+
+test('bundled MIT neural captures load without uploads and switch back safely',async({page},testInfo)=>{
+ await page.goto('/guitar-amp.html');
+ test.skip(!(await page.evaluate(()=>!!window.AudioWorkletNode&&!!window.WebAssembly)),'AudioWorklet or WebAssembly unavailable');
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.locator('#namClean').click();
+ await expect(page.locator('#namStarterStatus')).toContainText('RiffSmith Clean active',{timeout:35000});
+ await expect(page.locator('#namClean')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#namDistorted')).toHaveAttribute('aria-pressed','false');
+ await page.locator('#namDistorted').click();
+ await expect(page.locator('#namStarterStatus')).toContainText('RiffSmith Distorted active',{timeout:35000});
+ await expect(page.locator('#namDistorted')).toHaveAttribute('aria-pressed','true');
+ await page.locator('#demo').click();
+ await expect.poll(()=>page.locator('#media').evaluate(el=>el.currentTime),{timeout:12000}).toBeGreaterThan(.1);
+ await page.locator('#play').click();
+ await expect(page.locator('#namStarterClear')).toBeEnabled();
+ await page.screenshot({path:testInfo.outputPath('starter-captures.png'),fullPage:true});
+ await page.locator('#namStarterClear').click();
+ await expect(page.locator('#ampName')).not.toHaveText('Neural capture');
+ await expect(page.locator('#namDistorted')).toHaveAttribute('aria-pressed','false');
  expect(errors).toEqual([]);
 });
