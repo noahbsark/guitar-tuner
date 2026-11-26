@@ -17,3 +17,9 @@ The open source Neural Amp Modeler project (https://github.com/sdatkinson/neural
 - Verify current retailer products, links, affiliate disclosure and applicable program rules. Avoid claims of exact physical gear equivalence.
 - Keep unindexed and unlinked until reviewed; then add navigation, sitemap, privacy disclosures and canonical public page. No production/DNS changes until review.
 - PWA, public community, user accounts, retailer APIs, sponsored presets and paid infrastructure require separate scope and validation.
+
+## Performance video capture (implemented on the feature branch)
+
+After explicitly enabling the microphone, a user may enable the camera, view a muted local preview, and record a take. Camera permission requests video only. The video recorder receives the camera video track plus the existing processed audio bus, never a second microphone track; original and processed audio are also recorded separately. Video is limited to two minutes, requests up to 720p/30fps (24fps preferred), and requests a 1.5 Mbps video bitrate. Codec, actual resolution, bitrate and A/V alignment are browser-dependent. The five-take in-tab limit still applies. Finishing, disconnecting, switching inputs or hiding the tab releases camera and microphone tracks; permission failure leaves audio recording available. Preview and downloads are local and require no upload. MediaRecorder chooses a supported WebM or MP4 container; there is no guarantee of MP4 on every device.
+
+Before release: verify the video test with real browser encoders; test camera permission denial, front/rear camera differences, mobile orientation, audio/video synchronization using a visible/audible pluck or clap, stop during permission prompt, long recording resource limits and downloaded video playback on actual devices. Existing record-only microphone mode remains the default. No persistent recording library yet.
