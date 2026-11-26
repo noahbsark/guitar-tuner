@@ -4,6 +4,7 @@ on:
     paths:
       - 'guitar-amp*'
       - 'guitar-echo-lab.html'
+      - 'guitar-echo-filter.js'
       - 'guitar-nam-lab*'
       - 'scripts/prepare-nam-engine.cjs'
       - 'vendor/nam-runtime/**'
