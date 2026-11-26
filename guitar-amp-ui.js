@@ -37,7 +37,7 @@ const dials=[];for(const label of document.querySelectorAll("#ampKnobs .knob")){
 function sync(){
  for(const b of tiles.querySelectorAll("button"))b.setAttribute("aria-pressed",String(b.dataset.preset===preset.value));
  const bypass=$("bypass").checked;const quick=$("quickBypass");quick.textContent=bypass?"Hear processed":"Hear original";quick.setAttribute("aria-pressed",String(bypass));
- $("ampName").textContent=$("amp").selectedOptions[0]?.textContent||"Amplifier";
+ $("ampName").textContent=g?.namActive?"Neural capture":($("amp").selectedOptions[0]?.textContent||"Amplifier");
  const pedals=[...document.querySelectorAll(".pedal input[type=checkbox]")];$("pedalCount").textContent=pedals.filter(p=>p.checked).length+" active";
  for(const p of pedals){const l=p.closest("label");if(l&&l.lastChild?.nodeType===3)l.lastChild.textContent=p.checked?" On":" Off"}
  for(const [dial,input] of dials){const f=Math.max(0,Math.min(1,(Number(input.value)-Number(input.min))/(Number(input.max)-Number(input.min)||1)));dial.style.setProperty("--dial-angle",f*270+"deg");dial.style.setProperty("--dial-rotation",f*270-135+"deg")}
