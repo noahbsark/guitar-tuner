@@ -91,7 +91,10 @@ test('record both versions of a take, stop input and download or reamp',async({p
  await page.goto('/guitar-amp.html');
  test.skip(!(await page.evaluate(()=>!!window.MediaRecorder&&!!navigator.mediaDevices)),'MediaRecorder unavailable');
  await page.locator('#mic').click();
- await expect(page.locator('#recordLive')).toBeEnabled({timeout:15000});
+ try{await expect(page.locator('#recordLive')).toBeEnabled({timeout:15000})}catch(e){
+  const diagnostics=await page.evaluate(()=>({status:document.querySelector('#status')?.textContent,engine:typeof ctx!=='undefined'?ctx?.state:null,testInput:window.__testCaptureContext?.state,testTrack:window.__testCaptureTrack?.readyState,secure:isSecureContext,hidden:document.hidden,activation:navigator.userActivation?.hasBeenActive}));
+  console.log('MICROPHONE_DIAGNOSTICS '+JSON.stringify(diagnostics));throw e;
+ }
  await page.locator('#recordLive').click();
  await expect(page.locator('#takeStatus')).toContainText('Recording original and amplified');
  await expect(page.locator('#takeTimer')).not.toHaveText('00:00',{timeout:5000});
@@ -108,4 +111,39 @@ test('record both versions of a take, stop input and download or reamp',async({p
  await page.screenshot({path:testInfo.outputPath('take-review.png'),fullPage:true});
  await page.locator('#reampTake').click();await expect(page.locator('#status')).toContainText('Original take loaded',{timeout:15000});await expect(page.locator('#play')).toBeEnabled();
  await page.evaluate(()=>window.__testCaptureContext?.close());
+});
+
+test('NAM lab loads local synthetic model and processes a test recording',async({page},testInfo)=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/guitar-nam-lab.html');
+ test.skip(!(await page.evaluate(()=>!!window.AudioWorkletNode&&!!window.WebAssembly)),'AudioWorklet or WebAssembly unavailable');
+ // Original one-tap linear fixture: validates execution only, not amp tone.
+ const model={version:'0.5.4',architecture:'Linear',config:{receptive_field:1,bias:false},weights:[0.5],sample_rate:48000,metadata:{name:'Synthetic half-gain test fixture'}};
+ const rate=48000,frames=rate*2,buf=Buffer.alloc(44+2*frames);
+ buf.write('RIFF',0);buf.writeUInt32LE(buf.length-8,4);buf.write('WAVEfmt ',8);buf.writeUInt32LE(16,16);buf.writeUInt16LE(1,20);buf.writeUInt16LE(1,22);buf.writeUInt32LE(rate,24);buf.writeUInt32LE(rate*2,28);buf.writeUInt16LE(2,32);buf.writeUInt16LE(16,34);buf.write('data',36);buf.writeUInt32LE(frames*2,40);
+ for(let i=0;i<frames;i++)buf.writeInt16LE(Math.round(Math.sin(i*2*Math.PI*220/rate)*6000),44+i*2);
+ await page.locator('#namModel').setInputFiles({name:'synthetic.nam',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(model))});
+ await page.locator('#namAudio').setInputFiles({name:'synthetic.wav',mimeType:'audio/wav',buffer:buf});
+ await page.locator('#namPrepare').click();
+ await expect(page.locator('#namStatus')).toContainText('Model ready',{timeout:35000});
+ await page.locator('#namPlay').click();
+ await expect(page.locator('#namStatus')).toContainText('Playing recording');
+ await page.locator('#namBypass').click();await expect(page.locator('#namBypass')).toHaveAttribute('aria-pressed','true');
+ await page.locator('#namStop').click();await expect(page.locator('#namPlay')).toBeEnabled();
+ if(await page.evaluate(()=>!!window.MediaRecorder)){
+  await page.locator('#namExport').click();
+  await expect(page.locator('#namDownload')).toBeEnabled({timeout:12000});
+  const dl=page.waitForEvent('download');await page.locator('#namDownload').click();const file=await dl;
+  expect(file.suggestedFilename()).toMatch(/^neural-guitar\./);expect(require('node:fs').statSync(await file.path()).size).toBeGreaterThan(100);
+ }
+ await page.screenshot({path:testInfo.outputPath('neural-lab.png'),fullPage:true});
+ expect(errors).toEqual([]);
+});
+test('NAM lab rejects malformed captures without starting playback',async({page})=>{
+ await page.goto('/guitar-nam-lab.html');
+ await page.locator('#namModel').setInputFiles({name:'invalid.nam',mimeType:'application/json',buffer:Buffer.from('{"invalid":true}')});
+ await page.locator('#namAudio').setInputFiles({name:'invalid.wav',mimeType:'audio/wav',buffer:Buffer.from('invalid')});
+ await page.locator('#namPrepare').click();
+ await expect(page.locator('#namPlay')).toBeDisabled();
+ await expect(page.locator('#namStatus')).toContainText('Invalid or unsupported NAM model file.');
 });
