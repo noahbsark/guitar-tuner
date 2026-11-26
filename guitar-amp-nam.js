@@ -13,7 +13,7 @@ function sync(){
  el("studioNamClear").disabled=!allowed||!active;
  el("namControls").dataset.active=String(!!active);
  el("amp").disabled=!!active;el("gain").disabled=!!active;el("cab").disabled=!!active&&active.cab==="full";
- el("namWavNotice").hidden=!active;el("namReferenceNotice").hidden=!active;
+ el("namWavNotice").hidden=!active;el("namReferenceNotice").hidden=!active;el("namGearNotice").hidden=!active;
  if(active){el("wavExport").disabled=true;el("matchReference").disabled=true}
  el("ampName").textContent=active?"Neural capture":(el("amp").selectedOptions[0]?.textContent||"Amplifier");
 }
@@ -24,13 +24,16 @@ function setRoute(next){
  // pedals, EQ, safety limiter, output volume and recording taps unchanged.
  if(!g)throw Error("Studio audio engine is unavailable.");
  const old=active;
- if(old){g.ampIn.disconnect(old.node);old.node.disconnect(g.bass)}
- else g.ampIn.disconnect(g.ampPre);
- if(old?.cab==="full"){g.treble.disconnect(g.cabOut);g.treble.connect(g.cabHP)}
- if(next){
-  g.ampIn.connect(next.node);next.node.connect(g.bass);
-  if(next.cab==="full"){g.treble.disconnect(g.cabHP);g.treble.connect(g.cabOut)}
- }else g.ampIn.connect(g.ampPre);
+ g.ampIn.disconnect();g.treble.disconnect();if(old)old.node.disconnect();
+ try{
+  if(next){g.ampIn.connect(next.node);next.node.connect(g.bass)}
+  else g.ampIn.connect(g.ampPre);
+  g.treble.connect(next?.cab==="full"?g.cabOut:g.cabHP);
+ }catch(e){
+  g.ampIn.disconnect();g.treble.disconnect();if(next)release(next.node);
+  g.ampIn.connect(g.ampPre);g.treble.connect(g.cabHP);active=null;g.namActive=false;if(old)release(old.node);
+  document.dispatchEvent(new Event("studio-nam-change"));sync();throw e;
+ }
  active=next;g.namActive=!!active;
  if(old&&old.node!==next?.node)release(old.node);
  document.dispatchEvent(new Event("studio-nam-change"));
