@@ -4,6 +4,9 @@ on:
     paths:
       - 'guitar-amp*'
       - 'guitar-echo-lab.html'
+      - 'guitar-nam-lab*'
+      - 'scripts/prepare-nam-engine.cjs'
+      - 'vendor/nam-runtime/**'
       - '.github/studio-tests/**'
       - '.github/workflows/guitar-studio-browser.yml'
   workflow_dispatch:
@@ -22,6 +25,8 @@ jobs:
           node-version: '22'
       - run: npm install --ignore-scripts --no-audit --no-fund
       - run: npx --no-install playwright install --with-deps chromium firefox webkit
+      - run: node scripts/prepare-nam-engine.cjs
+        working-directory: .
       - run: npm test
       - uses: actions/upload-artifact@v4
         if: always()
