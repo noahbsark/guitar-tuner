@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0d1117">
+<title>Virtual Guitar Amp &amp; Pedalboard | Online Guitar Tuner</title>
+<meta name="description" content="Experiment with electric guitar tones using your microphone or a guitar audio or video recording. Free browser-based virtual amplifier and pedals.">
+<meta name="robots" content="noindex,follow">
+<link rel="canonical" href="https://onlineguitartuner.net/guitar-amp">
+<style>
+:root{color-scheme:dark;--bg:#0d1117;--panel:#161d26;--line:#303b49;--muted:#aab7c8;--accent:#9ee3b6;--gold:#e5bc78}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#edf2f7;font:16px/1.5 system-ui,sans-serif}a{color:var(--accent)}header{border-bottom:1px solid var(--line);padding:16px max(16px,calc((100% - 1040px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px}header a{text-decoration:none;font-weight:650}main{max-width:1040px;margin:auto;padding:24px 16px 64px}h1{font-size:clamp(30px,5vw,48px);line-height:1.12;margin:8px 0 12px}h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;margin:0 0 12px}p{margin:8px 0 14px}.muted{color:var(--muted)}.tag{color:var(--accent);font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:bold}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:16px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:14px}.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}button,select,input[type=file]{font:inherit;color:inherit}button,select{border:1px solid #445366;background:#222d3a;border-radius:8px;padding:10px 13px;min-height:44px}button{cursor:pointer;font-weight:650}button.primary{background:var(--accent);color:#10241b;border-color:var(--accent)}button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:3px}label{display:block;font-weight:600;font-size:14px}label select{display:block;width:100%;margin-top:6px}input[type=range]{width:100%;accent-color:var(--accent);min-height:32px;margin:0}input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px;vertical-align:middle;margin-right:7px}input[type=file]{max-width:100%;margin:8px 0 12px}.knob{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 8px}.knob input{grid-column:1/-1}.knob output{font:13px ui-monospace,monospace;color:var(--gold)}.amp{background:linear-gradient(180deg,#382f25 0,#242019 100%);border:1px solid #7b6748;border-radius:10px;padding:16px}.pedal{background:#1e3032;border:1px solid #4d706b;border-radius:10px;padding:14px}.pedal:nth-child(2){background:#362b39;border-color:#70577b}.pedal:nth-child(3){background:#283044;border-color:#566f95}.pedal:nth-child(4){background:#3b3027;border-color:#8c6d45}.pedal:nth-child(5){background:#28392c;border-color:#557e61}.pedal h3{letter-spacing:.06em;text-transform:uppercase;font-size:13px}.meter{height:8px;background:#080d12;border-radius:8px;overflow:hidden;margin:8px 0}.meter span{display:block;width:0;height:100%;background:var(--accent)}.notice{border-left:3px solid var(--gold);padding-left:12px;color:#e9d3b1;font-size:14px}video{display:block;max-height:360px;width:100%;background:#080d12;border-radius:8px;margin:12px 0}video[hidden], [hidden]{display:none!important}#status{min-height:24px;color:var(--accent)}.small{font-size:13px}fieldset{border:0;padding:0;margin:0;min-width:0}legend{font-size:20px;font-weight:700;margin-bottom:12px}footer{color:var(--muted);margin-top:24px;font-size:14px}
+</style>
+</head>
+<body>
+<header><a href="/">Online Guitar Tuner</a><a href="/">Back to tuner</a></header>
+<main>
+<div class="tag">Experimental tone studio</div>
+<h1>Virtual Guitar Amp</h1>
+<p class="muted">Turn the sound of an unplugged guitar into an amplified tone. Play through your microphone or load a recording, then build your own signal chain.</p>
+<section class="panel">
+<h2>1. Choose your input</h2>
+<div class="grid">
+<div><h3>Live microphone</h3><label><input id="headphones" type="checkbox">I am wearing headphones</label><p class="notice">Start at low volume. Do not use speakers with live monitoring: acoustic feedback can be loud. Wired headphones work best.</p><div class="actions"><button class="primary" id="mic" disabled>Start microphone</button><button id="stop" disabled>Stop</button></div></div>
+<div><h3>Audio or video recording</h3><label for="file">Choose a local recording</label><input id="file" type="file" accept="audio/*,video/*,.mp3,.wav,.m4a,.mp4,.mov,.webm,.ogg"><div class="actions"><button id="play" disabled>Play / pause</button><button id="export" disabled>Export processed recording</button><button id="cancel" disabled>Cancel export</button></div><p class="small muted">Export plays through the file in real time. Keep this tab open and visible. Output format depends on browser support.</p></div>
+</div>
+<video id="media" playsinline preload="metadata" controls hidden></video>
+<p id="status" role="status" aria-live="polite">Choose an input to begin.</p>
+<div class="meter" aria-hidden="true"><span id="meter"></span></div>
+<p class="small muted">Input level • <span id="level">—</span></p>
+</section>
+<section class="panel">
+<h2>2. Pick your tone</h2>
+<div class="grid">
+<label>Guitar type<select id="guitar"><option value="acoustic">Acoustic guitar</option><option value="electric">Unplugged electric guitar</option><option value="direct">Direct / pickup recording</option></select></label>
+<label>Tone preset<select id="preset"></select></label>
+<label>Amplifier<select id="amp"><option value="clean">American clean</option><option value="british">British crunch</option><option value="lead">Classic lead</option><option value="metal">Modern high gain</option></select></label>
+<label>Speaker cabinet<select id="cab"><option value="open">Open-back 1×12</option><option value="stack">Closed-back 4×12</option><option value="small">Small combo</option></select></label>
+</div>
+<div class="actions" style="margin-top:14px"><label><input type="checkbox" id="bypass">Original sound (bypass)</label><button id="reset">Reset preset</button></div>
+<p class="small muted">Artist names describe tonal inspiration, not exact equipment or endorsements.</p>
+</section>
+<section class="panel">
+<h2>3. Dial in the amplifier</h2>
+<div class="amp"><div class="grid" id="ampKnobs"></div></div>
+</section>
+<section class="panel">
+<h2>4. Virtual pedalboard</h2>
+<p class="muted small">Signal path: input EQ → gate → compressor → drive → amp → cabinet → modulation → delay → reverb.</p>
+<div class="grid">
+<div class="pedal"><h3>Noise gate</h3><label><input type="checkbox" id="gateOn">On</label><div id="gateKnobs"></div></div>
+<div class="pedal"><h3>Compressor</h3><label><input type="checkbox" id="compOn">On</label><div id="compKnobs"></div></div>
+<div class="pedal"><h3>Drive / fuzz</h3><label><input type="checkbox" id="driveOn">On</label><label>Type<select id="driveType"><option value="overdrive">Overdrive</option><option value="distortion">Distortion</option><option value="fuzz">Fuzz</option></select></label><div id="driveKnobs"></div></div>
+<div class="pedal"><h3>Chorus / flange</h3><label><input type="checkbox" id="modOn">On</label><label>Type<select id="modType"><option value="chorus">Chorus</option><option value="flange">Flanger</option></select></label><div id="modKnobs"></div></div>
+<div class="pedal"><h3>Delay</h3><label><input type="checkbox" id="delayOn">On</label><div id="delayKnobs"></div></div>
+<div class="pedal"><h3>Reverb</h3><label><input type="checkbox" id="verbOn">On</label><div id="verbKnobs"></div></div>
+</div>
+</section>
+<section class="panel">
+<h2>How it works</h2>
+<p>This beta uses real-time digital filters, saturation, compression and simulated speaker voicing. Acoustic mode reduces body resonance before amplification; electric mode boosts the quiet unplugged signal. Neither can perfectly reconstruct a magnetic pickup from a microphone.</p>
+<p>Place the microphone near the strings, play in a quiet room and adjust input gain until the meter responds without clipping. For a recording with vocals or background music, the effects apply to the entire audio track; this version does not isolate the guitar.</p>
+<p>Your microphone and selected recordings are processed locally in your browser. No audio uploads, account or paid service is required. Browser and device latency vary. Video export re-encodes the visible footage at up to 720p and 30 fps and replaces the entire audio track. Some browsers cannot export video.</p>
+</section>
+<footer><a href="/">Free guitar tuner</a> · <a href="/privacy">Privacy</a> · Experimental beta</footer>
+</main>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const presets={
+"Clean studio":{amp:"clean",cab:"open",gain:24,bass:0,mid:1,treble:2,compOn:true,verbOn:true,verb:14},
+"Blues breakup":{amp:"british",cab:"small",gain:42,bass:1,mid:3,treble:0,driveOn:true,drive:22,verbOn:true,verb:11},
+"Classic rock — AC/DC inspired":{amp:"british",cab:"stack",gain:52,bass:2,mid:4,treble:1,driveOn:true,drive:18},
+"Grunge — Nirvana inspired":{amp:"lead",cab:"stack",gain:55,mid:2,driveOn:true,driveType:"distortion",drive:65,modOn:true,mod:14},
+"Metal — Metallica inspired":{amp:"metal",cab:"stack",gain:72,bass:3,mid:-4,treble:3,gateOn:true,gate:-55,driveOn:true,drive:24},
+"Ambient lead — Pink Floyd inspired":{amp:"lead",cab:"open",gain:43,mid:3,driveOn:true,drive:25,compOn:true,delayOn:true,delay:29,time:440,verbOn:true,verb:27},
+"Vintage fuzz — Hendrix inspired":{amp:"british",cab:"stack",gain:39,driveOn:true,driveType:"fuzz",drive:72,modOn:true,modType:"flange",mod:18},
+"Brown lead — Van Halen inspired":{amp:"lead",cab:"stack",gain:61,mid:3,driveOn:true,drive:25,modOn:true,modType:"flange",mod:12,verbOn:true,verb:12},
+"Dreamy chorus":{amp:"clean",cab:"open",gain:22,modOn:true,mod:42,delayOn:true,delay:20,verbOn:true,verb:30}
+};
+const specs={ampKnobs:[["input","Input gain",0,24,12," dB"],["gain","Amp gain",0,100,24,"%"],["bass","Bass",-12,12,0," dB"],["mid","Mids",-12,12,0," dB"],["treble","Treble",-12,12,0," dB"],["volume","Output",0,100,18,"%"]],gateKnobs:[["gate","Threshold",-85,-30,-65," dB"]],compKnobs:[["comp","Sustain",0,100,35,"%"]],driveKnobs:[["drive","Drive",0,100,25,"%"]],modKnobs:[["mod","Mix",0,70,25,"%"],["rate","Rate",1,30,8," ×0.1 Hz"]],delayKnobs:[["delay","Mix",0,65,25,"%"],["time","Time",70,850,330," ms"],["feedback","Repeats",0,65,32,"%"]],verbKnobs:[["verb","Mix",0,65,20,"%"]]};
+const defaults={amp:"clean",cab:"open",driveType:"overdrive",modType:"chorus",gateOn:false,compOn:false,driveOn:false,modOn:false,delayOn:false,verbOn:false};
+const toggles=["gateOn","compOn","driveOn","modOn","delayOn","verbOn"];
+for(const [group,items] of Object.entries(specs))for(const [id,label,min,max,value,suffix] of items){const el=document.createElement("label");el.className="knob";el.htmlFor=id;el.innerHTML='<span>'+label+'</span><output id="'+id+'Value" for="'+id+'"></output><input type="range" id="'+id+'" min="'+min+'" max="'+max+'" value="'+value+'">';$(group).append(el);defaults[id]=value;$(id).addEventListener("input",()=>{showValues();apply();});}
+for(const name of Object.keys(presets)){const o=document.createElement("option");o.value=name;o.textContent=name;$("preset").append(o);}
+function n(id){return Number($(id).value)}
+function on(id){return $(id).checked}
+function showValues(){for(const items of Object.values(specs))for(const [id,,,,,suffix] of items)$(id+"Value").textContent=$(id).value+suffix}
+function loadPreset(){const p={...defaults,...presets[$("preset").value]};for(const [id,v] of Object.entries(p)){if(id==="input"||id==="volume")continue;if(typeof v==="boolean")$(id).checked=v;else $(id).value=v;}showValues();apply()}
+function status(s){$("status").textContent=s}
+let ctx,g,source,mediaSource,stream,fileURL,mode="none",busy=false,rec=null,raf=0,gateOpen=true;
+const media=$("media");
+const db=x=>Math.pow(10,x/20);
+const curve=(amount,kind)=>{const c=new Float32Array(4096),k=1+amount;for(let i=0;i<c.length;i++){const x=2*i/(c.length-1)-1;c[i]=kind==="fuzz"?Math.tanh(k*x*2.5)/Math.tanh(k*2.5):kind==="distortion"?Math.max(-1,Math.min(1,k*x)):Math.tanh(k*x)/Math.tanh(k);}return c};
+function build(){
+ if(ctx)return;
+ const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error("Web Audio is not supported in this browser.");
+ ctx=new AC({latencyHint:"interactive"});
+ const gain=(v=1)=>{const x=ctx.createGain();x.gain.value=v;return x};
+ const filter=(type,f,q=0.707)=>{const x=ctx.createBiquadFilter();x.type=type;x.frequency.value=f;x.Q.value=q;return x};
+ const shaper=()=>{const x=ctx.createWaveShaper();x.oversample="4x";return x};
+ const connect=(...nodes)=>{for(let i=0;i<nodes.length-1;i++)nodes[i].connect(nodes[i+1]);};
+ g={input:gain(),hp:filter("highpass",75),body:filter("peaking",180,1.2),pick:filter("peaking",2400,.8),boost:gain(),analyser:ctx.createAnalyser(),gate:gain(),comp:ctx.createDynamicsCompressor(),compDry:gain(),compWet:gain(0),compSum:gain(),drive:shaper(),drivePre:gain(),driveDry:gain(),driveWet:gain(0),driveSum:gain(),ampPre:gain(),ampShape:shaper(),bass:filter("lowshelf",180),mid:filter("peaking",800,.8),treble:filter("highshelf",2500),cabHP:filter("highpass",80),cabPeak:filter("peaking",1500,1),cabLP:filter("lowpass",4200),modDelay:ctx.createDelay(.1),modWet:gain(0),modSum:gain(),lfo:ctx.createOscillator(),lfoDepth:gain(.002),delay:ctx.createDelay(1.1),feedback:gain(0),delayWet:gain(0),delaySum:gain(),reverb:ctx.createConvolver(),verbWet:gain(0),verbSum:gain(),wet:gain(),dry:gain(0),sum:gain(),limiter:ctx.createDynamicsCompressor(),safety:shaper(),volume:gain(.12),monitor:gain(0),record:ctx.createMediaStreamDestination()};
+ g.analyser.fftSize=1024;g.comp.attack.value=.008;g.comp.release.value=.18;g.limiter.threshold.value=-10;g.limiter.knee.value=0;g.limiter.ratio.value=20;g.limiter.attack.value=.001;g.limiter.release.value=.12;
+ g.safety.curve=Float32Array.from({length:4096},(_,i)=>Math.max(-.85,Math.min(.85,2*i/4095-1)));
+ connect(g.input,g.hp,g.body,g.pick,g.boost,g.analyser,g.gate);
+ connect(g.gate,g.compDry,g.compSum);connect(g.gate,g.comp,g.compWet,g.compSum);
+ connect(g.compSum,g.driveDry,g.driveSum);connect(g.compSum,g.drivePre,g.drive,g.driveWet,g.driveSum);
+ connect(g.driveSum,g.ampPre,g.ampShape,g.bass,g.mid,g.treble,g.cabHP,g.cabPeak,g.cabLP,g.modSum);
+ connect(g.cabLP,g.modDelay,g.modWet,g.modSum);connect(g.lfo,g.lfoDepth,g.modDelay.delayTime);g.lfo.start();
+ connect(g.modSum,g.delaySum);connect(g.modSum,g.delay,g.delayWet,g.delaySum);connect(g.delay,g.feedback,g.delay);
+ connect(g.delaySum,g.verbSum);connect(g.delaySum,g.reverb,g.verbWet,g.verbSum);
+ const len=Math.floor(ctx.sampleRate*1.8),imp=ctx.createBuffer(2,len,ctx.sampleRate);for(let ch=0;ch<2;ch++){const a=imp.getChannelData(ch);for(let i=0;i<len;i++)a[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.4);}g.reverb.buffer=imp;
+ connect(g.verbSum,g.wet,g.sum);connect(g.input,g.dry,g.sum);connect(g.sum,g.limiter,g.safety,g.volume);connect(g.volume,g.monitor,ctx.destination);connect(g.volume,g.record);
+ mediaSource=ctx.createMediaElementSource(media);apply();tick();
+}
+let ampKey="",driveKey="";
+function apply(){
+ if(!g)return;
+ const set=(p,v)=>{p.setTargetAtTime(v,ctx.currentTime,.018)};
+ const acoustic=$("guitar").value==="acoustic",electric=$("guitar").value==="electric";
+ set(g.hp.frequency,acoustic?95:65);set(g.body.frequency,acoustic?190:250);set(g.body.gain,acoustic?-8:electric?-3:0);set(g.pick.gain,acoustic?3:electric?4:0);set(g.boost.gain,db(n("input")));
+ set(g.compDry.gain,on("compOn")?0:1);set(g.compWet.gain,on("compOn")?1:0);set(g.comp.threshold,-12-n("comp")*.28);set(g.comp.ratio,2+n("comp")*.09);
+ const dtype=$("driveType").value,dk=dtype+":"+n("drive");if(dk!==driveKey){g.drive.curve=curve(n("drive")*.12,dtype);driveKey=dk}
+ set(g.drivePre.gain,1+n("drive")*.025);set(g.driveDry.gain,on("driveOn")?0:1);set(g.driveWet.gain,on("driveOn")?.68:0);
+ const a=$("amp").value,base={clean:0.15,british:1.8,lead:3.2,metal:5.5}[a],ak=a+":"+n("gain");if(ak!==ampKey){g.ampShape.curve=curve(base+n("gain")*(a==="clean"?.012:.05),"overdrive");ampKey=ak}
+ set(g.ampPre.gain,1+n("gain")*(a==="clean"?.009:.026));set(g.bass.gain,n("bass"));set(g.mid.gain,n("mid"));set(g.treble.gain,n("treble"));
+ const cab={open:[75,1850,2,4900],stack:[95,1350,4,3800],small:[125,2200,3,3400]}[$("cab").value];set(g.cabHP.frequency,cab[0]);set(g.cabPeak.frequency,cab[1]);set(g.cabPeak.gain,cab[2]);set(g.cabLP.frequency,cab[3]);
+ const flange=$("modType").value==="flange";set(g.modDelay.delayTime,flange?.004:.019);set(g.lfoDepth.gain,flange?.002:.004);set(g.lfo.frequency,n("rate")/10);set(g.modWet.gain,on("modOn")?n("mod")/100:0);
+ set(g.delay.delayTime,n("time")/1000);set(g.feedback.gain,on("delayOn")?n("feedback")/100:0);set(g.delayWet.gain,on("delayOn")?n("delay")/100:0);set(g.verbWet.gain,on("verbOn")?n("verb")/100:0);
+ set(g.wet.gain,on("bypass")?0:1);set(g.dry.gain,on("bypass")?1:0);set(g.volume.gain,n("volume")/100*.8);
+}
+function tick(){
+ if(!g)return;const a=new Float32Array(g.analyser.fftSize);g.analyser.getFloatTimeDomainData(a);let sum=0,peak=0;for(const x of a){sum+=x*x;peak=Math.max(peak,Math.abs(x));}const rms=20*Math.log10(Math.max(1e-7,Math.sqrt(sum/a.length)));
+ if(on("gateOn")){const threshold=n("gate");gateOpen=gateOpen?rms>threshold-5:rms>threshold;g.gate.gain.setTargetAtTime(gateOpen?1:.015,ctx.currentTime,gateOpen?.008:.06)}else g.gate.gain.setTargetAtTime(1,ctx.currentTime,.02);
+ $("meter").style.width=(mode==="none"?0:Math.max(0,Math.min(100,(rms+70)*100/70)))+"%";$("level").textContent=mode==="none"?"—":Math.round(rms)+" dBFS"+(peak>.98?" • reduce input gain":"");raf=requestAnimationFrame(tick)
+}
+function ui(){const exporting=!!rec;$("mic").disabled=busy||exporting||mode==="mic"||!on("headphones");$("stop").disabled=busy||exporting||mode!=="mic";$("file").disabled=busy||exporting;$("play").disabled=busy||exporting||!fileURL||mode==="mic";$("export").disabled=busy||exporting||!fileURL||mode==="mic"||!window.MediaRecorder;$("cancel").disabled=!exporting;$("headphones").disabled=busy||exporting;media.controls=!exporting;}
+function disconnect(){if(source){try{source.disconnect(g.input)}catch{}source=null}if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}media.pause();mode="none";if(g)g.monitor.gain.setTargetAtTime(0,ctx.currentTime,.01);ui()}
+function attachMedia(){if(source!==mediaSource){disconnect();source=mediaSource;source.connect(g.input)}mode="file";g.monitor.gain.setTargetAtTime(rec?0:1,ctx.currentTime,.02);ui()}
+$("headphones").addEventListener("change",()=>{if(!on("headphones")&&mode==="mic"){disconnect();status("Microphone stopped.")}ui()});
+$("mic").addEventListener("click",async()=>{busy=true;ui();try{if(!navigator.mediaDevices?.getUserMedia)throw Error("Microphone access requires HTTPS and a supported browser.");build();await ctx.resume();disconnect();stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1}});source=ctx.createMediaStreamSource(stream);source.connect(g.input);mode="mic";g.monitor.gain.setTargetAtTime(1,ctx.currentTime,.04);stream.getAudioTracks()[0].addEventListener("ended",()=>{if(mode==="mic"){disconnect();status("Microphone disconnected.")}});status("Microphone live — play your guitar.")}catch(e){disconnect();status("Could not start microphone: "+e.message)}finally{busy=false;ui()}});
+$("stop").addEventListener("click",()=>{disconnect();status("Microphone stopped.")});
+$("file").addEventListener("change",async()=>{const file=$("file").files[0];if(!file)return;disconnect();if(fileURL)URL.revokeObjectURL(fileURL);fileURL=URL.createObjectURL(file);media.src=fileURL;media.hidden=false;media.load();try{build();await ctx.resume();attachMedia();status("Recording loaded. Press Play to preview.")}catch(e){status(e.message)}ui()});
+media.addEventListener("error",()=>{status("This browser could not decode the recording. Try MP4, WAV, or MP3.");if(rec)finish(true);disconnect();if(fileURL)URL.revokeObjectURL(fileURL);fileURL=null;ui()});
+media.addEventListener("play",()=>{if(mode==="mic"){media.pause();return}if(g){attachMedia();ctx.resume().catch(()=>{});if(!rec)status("Playing recording.")}});
+$("play").addEventListener("click",async()=>{try{build();await ctx.resume();if(media.paused){attachMedia();await media.play()}else media.pause()}catch(e){status("Playback failed: "+e.message)}});
+media.addEventListener("ended",()=>{if(rec)finish(false);else status("Playback finished.")});
+function format(video){const options=video?["video/webm;codecs=vp8,opus","video/webm","video/mp4"]:["audio/webm;codecs=opus","audio/webm","audio/mp4","audio/ogg;codecs=opus"];return options.find(x=>MediaRecorder.isTypeSupported(x))||""}
+function seekStart(){return new Promise((resolve,reject)=>{if(media.currentTime<.01){resolve();return}let timer;const done=()=>{clearTimeout(timer);media.removeEventListener("seeked",done);resolve()};media.addEventListener("seeked",done,{once:true});timer=setTimeout(()=>{media.removeEventListener("seeked",done);reject(Error("Could not seek to start."))},5000);media.currentTime=0})}
+function finish(cancelled){if(!rec)return;rec.cancelled=cancelled;media.pause();if(rec.recorder.state!=="inactive")rec.recorder.stop()}
+$("export").addEventListener("click",async()=>{busy=true;ui();let canvasStream=null;try{
+ build();await ctx.resume();if(!Number.isFinite(media.duration)||media.duration<=0)throw Error("Wait for a valid recording to load.");if(media.duration>600)throw Error("Beta export is limited to recordings of 10 minutes or less.");media.pause();attachMedia();g.monitor.gain.value=0;await seekStart();
+ const video=media.videoWidth>0;let canvas=null,c2=null;const tracks=[...g.record.stream.getAudioTracks()];
+ if(video){canvas=document.createElement("canvas");if(!canvas.captureStream)throw Error("Video export is not supported by this browser.");const scale=Math.min(1,1280/media.videoWidth,720/media.videoHeight);canvas.width=Math.max(2,Math.floor(media.videoWidth*scale/2)*2);canvas.height=Math.max(2,Math.floor(media.videoHeight*scale/2)*2);c2=canvas.getContext("2d");c2.drawImage(media,0,0,canvas.width,canvas.height);canvasStream=canvas.captureStream(30);tracks.push(...canvasStream.getVideoTracks())}
+ const mime=format(video);if(video&&!mime)throw Error("No supported video recorder format. Try Chrome or Firefox.");const recorder=new MediaRecorder(new MediaStream(tracks),mime?{mimeType:mime}:{});const job={recorder,chunks:[],cancelled:false,frame:0,canvasStream,video};rec=job;ui();
+ recorder.ondataavailable=e=>{if(e.data.size)job.chunks.push(e.data)};
+ recorder.onerror=()=>{status("Export failed in this browser.");finish(true)};
+ recorder.onstop=()=>{cancelAnimationFrame(job.frame);if(job.canvasStream)job.canvasStream.getTracks().forEach(t=>t.stop());rec=null;g.monitor.gain.setTargetAtTime(1,ctx.currentTime,.02);if(!job.cancelled&&job.chunks.length){const type=recorder.mimeType||job.chunks[0].type||"application/octet-stream",ext=type.includes("mp4")?(video?"mp4":"m4a"):type.includes("ogg")?"ogg":"webm";const blob=new Blob(job.chunks,{type}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="guitar-amp."+ext;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);status("Export finished. Check your downloads.")}else status("Export cancelled or unavailable.");ui()};
+ const draw=()=>{if(rec!==job)return;if(c2)c2.drawImage(media,0,0,canvas.width,canvas.height);status("Exporting: "+Math.min(100,Math.round(media.currentTime/media.duration*100))+"% — keep tab visible.");job.frame=requestAnimationFrame(draw)};
+ recorder.start(500);await media.play();draw();
+ }catch(e){if(rec)finish(true);else{if(canvasStream)canvasStream.getTracks().forEach(t=>t.stop());if(g)g.monitor.gain.setTargetAtTime(1,ctx.currentTime,.02)}status("Export could not start: "+e.message)}finally{busy=false;ui()}});
+$("cancel").addEventListener("click",()=>finish(true));
+for(const id of [...toggles,"guitar","amp","cab","driveType","modType","bypass"])$(id).addEventListener("change",apply);
+$("preset").addEventListener("change",loadPreset);$("reset").addEventListener("click",loadPreset);
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&rec)finish(true);if(document.hidden&&mode==="mic"){disconnect();status("Microphone stopped when the tab was hidden.")}});
+window.addEventListener("pagehide",()=>{if(rec)finish(true);disconnect();if(fileURL)URL.revokeObjectURL(fileURL);cancelAnimationFrame(raf);if(ctx)ctx.close().catch(()=>{})});
+showValues();loadPreset();ui();
+</script>
+</body>
+</html>
