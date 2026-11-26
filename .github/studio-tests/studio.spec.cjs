@@ -77,3 +77,35 @@ test('local waveform supports seeking and loop selection',async({page},testInfo)
  await expect(page.locator('#waveToggle')).toHaveText('Stop looping');
  await page.screenshot({path:testInfo.outputPath('waveform.png'),fullPage:true});
 });
+
+test('record both versions of a take, stop input and download or reamp',async({page},testInfo)=>{
+ // Generate a test-only input with Web Audio, without requesting a physical microphone.
+ await page.addInitScript(()=>{
+  if(!navigator.mediaDevices)return;
+  navigator.mediaDevices.getUserMedia=async()=>{
+   const ac=window.__testCaptureContext=new (window.AudioContext||window.webkitAudioContext)();
+   const output=ac.createMediaStreamDestination(),osc=ac.createOscillator(),gain=ac.createGain();osc.frequency.value=220;gain.gain.value=.06;osc.connect(gain);gain.connect(output);osc.start();
+   window.__testCaptureTrack=output.stream.getAudioTracks()[0];await ac.resume();return output.stream;
+  };
+ });
+ await page.goto('/guitar-amp.html');
+ test.skip(!(await page.evaluate(()=>!!window.MediaRecorder&&!!navigator.mediaDevices)),'MediaRecorder unavailable');
+ await page.locator('#mic').click();
+ await expect(page.locator('#recordLive')).toBeEnabled({timeout:15000});
+ await page.locator('#recordLive').click();
+ await expect(page.locator('#takeStatus')).toContainText('Recording original and amplified');
+ await expect(page.locator('#takeTimer')).not.toHaveText('00:00',{timeout:5000});
+ await page.locator('#stopLive').click();
+ await expect(page.locator('#takeReview')).toBeVisible({timeout:15000});
+ await expect(page.locator('#takeStatus')).toContainText('Take ready');
+ await expect.poll(()=>page.evaluate(()=>window.__testCaptureTrack.readyState)).toBe('ended');
+ for(const [id,tag] of [['saveWet','amplified'],['saveDry','original']]){
+  const dl=page.waitForEvent('download');await page.locator('#'+id).click();
+  const file=await dl;expect(file.suggestedFilename()).toMatch(new RegExp(tag+'\\.'));
+  expect(await file.failure()).toBeNull();
+  const fs=require('node:fs');expect(fs.statSync(await file.path()).size).toBeGreaterThan(100);
+ }
+ await page.screenshot({path:testInfo.outputPath('take-review.png'),fullPage:true});
+ await page.locator('#reampTake').click();await expect(page.locator('#status')).toContainText('Original take loaded',{timeout:15000});await expect(page.locator('#play')).toBeEnabled();
+ await page.evaluate(()=>window.__testCaptureContext?.close());
+});
