@@ -118,6 +118,37 @@ el("demo").addEventListener("click",async()=>{if(busy||rec||liveRec)return;busy=
 // Dual capture: direct microphone stream + processed studio output. No automatic downloads.
 let liveRec=null,calibration=null,takeSeq=0,takes=[],selectedTake=null,takeURL=null;
 let cameraStream=null,cameraPending=false,cameraEpoch=0;
+let libraryDB=null,libraryBusy=false,libraryReady=false,editJob=null;
+const LIB_LIMIT=150*1024*1024,LIB_COUNT=10;
+const takeBytes=t=>["dry","wet","video"].reduce((sum,k)=>sum+(t[k]?.size||0),0);
+const unsavedCount=()=>takes.filter(t=>!t.saved).length;
+const libraryText=message=>el("libraryStatus").textContent=message;
+function librarySummary(){const saved=takes.filter(t=>t.saved);return saved.length+" of "+LIB_COUNT+" saved · "+(saved.reduce((sum,t)=>sum+takeBytes(t),0)/1048576).toFixed(1)+" MB on this device. Browser storage may be cleared; download important recordings."}
+function dbOperation(mode,fn){return new Promise((resolve,reject)=>{const tx=libraryDB.transaction("takes",mode),store=tx.objectStore("takes");let result;tx.oncomplete=()=>resolve(result);tx.onerror=tx.onabort=()=>reject(tx.error||Error("Storage operation failed."));try{const req=fn(store);req.onsuccess=()=>{result=req.result}}catch(e){tx.abort();reject(e)}})}
+async function openLibrary(){
+ if(!window.indexedDB){libraryText("Local library is unavailable. Download takes before leaving.");return}
+ libraryBusy=true;ui();
+ try{
+  libraryDB=await new Promise((resolve,reject)=>{const req=window.indexedDB.open("ogt-guitar-recordings",1);req.onupgradeneeded=()=>req.result.createObjectStore("takes",{keyPath:"id"});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);req.onblocked=()=>reject(Error("Close other studio tabs and retry."))});
+  const records=await dbOperation("readonly",store=>store.getAll());const existing=new Set(takes.map(t=>t.id));for(const t of records){if(!existing.has(t.id)&&typeof t.id==="string"&&typeof t.name==="string"&&Number.isFinite(t.seconds)&&["dry","wet","video"].some(k=>t[k] instanceof Blob))takes.push({...t,saved:true})}
+  libraryReady=true;libraryText(librarySummary());if(takes.length)renderTakes();
+ }catch(e){libraryDB=null;libraryText("Local library unavailable: "+e.message+". Downloads still work.")}
+ finally{libraryBusy=false;ui()}
+}
+async function persistSelected(){
+ const t=currentTake();if(!t||t.saved||!libraryReady||libraryBusy||el("persistTake").disabled)return;
+ const saved=takes.filter(x=>x.saved);if(saved.length>=LIB_COUNT||saved.reduce((sum,x)=>sum+takeBytes(x),0)+takeBytes(t)>LIB_LIMIT){libraryText("Library limit reached (10 takes or 150 MB). Download or delete a saved take first.");return}
+ libraryBusy=true;ui();
+ try{await dbOperation("readwrite",store=>store.put({...t,saved:true}));t.saved=true;libraryText(librarySummary());renderTakes()}
+ catch(e){libraryText("Could not save locally: "+e.message+". Download the recording instead.")}
+ finally{libraryBusy=false;ui()}
+}
+el("persistTake").addEventListener("click",persistSelected);
+el("renameTake").addEventListener("click",async()=>{
+ const t=currentTake(),name=el("takeName").value.trim().slice(0,60);if(!t||!name||libraryBusy||el("renameTake").disabled)return;
+ libraryBusy=true;ui();try{if(t.saved)await dbOperation("readwrite",store=>store.put({...t,name}));t.name=name;renderTakes();libraryText(t.saved?librarySummary():"Name updated. Save to this device to keep it between visits.")}
+ catch(e){libraryText("Could not rename: "+e.message)}finally{libraryBusy=false;ui()}
+});
 const takePreview=el("takePreview"),videoPreview=el("takeVideoPreview"),cameraPreview=el("cameraPreview"),takeStatus=message=>el("takeStatus").textContent=message;
 const cameraStatus=message=>el("cameraStatus").textContent=message;
 function cameraUI(){
@@ -161,20 +192,20 @@ function previewTake(){
  takeURL=URL.createObjectURL(blob);const video=el("takeVersion").value==="video";takePreview.hidden=video;videoPreview.hidden=!video;const player=video?videoPreview:takePreview;player.src=takeURL;player.load();
 }
 function renderTakes(){
- const list=el("takeSelect");list.replaceChildren();for(const t of takes){const opt=make("option");opt.value=t.id;opt.textContent=t.name+" · "+takeTime(t.seconds);list.append(opt)}
+ const list=el("takeSelect");list.replaceChildren();for(const t of takes){const opt=make("option");opt.value=t.id;opt.textContent=t.name+" · "+takeTime(t.seconds)+(t.saved?" · Saved":" · Unsaved");list.append(opt)}
  if(!currentTake())selectedTake=takes.at(-1)?.id??null;list.value=selectedTake??"";el("takeReview").hidden=!takes.length;
- const t=currentTake();for(const option of el("takeVersion").options)option.disabled=!t?.[option.value];if(t&&!t[el("takeVersion").value])el("takeVersion").value=t.wet?"wet":t.dry?"dry":"video";previewTake();
+ const t=currentTake();el("takeName").value=t?.name||"";for(const option of el("takeVersion").options)option.disabled=!t?.[option.value];if(t&&!t[el("takeVersion").value])el("takeVersion").value=t.wet?"wet":t.dry?"dry":"video";previewTake();
 }
 function takeUI(){
- const t=currentTake(),blocked=mode==="mic"||busy||!!rec||!!liveRec;
+ const t=currentTake(),blocked=mode==="mic"||busy||!!rec||!!liveRec||!!editJob;
  el("takeReview").hidden=!takes.length||blocked;
  for(const [id,key] of [["saveWet","wet"],["saveDry","dry"],["saveVideo","video"],["reampTake","dry"]])el(id).disabled=blocked||!t?.[key];
- el("saveVideo").hidden=!t?.video;el("deleteTake").disabled=blocked||!t;el("takeSelect").disabled=blocked;el("takeVersion").disabled=blocked;
+ el("saveVideo").hidden=!t?.video;el("deleteTake").disabled=blocked||!t||libraryBusy;el("takeName").disabled=blocked||!t||libraryBusy;el("renameTake").disabled=blocked||!t||libraryBusy;el("persistTake").disabled=blocked||!t||t.saved||!libraryReady||libraryBusy;el("persistTake").textContent=t?.saved?"Saved on this device":"Save to this device";el("takeSelect").disabled=blocked;el("takeVersion").disabled=blocked;
  if(blocked&&takeURL)unloadPreview();else if(!blocked&&t&&!takeURL)previewTake();
  if(g)g.liveCaptureBusy=!!liveRec;
  if(el("takeStudio").dataset)el("takeStudio").dataset.recording=String(!!liveRec&&!liveRec.stopping);cameraUI();
 }
-const previousUI=ui;ui=function(){previousUI();el("demo").disabled=busy||!!rec||!!liveRec;el("recordLive").disabled=busy||!!rec||!!liveRec||mode!=="mic"||!window.MediaRecorder||takes.length>=5;el("stopLive").disabled=!liveRec||!!liveRec.stopping;el("calibrate").disabled=busy||!!rec||!!liveRec||!!calibration||mode!=="mic";if(liveRec){el("file").disabled=true;el("export").disabled=true;el("mic").disabled=true}takeUI()};
+const previousUI=ui;ui=function(){previousUI();el("demo").disabled=busy||!!rec||!!liveRec;el("recordLive").disabled=busy||!!rec||!!liveRec||mode!=="mic"||!window.MediaRecorder||unsavedCount()>=5;el("stopLive").disabled=!liveRec||!!liveRec.stopping;el("calibrate").disabled=busy||!!rec||!!liveRec||!!calibration||mode!=="mic";if(liveRec){el("file").disabled=true;el("export").disabled=true;el("mic").disabled=true}takeUI()};
 const previousDisconnect=disconnect;disconnect=function(){if(liveRec)stopLive();if(cameraStream||cameraPending)closeCamera();if(calibration){clearTimeout(calibration.timer);calibration=null}previousDisconnect()};
 function stopLive(){
  const job=liveRec;if(!job||job.stopping)return;job.stopping=true;clearTimeout(job.timer);clearInterval(job.clock);job.seconds=(performance.now()-job.started)/1000;el("takeTimer").textContent=takeTime(job.seconds);takeStatus("Finishing take…");
@@ -184,12 +215,12 @@ function stopLive(){
 function finalizeTake(job){
  if(liveRec!==job||!job.parts.every(p=>p.done))return;clearTimeout(job.timer);clearInterval(job.clock);liveRec=null;
  const dry=takeBlob(job.parts.find(p=>p.kind==="dry")),wet=takeBlob(job.parts.find(p=>p.kind==="wet")),video=takeBlob(job.parts.find(p=>p.kind==="video"));
- if(dry||wet||video){const t={id:String(++takeSeq),name:"Take "+takeSeq,seconds:job.seconds??(performance.now()-job.started)/1000,dry,wet,video,settings:job.settings};takes.push(t);selectedTake=t.id;el("takeVersion").value=video?"video":wet?"wet":"dry";renderTakes();takeStatus(video&&dry&&wet?"Take ready. Preview the performance video or download either audio version.":dry&&wet?(job.wantedVideo?"Take ready. Video unavailable; both audio versions were saved.":"Take ready. Preview, download either version, or try a different tone."):"Take ready. Some versions are unavailable; download the available recording.");status("Recording finished. Review your take below.")}
+ if(dry||wet||video){const t={id:window.crypto?.randomUUID?.()||("take-"+Date.now()+"-"+(++takeSeq)),name:"Take "+(takes.length+1),saved:false,seconds:job.seconds??(performance.now()-job.started)/1000,dry,wet,video,settings:job.settings};takes.push(t);selectedTake=t.id;el("takeVersion").value=video?"video":wet?"wet":"dry";renderTakes();takeStatus(video&&dry&&wet?"Take ready. Preview the performance video or download either audio version.":dry&&wet?(job.wantedVideo?"Take ready. Video unavailable; both audio versions were saved.":"Take ready. Preview, download either version, or try a different tone."):"Take ready. Some versions are unavailable; download the available recording.");status("Recording finished. Review your take below.")}
  else{takeStatus("Recording failed. Check microphone permissions and try again.");status("Recording unavailable.")}
  ui();
 }
 el("recordLive").addEventListener("click",()=>{
- if(mode!=="mic"||!stream||liveRec||rec||busy||cameraPending||takes.length>=5)return;
+ if(mode!=="mic"||!stream||liveRec||rec||busy||cameraPending||unsavedCount()>=5)return;
  let job=null;
  try{
   const mime=format(false);const parts=[];
@@ -220,7 +251,7 @@ el("recordLive").addEventListener("click",()=>{
  }catch(e){if(job){for(const p of job.parts)if(!p.started)p.done=true;stopLive()}takeStatus("Recording failed: "+e.message);ui()}
 });
 el("stopLive").addEventListener("click",()=>{stopLive();if(mode==="mic")disconnect()});
-el("takeSelect").addEventListener("change",()=>{selectedTake=el("takeSelect").value;previewTake();takeUI()});
+el("takeSelect").addEventListener("change",()=>{selectedTake=el("takeSelect").value;renderTakes();takeUI()});
 el("takeVersion").addEventListener("change",previewTake);
 for(const player of [takePreview,videoPreview])player.addEventListener("play",()=>{if(mode==="mic"||busy||rec||liveRec){player.pause();return}media.pause();(player===takePreview?videoPreview:takePreview).pause()});
 media.addEventListener("play",pauseTakePreview);
@@ -235,9 +266,9 @@ el("reampTake").addEventListener("click",async()=>{
   if(fileURL)URL.revokeObjectURL(fileURL);fileURL=URL.createObjectURL(clip);media.src=fileURL;media.hidden=false;media.load();attachMedia();status("Original take loaded. Pick a tone and press Play; export to save a new amplified version.");takeStatus("Original loaded into the studio. Your saved take is unchanged. Seeking and WAV export depend on the recording format.");
  }catch(e){takeStatus("Unable to load take: "+e.message)}finally{busy=false;ui()}
 });
-el("deleteTake").addEventListener("click",()=>{const t=currentTake();if(!t||el("deleteTake").disabled||!window.confirm("Delete this take from the current tab? Downloaded files are unaffected."))return;unloadPreview();takes=takes.filter(x=>x!==t);selectedTake=null;renderTakes();takeStatus("Take deleted from this tab.");ui()});
+el("deleteTake").addEventListener("click",async()=>{const t=currentTake();if(!t||el("deleteTake").disabled||!window.confirm("Delete this take"+(t.saved?" from your device library":" from this tab")+"? Downloaded files are unaffected."))return;libraryBusy=true;ui();try{if(t.saved)await dbOperation("readwrite",store=>store.delete(t.id));unloadPreview();takes=takes.filter(x=>x!==t);selectedTake=null;renderTakes();takeStatus("Take deleted.");if(libraryReady)libraryText(librarySummary())}catch(e){libraryText("Could not delete: "+e.message)}finally{libraryBusy=false;ui()}});
 window.addEventListener("pagehide",unloadPreview);
-window.addEventListener("beforeunload",e=>{if(takes.length||liveRec){e.preventDefault();e.returnValue=""}});
+window.addEventListener("beforeunload",e=>{if(unsavedCount()||liveRec||libraryBusy||editJob){e.preventDefault();e.returnValue=""}});
 el("calibrate").addEventListener("click",()=>{if(mode!=="mic"||calibration)return;const samples=[],a=new Float32Array(g.analyser.fftSize),started=performance.now();status("Play normally for three seconds to calibrate input gain.");const job={timer:0};calibration=job;ui();
  const sample=()=>{if(calibration!==job||mode!=="mic")return;g.analyser.getFloatTimeDomainData(a);let sum=0,peak=0;for(const x of a){sum+=x*x;peak=Math.max(peak,Math.abs(x))}const rms=20*Math.log10(Math.max(1e-8,Math.sqrt(sum/a.length)));if(rms>-65)samples.push({rms,peak});if(performance.now()-started<3000){job.timer=setTimeout(sample,60);return}calibration=null;if(samples.length<5){status("Input too quiet. Move microphone closer and try again.")}else{samples.sort((a,b)=>a.rms-b.rms);const typical=samples[Math.floor(samples.length*.75)].rms,peak=Math.max(...samples.map(x=>x.peak));const delta=Math.min(6,-26-typical,20*Math.log10(.7/Math.max(.001,peak)));el("input").value=Math.max(0,Math.min(24,Math.round(n("input")+delta)));showValues();apply();status("Calibration complete. Input gain "+n("input")+" dB. Repeat if needed.")}ui()};sample()});
 // Custom user-supplied speaker IR, with filtered cabinet path retained as fallback.
@@ -389,6 +420,7 @@ let refToken=0,referenceBuffer=null,matchBusy=false;
 el("referenceFile").addEventListener("change",async()=>{const token=++refToken;referenceBuffer=null;el("matchReference").disabled=true;try{const f=el("referenceFile").files[0];if(!f||f.size>20000000)throw Error("Choose a guitar-only reference under 20 MB.");build();const decoded=await ctx.decodeAudioData(await f.arrayBuffer());if(token!==refToken)return;referenceBuffer=decoded;el("referenceStatus").textContent="Reference loaded. First ten seconds will be compared.";el("matchReference").disabled=!!g?.namActive||busy}catch(e){if(token===refToken)el("referenceStatus").textContent="Reference unavailable: "+e.message}});
 el("matchReference").addEventListener("click",async()=>{if(!referenceBuffer||matchBusy||busy||g?.namActive)return;if(!fileURL||mode==="mic"||rec||wavBusy){el("referenceStatus").textContent="Load a recording or the generated demo and stop any active recording/export first.";return;}const token=refToken,sourceURL=fileURL,original=JSON.stringify(toneSnapshot());matchBusy=true;if(g)g.offlineBusy=true;el("matchReference").disabled=true;ui();try{const Offline=window.OfflineAudioContext;if(!Offline)throw Error("Offline rendering unavailable.");const blob=await(await fetch(sourceURL)).blob();if(blob.size>80000000)throw Error("Choose a source under 80 MB.");const decoded=await ctx.decodeAudioData(await blob.arrayBuffer());if(token!==refToken||sourceURL!==fileURL||mode==="mic"||rec||wavBusy||JSON.stringify(toneSnapshot())!==original)throw Error("Input or settings changed; try again.");const ac=new Offline(2,Math.ceil(Math.min(10,decoded.duration)*48000),48000),graph=createGraph(ac),src=ac.createBufferSource();configureGraph(graph,ac,true);offlineGate(decoded,graph,ac);if(customIR){const conv=ac.createConvolver();conv.buffer=customIR;graph.cabLP.disconnect(graph.cabOut);graph.cabLP.connect(conv);conv.connect(graph.cabOut)}src.buffer=decoded;src.connect(graph.input);graph.safety.connect(ac.destination);src.start();el("referenceStatus").textContent="Comparing broad frequency bands locally…";const rendered=await ac.startRendering();if(token!==refToken||sourceURL!==fileURL||mode==="mic"||rec||wavBusy||JSON.stringify(toneSnapshot())!==original)throw Error("Input or settings changed; try again.");const target=bandProfile(referenceBuffer),actual=bandProfile(rendered);flushHistory();for(const [i,id] of ["bass","mid","treble"].entries()){const delta=Math.max(-4,Math.min(4,(target[i]-actual[i])*.65));el(id).value=Math.max(-12,Math.min(12,Math.round(n(id)+delta)))}showValues();apply();flushHistory();el("referenceStatus").textContent="Applied bounded EQ adjustments. Use Undo to compare. This matches broad tonal balance only, not distortion, playing style or guitar identity."}catch(e){el("referenceStatus").textContent="EQ match unavailable: "+e.message}finally{matchBusy=false;if(g)g.offlineBusy=false;el("matchReference").disabled=!referenceBuffer||!!g?.namActive;ui()}});
 
+if(window.indexedDB)openLibrary();else libraryText("Local library unavailable. Download takes before leaving.");
 document.addEventListener("studio-nam-change",()=>{el("matchReference").disabled=!referenceBuffer||matchBusy||!!g?.namActive;practiceUI()});
 ui();
 })();
