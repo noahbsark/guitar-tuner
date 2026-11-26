@@ -138,7 +138,8 @@ function takeUI(){
  el("takeReview").hidden=!takes.length||blocked;
  for(const [id,key] of [["saveWet","wet"],["saveDry","dry"],["reampTake","dry"]])el(id).disabled=blocked||!t?.[key];
  el("deleteTake").disabled=blocked||!t;el("takeSelect").disabled=blocked;el("takeVersion").disabled=blocked;
- if(blocked&&takeURL)unloadPreview();
+ if(blocked&&takeURL)unloadPreview();else if(!blocked&&t&&!takeURL)previewTake();
+ if(el("takeStudio").dataset)el("takeStudio").dataset.recording=String(!!liveRec&&!liveRec.stopping);
 }
 const previousUI=ui;ui=function(){previousUI();el("demo").disabled=busy||!!rec||!!liveRec;el("recordLive").disabled=busy||!!rec||!!liveRec||mode!=="mic"||!window.MediaRecorder||takes.length>=5;el("stopLive").disabled=!liveRec||!!liveRec.stopping;el("calibrate").disabled=busy||!!rec||!!liveRec||!!calibration||mode!=="mic";if(liveRec){el("file").disabled=true;el("export").disabled=true}takeUI()};
 const previousDisconnect=disconnect;disconnect=function(){if(liveRec)stopLive();if(calibration){clearTimeout(calibration.timer);calibration=null}previousDisconnect()};
@@ -182,10 +183,14 @@ takePreview.addEventListener("play",()=>{if(mode==="mic"||busy||rec||liveRec){ta
 media.addEventListener("play",()=>takePreview.pause());
 for(const id of ["mic","demo","export","file","wavExport","metroStart"])el(id).addEventListener(id==="file"?"change":"click",()=>takePreview.pause(),true);
 for(const [id,key,suffix] of [["saveWet","wet","amplified"],["saveDry","dry","original"]])el(id).addEventListener("click",()=>{const t=currentTake(),blob=t?.[key];if(blob&&!el(id).disabled)download(blob,"guitar-take-"+t.id+"-"+suffix+"."+takeExt(blob))});
-el("reampTake").addEventListener("click",()=>{
+el("reampTake").addEventListener("click",async()=>{
  const t=currentTake();if(!t?.dry||el("reampTake").disabled)return;
- try{unloadPreview();disconnect();if(fileURL)URL.revokeObjectURL(fileURL);fileURL=URL.createObjectURL(t.dry);media.src=fileURL;media.hidden=false;media.load();build();attachMedia();status("Original take loaded. Pick a tone and press Play; export to save a new amplified version.");takeStatus("Original loaded into the studio. Your saved take is unchanged.")}
- catch(e){takeStatus("Unable to load take: "+e.message)}ui();
+ busy=true;ui();try{
+  unloadPreview();disconnect();build();let clip=t.dry;
+  // Some MediaRecorder containers lack duration metadata. Prefer a seekable PCM copy for shorter takes, preserving the original download.
+  if(t.seconds<=180&&clip.size<=40000000){takeStatus("Preparing original take…");try{const decoded=await ctx.decodeAudioData(await clip.arrayBuffer());if(decoded.duration<=180)clip=encodeWav(decoded,16)}catch{/* Keep the original container if the browser cannot decode it offline. */}}
+  if(fileURL)URL.revokeObjectURL(fileURL);fileURL=URL.createObjectURL(clip);media.src=fileURL;media.hidden=false;media.load();attachMedia();status("Original take loaded. Pick a tone and press Play; export to save a new amplified version.");takeStatus("Original loaded into the studio. Your saved take is unchanged. Seeking and WAV export depend on the recording format.");
+ }catch(e){takeStatus("Unable to load take: "+e.message)}finally{busy=false;ui()}
 });
 el("deleteTake").addEventListener("click",()=>{const t=currentTake();if(!t||el("deleteTake").disabled||!window.confirm("Delete this take from the current tab? Downloaded files are unaffected."))return;unloadPreview();takes=takes.filter(x=>x!==t);selectedTake=null;renderTakes();takeStatus("Take deleted from this tab.");ui()});
 window.addEventListener("pagehide",unloadPreview);
