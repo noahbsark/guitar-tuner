@@ -115,13 +115,81 @@ function demoWav(){
  const ab=new ArrayBuffer(44+arr.length*2),v=new DataView(ab);const str=(offset,s)=>{for(let i=0;i<s.length;i++)v.setUint8(offset+i,s.charCodeAt(i))};str(0,"RIFF");v.setUint32(4,ab.byteLength-8,true);str(8,"WAVE");str(12,"fmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);str(36,"data");v.setUint32(40,arr.length*2,true);for(let i=0;i<arr.length;i++)v.setInt16(44+2*i,Math.round(Math.max(-1,Math.min(1,arr[i]))*32767),true);return new Blob([ab],{type:"audio/wav"});
 }
 el("demo").addEventListener("click",async()=>{if(busy||rec||liveRec)return;busy=true;ui();status("Loading generated guitar demo…");let timer;try{disconnect();if(fileURL)URL.revokeObjectURL(fileURL);fileURL=URL.createObjectURL(demoWav());media.src=fileURL;media.hidden=false;media.load();build();attachMedia();el("guitar").value="direct";apply();const started=Promise.all([ctx.resume(),media.play()]);await Promise.race([started,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error("Playback did not start. Press Play to retry.")),5000)})]);status("Playing a generated plucked-string demo (not a real guitar recording).")}catch(e){media.pause();status("Demo loaded; "+e.message)}finally{clearTimeout(timer);busy=false;ui()}});
-// Local live recording; stop safely on mic disconnection, input switch or hidden tab.
-let liveRec=null,calibration=null;
-const previousUI=ui;ui=function(){previousUI();el("demo").disabled=busy||!!rec||!!liveRec;el("recordLive").disabled=busy||!!rec||!!liveRec||mode!=="mic"||!window.MediaRecorder;el("stopLive").disabled=!liveRec;el("calibrate").disabled=busy||!!rec||!!liveRec||!!calibration||mode!=="mic";if(liveRec){el("file").disabled=true;el("export").disabled=true}};
+// Dual capture: direct microphone stream + processed studio output. No automatic downloads.
+let liveRec=null,calibration=null,takeSeq=0,takes=[],selectedTake=null,takeURL=null;
+const takePreview=el("takePreview"),takeStatus=message=>el("takeStatus").textContent=message;
+function takeTime(seconds){const t=Math.max(0,Math.floor(seconds));return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")}
+function takeBlob(part){return part&&!part.failed&&part.chunks.length?new Blob(part.chunks,{type:part.recorder.mimeType||part.chunks[0].type||"application/octet-stream"}):null}
+function takeExt(blob){return blob.type.includes("mp4")?"m4a":blob.type.includes("ogg")?"ogg":blob.type.includes("wav")?"wav":"webm"}
+function currentTake(){return takes.find(t=>t.id===selectedTake)}
+function unloadPreview(){takePreview.pause();if(takeURL){URL.revokeObjectURL(takeURL);takeURL=null;takePreview.removeAttribute("src");takePreview.load()}}
+function previewTake(){
+ unloadPreview();const t=currentTake();if(!t||mode==="mic"||busy||rec||liveRec)return;
+ const blob=t[el("takeVersion").value];if(!blob){takeStatus("This version is unavailable. Choose the other recording.");return}
+ takeURL=URL.createObjectURL(blob);takePreview.src=takeURL;takePreview.load();
+}
+function renderTakes(){
+ const list=el("takeSelect");list.replaceChildren();for(const t of takes){const opt=make("option");opt.value=t.id;opt.textContent=t.name+" · "+takeTime(t.seconds);list.append(opt)}
+ if(!currentTake())selectedTake=takes.at(-1)?.id??null;list.value=selectedTake??"";el("takeReview").hidden=!takes.length;
+ const t=currentTake();if(t&&!t[el("takeVersion").value])el("takeVersion").value=t.wet?"wet":"dry";previewTake();
+}
+function takeUI(){
+ const t=currentTake(),blocked=mode==="mic"||busy||!!rec||!!liveRec;
+ el("takeReview").hidden=!takes.length||blocked;
+ for(const [id,key] of [["saveWet","wet"],["saveDry","dry"],["reampTake","dry"]])el(id).disabled=blocked||!t?.[key];
+ el("deleteTake").disabled=blocked||!t;el("takeSelect").disabled=blocked;el("takeVersion").disabled=blocked;
+ if(blocked&&takeURL)unloadPreview();
+}
+const previousUI=ui;ui=function(){previousUI();el("demo").disabled=busy||!!rec||!!liveRec;el("recordLive").disabled=busy||!!rec||!!liveRec||mode!=="mic"||!window.MediaRecorder||takes.length>=5;el("stopLive").disabled=!liveRec||!!liveRec.stopping;el("calibrate").disabled=busy||!!rec||!!liveRec||!!calibration||mode!=="mic";if(liveRec){el("file").disabled=true;el("export").disabled=true}takeUI()};
 const previousDisconnect=disconnect;disconnect=function(){if(liveRec)stopLive();if(calibration){clearTimeout(calibration.timer);calibration=null}previousDisconnect()};
-function stopLive(){if(liveRec&&liveRec.recorder.state!=="inactive")liveRec.recorder.stop()}
-el("recordLive").addEventListener("click",()=>{if(mode!=="mic"||liveRec||rec)return;try{const mime=format(false),recorder=new MediaRecorder(g.record.stream,mime?{mimeType:mime}:{}),job={recorder,chunks:[],failed:false,timer:0};liveRec=job;recorder.ondataavailable=e=>{if(e.data.size)job.chunks.push(e.data)};recorder.onerror=()=>{job.failed=true;stopLive()};recorder.onstop=()=>{clearTimeout(job.timer);liveRec=null;if(!job.failed&&job.chunks.length){const type=recorder.mimeType||job.chunks[0].type,ext=type.includes("mp4")?"m4a":type.includes("ogg")?"ogg":"webm";download(new Blob(job.chunks,{type}),"live-guitar."+ext);status("Live recording saved.")}else status("Live recording failed.");ui()};recorder.start(500);job.timer=setTimeout(stopLive,600000);status("Recording processed microphone audio (10 minute limit).");ui()}catch(e){liveRec=null;status("Recording failed: "+e.message);ui()}});
-el("stopLive").addEventListener("click",stopLive);
+function stopLive(){
+ const job=liveRec;if(!job||job.stopping)return;job.stopping=true;clearTimeout(job.timer);clearInterval(job.clock);job.seconds=(performance.now()-job.started)/1000;el("takeTimer").textContent=takeTime(job.seconds);takeStatus("Finishing take…");
+ for(const part of job.parts){if(part.recorder.state!=="inactive"){try{part.recorder.stop()}catch{part.failed=true;part.done=true}}else if(!part.started){part.done=true}}
+ finalizeTake(job);ui();
+}
+function finalizeTake(job){
+ if(liveRec!==job||!job.parts.every(p=>p.done))return;clearTimeout(job.timer);clearInterval(job.clock);liveRec=null;
+ const dry=takeBlob(job.parts.find(p=>p.kind==="dry")),wet=takeBlob(job.parts.find(p=>p.kind==="wet"));
+ if(dry||wet){const t={id:String(++takeSeq),name:"Take "+takeSeq,seconds:job.seconds??(performance.now()-job.started)/1000,dry,wet,settings:job.settings};takes.push(t);selectedTake=t.id;el("takeVersion").value=wet?"wet":"dry";renderTakes();takeStatus(dry&&wet?"Take ready. Preview, download either version, or try a different tone.":"Only one version was captured. Download the available recording.");status("Recording finished. Review your take below.")}
+ else{takeStatus("Recording failed. Check microphone permissions and try again.");status("Recording unavailable.")}
+ ui();
+}
+el("recordLive").addEventListener("click",()=>{
+ if(mode!=="mic"||!stream||liveRec||rec||busy||takes.length>=5)return;
+ let job=null;
+ try{
+  const mime=format(false);const parts=[];
+  // Separate recorders start in the same user action; codecs can add different delays.
+  for(const [kind,inputStream] of [["dry",stream],["wet",g.record.stream]]){
+   const recorder=new MediaRecorder(inputStream,mime?{mimeType:mime}:{});parts.push({kind,recorder,chunks:[],failed:false,started:false,done:false});
+  }
+  job={parts,started:performance.now(),settings:snapshot(),stopping:false,timer:0,clock:0};liveRec=job;
+  for(const part of parts){
+   part.recorder.ondataavailable=e=>{if(e.data.size)part.chunks.push(e.data)};
+   part.recorder.onerror=()=>{part.failed=true;stopLive();if(mode==="mic")disconnect()};
+   part.recorder.onstop=()=>{part.done=true;if(!job.stopping){stopLive();if(mode==="mic")disconnect()}finalizeTake(job)};
+   part.recorder.start(500);part.started=true;
+  }
+  el("takeTimer").textContent="00:00";job.clock=setInterval(()=>{if(liveRec===job)el("takeTimer").textContent=takeTime((performance.now()-job.started)/1000)},250);
+  job.timer=setTimeout(()=>{stopLive();if(mode==="mic")disconnect()},600000);
+  takeStatus("Recording original and amplified audio. Finish the take when ready (10-minute limit).");status("Recording a take…");ui();
+ }catch(e){if(job){for(const p of job.parts)if(!p.started)p.done=true;stopLive()}takeStatus("Recording failed: "+e.message);ui()}
+});
+el("stopLive").addEventListener("click",()=>{stopLive();if(mode==="mic")disconnect()});
+el("takeSelect").addEventListener("change",()=>{selectedTake=el("takeSelect").value;previewTake();takeUI()});
+el("takeVersion").addEventListener("change",previewTake);
+takePreview.addEventListener("play",()=>{if(mode==="mic"||busy||rec||liveRec){takePreview.pause();return}media.pause()});
+media.addEventListener("play",()=>takePreview.pause());
+for(const id of ["mic","demo","export","file","wavExport","metroStart"])el(id).addEventListener(id==="file"?"change":"click",()=>takePreview.pause(),true);
+for(const [id,key,suffix] of [["saveWet","wet","amplified"],["saveDry","dry","original"]])el(id).addEventListener("click",()=>{const t=currentTake(),blob=t?.[key];if(blob&&!el(id).disabled)download(blob,"guitar-take-"+t.id+"-"+suffix+"."+takeExt(blob))});
+el("reampTake").addEventListener("click",()=>{
+ const t=currentTake();if(!t?.dry||el("reampTake").disabled)return;
+ try{unloadPreview();disconnect();if(fileURL)URL.revokeObjectURL(fileURL);fileURL=URL.createObjectURL(t.dry);media.src=fileURL;media.hidden=false;media.load();build();attachMedia();status("Original take loaded. Pick a tone and press Play; export to save a new amplified version.");takeStatus("Original loaded into the studio. Your saved take is unchanged.")}
+ catch(e){takeStatus("Unable to load take: "+e.message)}ui();
+});
+el("deleteTake").addEventListener("click",()=>{const t=currentTake();if(!t||el("deleteTake").disabled||!window.confirm("Delete this take from the current tab? Downloaded files are unaffected."))return;unloadPreview();takes=takes.filter(x=>x!==t);selectedTake=null;renderTakes();takeStatus("Take deleted from this tab.");ui()});
+window.addEventListener("pagehide",unloadPreview);
+window.addEventListener("beforeunload",e=>{if(takes.length||liveRec){e.preventDefault();e.returnValue=""}});
 el("calibrate").addEventListener("click",()=>{if(mode!=="mic"||calibration)return;const samples=[],a=new Float32Array(g.analyser.fftSize),started=performance.now();status("Play normally for three seconds to calibrate input gain.");const job={timer:0};calibration=job;ui();
  const sample=()=>{if(calibration!==job||mode!=="mic")return;g.analyser.getFloatTimeDomainData(a);let sum=0,peak=0;for(const x of a){sum+=x*x;peak=Math.max(peak,Math.abs(x))}const rms=20*Math.log10(Math.max(1e-8,Math.sqrt(sum/a.length)));if(rms>-65)samples.push({rms,peak});if(performance.now()-started<3000){job.timer=setTimeout(sample,60);return}calibration=null;if(samples.length<5){status("Input too quiet. Move microphone closer and try again.")}else{samples.sort((a,b)=>a.rms-b.rms);const typical=samples[Math.floor(samples.length*.75)].rms,peak=Math.max(...samples.map(x=>x.peak));const delta=Math.min(6,-26-typical,20*Math.log10(.7/Math.max(.001,peak)));el("input").value=Math.max(0,Math.min(24,Math.round(n("input")+delta)));showValues();apply();status("Calibration complete. Input gain "+n("input")+" dB. Repeat if needed.")}ui()};sample()});
 // Custom user-supplied speaker IR, with filtered cabinet path retained as fallback.
