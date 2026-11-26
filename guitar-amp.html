@@ -56,18 +56,18 @@
 </section>
 <section class="panel">
 <h2>3. Dial in the amplifier</h2>
-<div class="amp"><div class="grid" id="ampKnobs"></div></div><details><summary>Advanced: custom speaker impulse response</summary><p class="small muted">Load a locally stored, licensed speaker IR (mono/stereo, up to two seconds). Applied after the built-in cabinet filter. Audio is not uploaded or included in shared rigs.</p><label for="irFile">Speaker IR audio file</label><input id="irFile" type="file" accept="audio/*,.wav"><button id="clearIR" disabled>Remove custom IR</button><p id="irStatus" role="status" class="small muted">Using the built-in cabinet voicing.</p></details>
+<div class="amp"><div class="grid" id="ampKnobs"></div></div><details><summary>Pickup color and input cleanup</summary><p class="small muted">Approximate pickup-like EQ, not magnetic pickup reconstruction. Hum filters target fixed mains frequencies; adaptive gate reduces quiet background noise, not overlapping instruments.</p><div class="grid"><label>Pickup color<select id="pickup"><option value="neutral">Neutral</option><option value="single">Single coil</option><option value="humbucker">Humbucker</option><option value="p90">P90</option><option value="neck">Neck</option><option value="bridge">Bridge</option></select></label><label>Hum filter<select id="hum"><option value="off">Off</option><option value="50">50 / 100 Hz</option><option value="60">60 / 120 Hz</option></select></label><div id="pickupKnobs"></div><label><input type="checkbox" id="adaptiveGate">Adaptive quiet-noise gate</label></div></details><details><summary>Advanced: custom speaker impulse response</summary><p class="small muted">Load a locally stored, licensed speaker IR (mono/stereo, up to two seconds). Applied after the built-in cabinet filter. Audio is not uploaded or included in shared rigs.</p><label for="irFile">Speaker IR audio file</label><input id="irFile" type="file" accept="audio/*,.wav"><button id="clearIR" disabled>Remove custom IR</button><p id="irStatus" role="status" class="small muted">Using the built-in cabinet voicing.</p></details>
 </section>
 <section class="panel">
-<h2>4. Virtual pedalboard</h2>
-<p class="muted small">Signal path: input EQ → gate → compressor → drive → amp → cabinet → modulation → delay → reverb.</p>
+<h2>4. Virtual pedalboard</h2><div class="grid"><label>Preamp order<select id="preOrder"><option value="comp-drive">Compressor → drive</option><option value="drive-comp">Drive → compressor</option></select></label><label>Postamp order<select id="postOrder"><option value="mod-delay-verb">Modulation → delay → reverb</option><option value="mod-verb-delay">Modulation → reverb → delay</option><option value="delay-mod-verb">Delay → modulation → reverb</option><option value="delay-verb-mod">Delay → reverb → modulation</option><option value="verb-mod-delay">Reverb → modulation → delay</option><option value="verb-delay-mod">Reverb → delay → modulation</option></select></label></div>
+<p class="muted small">Signal path: input cleanup → pickup EQ / wah → gate → preamp pedals → amp / cabinet → postamp pedals → tremolo.</p>
 <div class="grid">
 <div class="pedal"><h3>Noise gate</h3><label><input type="checkbox" id="gateOn">On</label><div id="gateKnobs"></div></div>
 <div class="pedal"><h3>Compressor</h3><label><input type="checkbox" id="compOn">On</label><div id="compKnobs"></div></div>
 <div class="pedal"><h3>Drive / fuzz</h3><label><input type="checkbox" id="driveOn">On</label><label>Type<select id="driveType"><option value="overdrive">Overdrive</option><option value="distortion">Distortion</option><option value="fuzz">Fuzz</option></select></label><div id="driveKnobs"></div></div>
 <div class="pedal"><h3>Chorus / flange</h3><label><input type="checkbox" id="modOn">On</label><label>Type<select id="modType"><option value="chorus">Chorus</option><option value="flange">Flanger</option></select></label><div id="modKnobs"></div></div>
 <div class="pedal"><h3>Delay</h3><label><input type="checkbox" id="delayOn">On</label><div id="delayKnobs"></div></div>
-<div class="pedal"><h3>Reverb</h3><label><input type="checkbox" id="verbOn">On</label><div id="verbKnobs"></div></div>
+<div class="pedal"><h3>Reverb</h3><label><input type="checkbox" id="verbOn">On</label><div id="verbKnobs"></div></div><div class="pedal"><h3>Wah (manual)</h3><label><input type="checkbox" id="wahOn">On</label><div id="wahKnobs"></div></div><div class="pedal"><h3>Tremolo</h3><label><input type="checkbox" id="tremOn">On</label><div id="tremKnobs"></div></div>
 </div>
 </section>
 <section class="panel" id="my-rigs">
@@ -113,9 +113,9 @@ const presets={
 "Brown lead — Van Halen inspired":{amp:"lead",cab:"stack",gain:61,mid:3,driveOn:true,drive:25,modOn:true,modType:"flange",mod:12,verbOn:true,verb:12},
 "Dreamy chorus":{amp:"clean",cab:"open",gain:22,modOn:true,mod:42,delayOn:true,delay:20,verbOn:true,verb:30}
 };
-const specs={ampKnobs:[["input","Input gain",0,24,12," dB"],["gain","Amp gain",0,100,24,"%"],["bass","Bass",-12,12,0," dB"],["mid","Mids",-12,12,0," dB"],["treble","Treble",-12,12,0," dB"],["volume","Output",0,100,18,"%"]],gateKnobs:[["gate","Threshold",-85,-30,-65," dB"]],compKnobs:[["comp","Sustain",0,100,35,"%"]],driveKnobs:[["drive","Drive",0,100,25,"%"]],modKnobs:[["mod","Mix",0,70,25,"%"],["rate","Rate",1,30,8," ×0.1 Hz"]],delayKnobs:[["delay","Mix",0,65,25,"%"],["time","Time",70,850,330," ms"],["feedback","Repeats",0,65,32,"%"]],verbKnobs:[["verb","Mix",0,65,20,"%"]]};
-const defaults={amp:"clean",cab:"open",driveType:"overdrive",modType:"chorus",gateOn:false,compOn:false,driveOn:false,modOn:false,delayOn:false,verbOn:false};
-const toggles=["gateOn","compOn","driveOn","modOn","delayOn","verbOn"];
+const specs={ampKnobs:[["input","Input gain",0,24,12," dB"],["gain","Amp gain",0,100,24,"%"],["bass","Bass",-12,12,0," dB"],["mid","Mids",-12,12,0," dB"],["treble","Treble",-12,12,0," dB"],["volume","Output",0,100,18,"%"]],gateKnobs:[["gate","Threshold",-85,-30,-65," dB"]],compKnobs:[["comp","Sustain",0,100,35,"%"]],driveKnobs:[["drive","Drive",0,100,25,"%"]],modKnobs:[["mod","Mix",0,70,25,"%"],["rate","Rate",1,30,8," ×0.1 Hz"]],delayKnobs:[["delay","Mix",0,65,25,"%"],["time","Time",70,850,330," ms"],["feedback","Repeats",0,65,32,"%"]],verbKnobs:[["verb","Mix",0,65,20,"%"]],wahKnobs:[["wah","Position",0,100,50,"%"]],tremKnobs:[["tremDepth","Depth",0,100,45,"%"],["tremRate","Rate",5,100,45," ×0.1 Hz"]],pickupKnobs:[["pickupMix","Pickup color",0,100,60,"%"]]};
+const defaults={amp:"clean",cab:"open",driveType:"overdrive",modType:"chorus",gateOn:false,compOn:false,driveOn:false,modOn:false,delayOn:false,verbOn:false,wahOn:false,tremOn:false,adaptiveGate:false,pickup:"neutral",hum:"off",preOrder:"comp-drive",postOrder:"mod-delay-verb"};
+const toggles=["gateOn","compOn","driveOn","modOn","delayOn","verbOn","wahOn","tremOn","adaptiveGate"];
 for(const [group,items] of Object.entries(specs))for(const [id,label,min,max,value,suffix] of items){const el=document.createElement("label");el.className="knob";el.htmlFor=id;el.innerHTML='<span>'+label+'</span><output id="'+id+'Value" for="'+id+'"></output><input type="range" id="'+id+'" min="'+min+'" max="'+max+'" value="'+value+'">';$(group).append(el);defaults[id]=value;$(id).addEventListener("input",()=>{showValues();apply();});}
 for(const name of Object.keys(presets)){const o=document.createElement("option");o.value=name;o.textContent=name;$("preset").append(o);}
 function n(id){return Number($(id).value)}
@@ -123,42 +123,58 @@ function on(id){return $(id).checked}
 function showValues(){for(const items of Object.values(specs))for(const [id,,,,,suffix] of items)$(id+"Value").textContent=$(id).value+suffix}
 function loadPreset(){const p={...defaults,...presets[$("preset").value]};for(const [id,v] of Object.entries(p)){if(id==="input"||id==="volume")continue;if(typeof v==="boolean")$(id).checked=v;else $(id).value=v;}showValues();apply()}
 function status(s){$("status").textContent=s}
-let ctx,g,source,mediaSource,stream,fileURL,mode="none",busy=false,rec=null,raf=0,gateOpen=true;
+let ctx,g,source,mediaSource,stream,fileURL,mode="none",busy=false,rec=null,raf=0,gateOpen=true,noiseFloor=-75;
 const media=$("media");
 const db=x=>Math.pow(10,x/20);
 const curve=(amount,kind)=>{const c=new Float32Array(4096),k=1+amount;for(let i=0;i<c.length;i++){const x=2*i/(c.length-1)-1;c[i]=kind==="fuzz"?Math.tanh(k*x*2.5)/Math.tanh(k*2.5):kind==="distortion"?Math.max(-1,Math.min(1,k*x)):Math.tanh(k*x)/Math.tanh(k);}return c};
-function build(){
- if(ctx)return;
- const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error("Web Audio is not supported in this browser.");
- ctx=new AC({latencyHint:"interactive"});
+function createGraph(ctx){
  const gain=(v=1)=>{const x=ctx.createGain();x.gain.value=v;return x};
  const filter=(type,f,q=0.707)=>{const x=ctx.createBiquadFilter();x.type=type;x.frequency.value=f;x.Q.value=q;return x};
  const shaper=()=>{const x=ctx.createWaveShaper();x.oversample="4x";return x};
  const connect=(...nodes)=>{for(let i=0;i<nodes.length-1;i++)nodes[i].connect(nodes[i+1]);};
- g={input:gain(),hp:filter("highpass",75),body:filter("peaking",180,1.2),pick:filter("peaking",2400,.8),boost:gain(),analyser:ctx.createAnalyser(),gate:gain(),comp:ctx.createDynamicsCompressor(),compDry:gain(),compWet:gain(0),compSum:gain(),drive:shaper(),drivePre:gain(),driveDry:gain(),driveWet:gain(0),driveSum:gain(),ampPre:gain(),ampShape:shaper(),bass:filter("lowshelf",180),mid:filter("peaking",800,.8),treble:filter("highshelf",2500),cabHP:filter("highpass",80),cabPeak:filter("peaking",1500,1),cabLP:filter("lowpass",4200),modDelay:ctx.createDelay(.1),modWet:gain(0),modSum:gain(),lfo:ctx.createOscillator(),lfoDepth:gain(.002),delay:ctx.createDelay(1.1),feedback:gain(0),delayWet:gain(0),delaySum:gain(),reverb:ctx.createConvolver(),verbWet:gain(0),verbSum:gain(),wet:gain(),dry:gain(0),sum:gain(),limiter:ctx.createDynamicsCompressor(),safety:shaper(),volume:gain(.12),monitor:gain(0),record:ctx.createMediaStreamDestination()};
- g.analyser.fftSize=1024;g.comp.attack.value=.008;g.comp.release.value=.18;g.limiter.threshold.value=-10;g.limiter.knee.value=0;g.limiter.ratio.value=20;g.limiter.attack.value=.001;g.limiter.release.value=.12;
+ const g={input:gain(),raw:ctx.createAnalyser(),hum1:filter("notch",60,18),hum2:filter("notch",120,18),humDry:gain(),humWet:gain(0),humSum:gain(),pickupLow:filter("lowshelf",250),pickupPeak:filter("peaking",3000,1.1),pickupHigh:filter("highshelf",4500),wahFilter:filter("peaking",900,3),trem:gain(),tremOsc:ctx.createOscillator(),tremAmount:gain(0),preIn:gain(),ampIn:gain(),cabOut:gain(),postOut:gain(),modIn:gain(),delayIn:gain(),verbIn:gain(),hp:filter("highpass",75),body:filter("peaking",180,1.2),pick:filter("peaking",2400,.8),boost:gain(),analyser:ctx.createAnalyser(),gate:gain(),comp:ctx.createDynamicsCompressor(),compDry:gain(),compWet:gain(0),compSum:gain(),drive:shaper(),drivePre:gain(),driveDry:gain(),driveWet:gain(0),driveSum:gain(),ampPre:gain(),ampShape:shaper(),bass:filter("lowshelf",180),mid:filter("peaking",800,.8),treble:filter("highshelf",2500),cabHP:filter("highpass",80),cabPeak:filter("peaking",1500,1),cabLP:filter("lowpass",4200),modDelay:ctx.createDelay(.1),modWet:gain(0),modSum:gain(),lfo:ctx.createOscillator(),lfoDepth:gain(.002),delay:ctx.createDelay(1.1),feedback:gain(0),delayWet:gain(0),delaySum:gain(),reverb:ctx.createConvolver(),verbWet:gain(0),verbSum:gain(),wet:gain(),dry:gain(0),sum:gain(),limiter:ctx.createDynamicsCompressor(),safety:shaper(),volume:gain(.12),monitor:gain(0),record:null};
+ g.raw.fftSize=4096;g.analyser.fftSize=1024;g.comp.attack.value=.008;g.comp.release.value=.18;g.limiter.threshold.value=-10;g.limiter.knee.value=0;g.limiter.ratio.value=20;g.limiter.attack.value=.001;g.limiter.release.value=.12;
  g.safety.curve=Float32Array.from({length:4096},(_,i)=>Math.max(-.85,Math.min(.85,2*i/4095-1)));
- connect(g.input,g.hp,g.body,g.pick,g.boost,g.analyser,g.gate);
- connect(g.gate,g.compDry,g.compSum);connect(g.gate,g.comp,g.compWet,g.compSum);
- connect(g.compSum,g.driveDry,g.driveSum);connect(g.compSum,g.drivePre,g.drive,g.driveWet,g.driveSum);
- connect(g.driveSum,g.ampPre,g.ampShape,g.bass,g.mid,g.treble,g.cabHP,g.cabPeak,g.cabLP,g.modSum);
- connect(g.cabLP,g.modDelay,g.modWet,g.modSum);connect(g.lfo,g.lfoDepth,g.modDelay.delayTime);g.lfo.start();
- connect(g.modSum,g.delaySum);connect(g.modSum,g.delay,g.delayWet,g.delaySum);connect(g.delay,g.feedback,g.delay);
- connect(g.delaySum,g.verbSum);connect(g.delaySum,g.reverb,g.verbWet,g.verbSum);
- const len=Math.floor(ctx.sampleRate*1.8),imp=ctx.createBuffer(2,len,ctx.sampleRate);for(let ch=0;ch<2;ch++){const a=imp.getChannelData(ch);for(let i=0;i<len;i++)a[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.4);}g.reverb.buffer=imp;
- connect(g.verbSum,g.wet,g.sum);connect(g.input,g.dry,g.sum);connect(g.sum,g.limiter,g.safety,g.volume);connect(g.volume,g.monitor,ctx.destination);connect(g.volume,g.record);
+ connect(g.input,g.raw);connect(g.input,g.humDry,g.humSum);connect(g.input,g.hum1,g.hum2,g.humWet,g.humSum);connect(g.humSum,g.hp,g.body,g.pick,g.pickupLow,g.pickupPeak,g.pickupHigh,g.wahFilter,g.boost,g.analyser,g.gate,g.preIn);
+ connect(g.comp,g.compWet,g.compSum);connect(g.compDry,g.compSum);
+ connect(g.driveDry,g.driveSum);connect(g.drivePre,g.drive,g.driveWet,g.driveSum);
+ connect(g.ampIn,g.ampPre,g.ampShape,g.bass,g.mid,g.treble,g.cabHP,g.cabPeak,g.cabLP,g.cabOut);
+ connect(g.modIn,g.modSum);connect(g.modIn,g.modDelay,g.modWet,g.modSum);connect(g.lfo,g.lfoDepth,g.modDelay.delayTime);g.lfo.start();
+ connect(g.delayIn,g.delaySum);connect(g.delayIn,g.delay,g.delayWet,g.delaySum);connect(g.delay,g.feedback,g.delay);
+ connect(g.verbIn,g.verbSum);connect(g.verbIn,g.reverb,g.verbWet,g.verbSum);connect(g.tremOsc,g.tremAmount,g.trem.gain);g.tremOsc.start();
+ const len=Math.floor(ctx.sampleRate*1.8),imp=ctx.createBuffer(2,len,ctx.sampleRate);let seed=8492;for(let ch=0;ch<2;ch++){const a=imp.getChannelData(ch);for(let i=0;i<len;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;a[i]=(seed/4294967296*2-1)*Math.pow(1-i/len,3.4);}}g.reverb.buffer=imp;
+ connect(g.postOut,g.trem,g.wet,g.sum);connect(g.input,g.dry,g.sum);connect(g.sum,g.limiter,g.safety,g.volume);
+ return g;
+}
+function routeGraph(g,pre,post){
+ if(g.routeKey===pre+"/"+post)return;
+ for(const x of [g.preIn,g.compSum,g.driveSum,g.cabOut,g.modSum,g.delaySum,g.verbSum])x.disconnect();
+ const c=(a,b)=>a.connect(b);
+ const compIn=x=>{c(x,g.compDry);c(x,g.comp)};
+ const driveIn=x=>{c(x,g.driveDry);c(x,g.drivePre)};
+ if(pre==="drive-comp"){driveIn(g.preIn);compIn(g.driveSum);c(g.compSum,g.ampIn)}else{compIn(g.preIn);driveIn(g.compSum);c(g.driveSum,g.ampIn)}
+ const stages={mod:[g.modIn,g.modSum],delay:[g.delayIn,g.delaySum],verb:[g.verbIn,g.verbSum]};let x=g.cabOut;
+ for(const k of post.split("-")){const [input,output]=stages[k];c(x,input);x=output}c(x,g.postOut);g.routeKey=pre+"/"+post;
+}
+function build(){
+ if(ctx)return;
+ const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error("Web Audio is not supported in this browser.");
+ ctx=new AC({latencyHint:"interactive"});g=createGraph(ctx);g.record=ctx.createMediaStreamDestination();g.volume.connect(g.monitor);g.monitor.connect(ctx.destination);g.volume.connect(g.record);
  mediaSource=ctx.createMediaElementSource(media);apply();tick();
 }
-let ampKey="",driveKey="";
-function apply(){
- if(!g)return;
- const set=(p,v)=>{p.setTargetAtTime(v,ctx.currentTime,.018)};
+function apply(){if(g)configureGraph(g,ctx,false)}
+function configureGraph(g,ctx,offline){
+ const set=(p,v)=>{if(offline)p.value=v;else p.setTargetAtTime(v,ctx.currentTime,.018)};
+ routeGraph(g,$("preOrder").value,$("postOrder").value);
+ const hum=$("hum").value;set(g.hum1.frequency,hum==="50"?50:60);set(g.hum2.frequency,hum==="50"?100:120);set(g.humDry.gain,hum==="off"?1:0);set(g.humWet.gain,hum==="off"?0:1);
+ const color={neutral:[0,3000,0,0],single:[-3,3300,4,1],humbucker:[3,2200,3,-4],p90:[1,2600,5,-1],neck:[3,1800,1,-5],bridge:[-2,3500,5,2]}[$("pickup").value],mix=n("pickupMix")/100;set(g.pickupLow.gain,color[0]*mix);set(g.pickupPeak.frequency,color[1]);set(g.pickupPeak.gain,color[2]*mix);set(g.pickupHigh.gain,color[3]*mix);
+ set(g.wahFilter.frequency,350*Math.pow(6,n("wah")/100));set(g.wahFilter.gain,on("wahOn")?12:0);const depth=on("tremOn")?n("tremDepth")/100:0;set(g.trem.gain,1-depth/2);set(g.tremAmount.gain,depth/2);set(g.tremOsc.frequency,n("tremRate")/10);
  const acoustic=$("guitar").value==="acoustic",electric=$("guitar").value==="electric";
  set(g.hp.frequency,acoustic?95:65);set(g.body.frequency,acoustic?190:250);set(g.body.gain,acoustic?-8:electric?-3:0);set(g.pick.gain,acoustic?3:electric?4:0);set(g.boost.gain,db(n("input")));
  set(g.compDry.gain,on("compOn")?0:1);set(g.compWet.gain,on("compOn")?1:0);set(g.comp.threshold,-12-n("comp")*.28);set(g.comp.ratio,2+n("comp")*.09);
- const dtype=$("driveType").value,dk=dtype+":"+n("drive");if(dk!==driveKey){g.drive.curve=curve(n("drive")*.12,dtype);driveKey=dk}
+ const dtype=$("driveType").value,dk=dtype+":"+n("drive");if(dk!==g.driveKey){g.drive.curve=curve(n("drive")*.12,dtype);g.driveKey=dk}
  set(g.drivePre.gain,1+n("drive")*.025);set(g.driveDry.gain,on("driveOn")?0:1);set(g.driveWet.gain,on("driveOn")?.68:0);
- const a=$("amp").value,base={clean:0.15,british:1.8,lead:3.2,metal:5.5}[a],ak=a+":"+n("gain");if(ak!==ampKey){g.ampShape.curve=curve(base+n("gain")*(a==="clean"?.012:.05),"overdrive");ampKey=ak}
+ const a=$("amp").value,base={clean:0.15,british:1.8,lead:3.2,metal:5.5}[a],ak=a+":"+n("gain");if(ak!==g.ampKey){g.ampShape.curve=curve(base+n("gain")*(a==="clean"?.012:.05),"overdrive");g.ampKey=ak}
  set(g.ampPre.gain,1+n("gain")*(a==="clean"?.009:.026));set(g.bass.gain,n("bass"));set(g.mid.gain,n("mid"));set(g.treble.gain,n("treble"));
  const cab={open:[75,1850,2,4900],stack:[95,1350,4,3800],small:[125,2200,3,3400]}[$("cab").value];set(g.cabHP.frequency,cab[0]);set(g.cabPeak.frequency,cab[1]);set(g.cabPeak.gain,cab[2]);set(g.cabLP.frequency,cab[3]);
  const flange=$("modType").value==="flange";set(g.modDelay.delayTime,flange?.004:.019);set(g.lfoDepth.gain,flange?.002:.004);set(g.lfo.frequency,n("rate")/10);set(g.modWet.gain,on("modOn")?n("mod")/100:0);
@@ -167,7 +183,8 @@ function apply(){
 }
 function tick(){
  if(!g)return;const a=new Float32Array(g.analyser.fftSize);g.analyser.getFloatTimeDomainData(a);let sum=0,peak=0;for(const x of a){sum+=x*x;peak=Math.max(peak,Math.abs(x));}const rms=20*Math.log10(Math.max(1e-7,Math.sqrt(sum/a.length)));
- if(on("gateOn")){const threshold=n("gate");gateOpen=gateOpen?rms>threshold-5:rms>threshold;g.gate.gain.setTargetAtTime(gateOpen?1:.015,ctx.currentTime,gateOpen?.008:.06)}else g.gate.gain.setTargetAtTime(1,ctx.currentTime,.02);
+ if(on("adaptiveGate")&&mode!=="none"&&rms<noiseFloor+8)noiseFloor=Math.max(-90,Math.min(-35,noiseFloor*.98+rms*.02));
+ if(on("gateOn")||on("adaptiveGate")){const threshold=Math.max(on("gateOn")?n("gate"):-90,on("adaptiveGate")?Math.min(-32,noiseFloor+10):-90);gateOpen=gateOpen?rms>threshold-5:rms>threshold;g.gate.gain.setTargetAtTime(gateOpen?1:.015,ctx.currentTime,gateOpen?.008:.06)}else g.gate.gain.setTargetAtTime(1,ctx.currentTime,.02);
  $("meter").style.width=(mode==="none"?0:Math.max(0,Math.min(100,(rms+70)*100/70)))+"%";$("level").textContent=mode==="none"?"—":Math.round(rms)+" dBFS"+(peak>.98?" • reduce input gain":"");raf=requestAnimationFrame(tick)
 }
 function ui(){const exporting=!!rec;$("mic").disabled=busy||exporting||mode==="mic"||!on("headphones");$("stop").disabled=busy||exporting||mode!=="mic";$("file").disabled=busy||exporting;$("play").disabled=busy||exporting||!fileURL||mode==="mic";$("export").disabled=busy||exporting||!fileURL||mode==="mic"||!window.MediaRecorder;$("cancel").disabled=!exporting;$("headphones").disabled=busy||exporting;media.controls=!exporting;}
@@ -196,12 +213,12 @@ $("export").addEventListener("click",async()=>{busy=true;ui();let canvasStream=n
  recorder.start(500);await media.play();draw();
  }catch(e){if(rec)finish(true);else{if(canvasStream)canvasStream.getTracks().forEach(t=>t.stop());if(g)g.monitor.gain.setTargetAtTime(1,ctx.currentTime,.02)}status("Export could not start: "+e.message)}finally{busy=false;ui()}});
 $("cancel").addEventListener("click",()=>finish(true));
-for(const id of [...toggles,"guitar","amp","cab","driveType","modType","bypass"])$(id).addEventListener("change",apply);
+for(const id of [...toggles,"guitar","amp","cab","driveType","modType","bypass","pickup","hum","preOrder","postOrder"])$(id).addEventListener("change",apply);
 $("preset").addEventListener("change",loadPreset);$("reset").addEventListener("click",loadPreset);
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&rec)finish(true);if(document.hidden&&mode==="mic"){disconnect();status("Microphone stopped when the tab was hidden.")}});
 window.addEventListener("pagehide",()=>{if(rec)finish(true);disconnect();if(fileURL)URL.revokeObjectURL(fileURL);cancelAnimationFrame(raf);if(ctx)ctx.close().catch(()=>{})});
 showValues();loadPreset();ui();
 </script>
-<script src="/guitar-amp-extras.js?v=3" defer></script>
+<script src="/guitar-amp-extras.js?v=4" defer></script>
 </body>
 </html>
