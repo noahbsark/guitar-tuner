@@ -335,7 +335,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden)cancelEdit(
 el("editRender").addEventListener("click",async()=>{
  const t=currentTake(),key=el("takeVersion").value,blob=t?.[key];if(!blob||editJob||busy||rec||liveRec||mode==="mic")return;
  // Capture the user's current range before UI resets or preview unload.
- const job={cancelled:false};editJob=job;busy=true;pauseTakePreview();ui();el("editStatus").textContent="Preparing edited copy…";
+ const job={cancelled:false};editJob=job;busy=true;pauseTakePreview();media.pause();stopMetro();ui();el("editStatus").textContent="Preparing edited copy…";
  try{const output=key==="video"?await editVideo(job,blob,t.seconds):await editAudio(job,blob);checkEdit(job);download(output,"guitar-edited-"+key+"."+takeExt(output));el("editStatus").textContent="Edited copy downloaded. Original unchanged."}
  catch(e){el("editStatus").textContent=e.message||"Editing failed."}
  finally{cleanupEdit(job);editJob=null;busy=false;ui()}
