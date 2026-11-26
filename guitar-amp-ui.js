@@ -44,7 +44,7 @@ function sync(){
  const silent=$("micMode").value==="silent",label=$("headphones").closest("label");
  // The checkbox is also used by the metronome. Keep it accessible from the input area.
  label.hidden=silent&&workspace!=="practice";if(label.lastChild?.nodeType===3)label.lastChild.textContent=silent?" I am wearing headphones for the metronome":" I am wearing headphones";
- $("micHint").textContent=silent?"No headphones needed. Start the mic, record, then stop and listen.":"Wear headphones and start at a low volume before enabling live monitoring.";
+ $("micHint").textContent=silent?"No headphones needed. Start the mic, record a take, then finish it to listen.":"Wear headphones and start at a low volume before enabling live monitoring.";
  $("mic").textContent=silent?"Start recording setup":"Start live microphone";
  document.querySelector(".transport-status").dataset.live=String($("stop").disabled===false||$("recordLive").disabled===false);
 }
