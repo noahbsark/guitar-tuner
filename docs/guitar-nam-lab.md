@@ -1,6 +1,6 @@
 # Experimental Neural Amp Lab
 
-This branch contains a separate local-file NAM experiment at /guitar-nam-lab.html. It is not the built-in amp's replacement and does not enable speaker monitoring or microphone capture. The built-in studio remains usable with no additional dependencies.
+This branch contains a separate local-file NAM experiment at /guitar-nam-lab.html. The separate lab itself does not enable speaker monitoring or microphone capture. An optional experimental NAM mode is now also available inside the main studio's amplifier section, using the same runtime. The built-in studio remains usable with no additional dependencies.
 
 ## Local setup (Node 22, npm and tar)
 
@@ -28,3 +28,7 @@ Choose a legally usable .nam capture and a short local guitar recording, load th
 The GitHub browser workflow stages the runtime before tests, validates the synthetic model and records an output where MediaRecorder exists. Review CI results, actual device compatibility, actual guitar listening, input/output levels and real-time load before replacing the existing amplifier. A test model verifies execution, not the quality of an amp capture. No user file is uploaded.
 
 The future live integration must preserve the existing dry/wet recording paths, limiter, headphone gate, graph routing and fallback, and either support neural offline rendering or disable WAV export while the neural model is active.
+
+## Main studio integration
+
+With the runtime staged, open /guitar-amp.html and expand **Neural amp capture (experimental)** under the amplifier. Load a local licensed capture while playback and microphone are stopped. The studio context's native sample rate must match the capture. Full-rig captures bypass the studio cabinet, while amp-only captures retain the cabinet and custom IR path. Pre/post pedals, EQ, master volume, limiter, dry bypass and real-time recording are retained. Offline WAV and reference EQ are disabled while NAM is active to prevent rendering a different amp from the one heard. Return to the built-in amplifier to use those tools. Models are not persisted in saved rigs or shared links. Runtime failures stop monitoring and restore the built-in amplifier; input must be restarted manually. No model catalog or captures are distributed. Browser CI now also tests the actual neural signal ratio and restoration of the built-in route. The normal Firefox profile is retained; an additional test-only audio-permitted profile investigates suspended contexts without changing visitor browser behavior.
