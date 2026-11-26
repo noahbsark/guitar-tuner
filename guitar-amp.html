@@ -10,7 +10,7 @@
 <link rel="canonical" href="https://onlineguitartuner.net/guitar-amp">
 <style>
 :root{color-scheme:dark;--bg:#0d1117;--panel:#161d26;--line:#303b49;--muted:#aab7c8;--accent:#9ee3b6;--gold:#e5bc78}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#edf2f7;font:16px/1.5 system-ui,sans-serif}a{color:var(--accent)}header{border-bottom:1px solid var(--line);padding:16px max(16px,calc((100% - 1040px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px}header a{text-decoration:none;font-weight:650}main{max-width:1040px;margin:auto;padding:24px 16px 64px}h1{font-size:clamp(30px,5vw,48px);line-height:1.12;margin:8px 0 12px}h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;margin:0 0 12px}p{margin:8px 0 14px}.muted{color:var(--muted)}.tag{color:var(--accent);font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:bold}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:16px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:14px}.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}button,select,input[type=file]{font:inherit;color:inherit}button,select{border:1px solid #445366;background:#222d3a;border-radius:8px;padding:10px 13px;min-height:44px}button{cursor:pointer;font-weight:650}button.primary{background:var(--accent);color:#10241b;border-color:var(--accent)}button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:3px}label{display:block;font-weight:600;font-size:14px}label select{display:block;width:100%;margin-top:6px}input[type=range]{width:100%;accent-color:var(--accent);min-height:32px;margin:0}input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px;vertical-align:middle;margin-right:7px}input[type=file]{max-width:100%;margin:8px 0 12px}.knob{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 8px}.knob input{grid-column:1/-1}.knob output{font:13px ui-monospace,monospace;color:var(--gold)}.amp{background:linear-gradient(180deg,#382f25 0,#242019 100%);border:1px solid #7b6748;border-radius:10px;padding:16px}.pedal{background:#1e3032;border:1px solid #4d706b;border-radius:10px;padding:14px}.pedal:nth-child(2){background:#362b39;border-color:#70577b}.pedal:nth-child(3){background:#283044;border-color:#566f95}.pedal:nth-child(4){background:#3b3027;border-color:#8c6d45}.pedal:nth-child(5){background:#28392c;border-color:#557e61}.pedal h3{letter-spacing:.06em;text-transform:uppercase;font-size:13px}.meter{height:8px;background:#080d12;border-radius:8px;overflow:hidden;margin:8px 0}.meter span{display:block;width:0;height:100%;background:var(--accent)}.notice{border-left:3px solid var(--gold);padding-left:12px;color:#e9d3b1;font-size:14px}video{display:block;max-height:360px;width:100%;background:#080d12;border-radius:8px;margin:12px 0}video[hidden], [hidden]{display:none!important}#status{min-height:24px;color:var(--accent)}.small{font-size:13px}fieldset{border:0;padding:0;margin:0;min-width:0}legend{font-size:20px;font-weight:700;margin-bottom:12px}footer{color:var(--muted);margin-top:24px;font-size:14px}
-</style>
+.gear-item{background:#101820;border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}.gear-item .actions{margin-top:12px}.gear-item .actions a{font-size:14px}.gear-item button{font-size:13px;padding:8px;min-height:44px}.gear-item h3{margin-bottom:4px}.rig-input{background:#222d3a;color:inherit;border:1px solid #445366;border-radius:8px;padding:10px;font:inherit;max-width:100%;width:100%;min-height:44px}details{margin-top:16px}summary{cursor:pointer;font-weight:650;padding:8px 0}.section-space{margin-top:16px}</style>
 </head>
 <body>
 <header><a href="/">Online Guitar Tuner</a><a href="/">Back to tuner</a></header>
@@ -21,8 +21,8 @@
 <section class="panel">
 <h2>1. Choose your input</h2>
 <div class="grid">
-<div><h3>Live microphone</h3><label><input id="headphones" type="checkbox">I am wearing headphones</label><p class="notice">Start at low volume. Do not use speakers with live monitoring: acoustic feedback can be loud. Wired headphones work best.</p><div class="actions"><button class="primary" id="mic" disabled>Start microphone</button><button id="stop" disabled>Stop</button></div></div>
-<div><h3>Audio or video recording</h3><label for="file">Choose a local recording</label><input id="file" type="file" accept="audio/*,video/*,.mp3,.wav,.m4a,.mp4,.mov,.webm,.ogg"><div class="actions"><button id="play" disabled>Play / pause</button><button id="export" disabled>Export processed recording</button><button id="cancel" disabled>Cancel export</button></div><p class="small muted">Export plays through the file in real time. Keep this tab open and visible. Output format depends on browser support.</p></div>
+<div><h3>Live microphone</h3><label><input id="headphones" type="checkbox">I am wearing headphones</label><p class="notice">Start at low volume. Do not use speakers with live monitoring: acoustic feedback can be loud. Wired headphones work best.</p><div class="actions"><button class="primary" id="mic" disabled>Start microphone</button><button id="stop" disabled>Stop</button><button id="calibrate" disabled>Auto input gain</button><button id="recordLive" disabled>Record live</button><button id="stopLive" disabled>Save recording</button></div></div>
+<div><h3>Audio or video recording</h3><label for="file">Choose a local recording</label><input id="file" type="file" accept="audio/*,video/*,.mp3,.wav,.m4a,.mp4,.mov,.webm,.ogg"><div class="actions"><button id="demo">Try generated demo</button><button id="play" disabled>Play / pause</button><button id="export" disabled>Export processed recording</button><button id="cancel" disabled>Cancel export</button></div><p class="small muted">Export plays through the file in real time. Keep this tab open and visible. Output format depends on browser support.</p></div>
 </div>
 <video id="media" playsinline preload="metadata" controls hidden></video>
 <p id="status" role="status" aria-live="polite">Choose an input to begin.</p>
@@ -42,7 +42,7 @@
 </section>
 <section class="panel">
 <h2>3. Dial in the amplifier</h2>
-<div class="amp"><div class="grid" id="ampKnobs"></div></div>
+<div class="amp"><div class="grid" id="ampKnobs"></div></div><details><summary>Advanced: custom speaker impulse response</summary><p class="small muted">Load a locally stored, licensed speaker IR (mono/stereo, up to two seconds). Applied after the built-in cabinet filter. Audio is not uploaded or included in shared rigs.</p><label for="irFile">Speaker IR audio file</label><input id="irFile" type="file" accept="audio/*,.wav"><button id="clearIR" disabled>Remove custom IR</button><p id="irStatus" role="status" class="small muted">Using the built-in cabinet voicing.</p></details>
 </section>
 <section class="panel">
 <h2>4. Virtual pedalboard</h2>
@@ -55,6 +55,24 @@
 <div class="pedal"><h3>Delay</h3><label><input type="checkbox" id="delayOn">On</label><div id="delayKnobs"></div></div>
 <div class="pedal"><h3>Reverb</h3><label><input type="checkbox" id="verbOn">On</label><div id="verbKnobs"></div></div>
 </div>
+</section>
+<section class="panel" id="my-rigs">
+<h2>5. My rigs</h2><p class="muted">Save up to 100 named configurations on this browser, restore them later, or share a link. No account required. Export a JSON backup to keep them across devices. Recordings and custom speaker IRs are not saved.</p>
+<button id="loadShared" hidden>Load shared rig</button>
+<label for="rigName">Rig name</label><input class="rig-input" id="rigName" maxlength="60" placeholder="My classic rock rig">
+<div class="actions section-space"><button class="primary" id="saveRig">Save new rig</button><button id="updateRig">Update loaded rig</button><button id="shareRig">Share current rig</button></div>
+<div id="shareWrap" hidden><label for="shareURL">Shareable configuration link (anyone with it can view the rig name and settings)</label><input id="shareURL" readonly class="rig-input"></div>
+<p id="rigStatus" role="status" aria-live="polite"></p><div class="grid" id="rigList"></div>
+<div class="actions section-space"><button id="exportRigs">Export backup</button><label>Import backup <input id="importRigs" type="file" accept=".json,application/json"></label></div>
+</section>
+<section class="panel" id="real-gear">
+<h2>6. Build a real-world rig</h2><p>Explore equipment with similar general tonal characteristics to your selected amp and active pedals. These are editorial suggestions, not exact modeled products or guaranteed artist gear. Check compatibility before buying. Price tiers are relative categories, not live prices.</p>
+<p class="notice">As an Amazon Associate I earn from qualifying purchases. Amazon links are paid links. Reverb links are ordinary, non-affiliate links. <a href="/affiliate-disclosure">Affiliate disclosure</a>.</p>
+<div class="grid"><label>Preferred price tier<select id="gearTier"><option value="budget">Budget</option><option value="value">Midrange / value</option><option value="premium">Premium</option></select></label><label><input id="hideOwned" type="checkbox" checked>Hide gear I already own</label></div>
+<div class="grid section-space" id="gearResults"></div>
+<details id="currentRigGearWrap" hidden><summary>Saved suggestions in the loaded rig</summary><div class="grid" id="currentRigGear"></div></details>
+<details open><summary>My gear wishlist</summary><div class="grid" id="wishlist"></div></details>
+<details><summary>Gear I already own</summary><div id="ownedList" class="actions"></div></details>
 </section>
 <section class="panel">
 <h2>How it works</h2>
@@ -167,5 +185,6 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&&rec)finish
 window.addEventListener("pagehide",()=>{if(rec)finish(true);disconnect();if(fileURL)URL.revokeObjectURL(fileURL);cancelAnimationFrame(raf);if(ctx)ctx.close().catch(()=>{})});
 showValues();loadPreset();ui();
 </script>
+<script src="/guitar-amp-extras.js" defer></script>
 </body>
 </html>
