@@ -186,10 +186,10 @@ function takeBlob(part){return part&&!part.failed&&part.chunks.length?new Blob(p
 function takeExt(blob){return blob.type.includes("mp4")?(blob.type.startsWith("video/")?"mp4":"m4a"):blob.type.includes("ogg")?"ogg":blob.type.includes("wav")?"wav":"webm"}
 function currentTake(){return takes.find(t=>t.id===selectedTake)}
 function unloadPreview(){pauseTakePreview();if(takeURL){URL.revokeObjectURL(takeURL);takeURL=null;for(const player of [takePreview,videoPreview]){player.removeAttribute("src");player.load()}}}
-function previewTake(){
+function previewTake(reset=true){
  unloadPreview();const t=currentTake();if(!t||mode==="mic"||busy||rec||liveRec)return;
  const blob=t[el("takeVersion").value];if(!blob){takeStatus("This version is unavailable. Choose the other recording.");return}
- takeURL=URL.createObjectURL(blob);const video=el("takeVersion").value==="video";takePreview.hidden=video;videoPreview.hidden=!video;const player=video?videoPreview:takePreview;player.src=takeURL;player.load();
+ takeURL=URL.createObjectURL(blob);const video=el("takeVersion").value==="video";takePreview.hidden=video;videoPreview.hidden=!video;const player=video?videoPreview:takePreview;player.src=takeURL;player.load();if(reset)resetEditor();
 }
 function renderTakes(){
  const list=el("takeSelect");list.replaceChildren();for(const t of takes){const opt=make("option");opt.value=t.id;opt.textContent=t.name+" · "+takeTime(t.seconds)+(t.saved?" · Saved":" · Unsaved");list.append(opt)}
@@ -198,10 +198,10 @@ function renderTakes(){
 }
 function takeUI(){
  const t=currentTake(),blocked=mode==="mic"||busy||!!rec||!!liveRec||!!editJob;
- el("takeReview").hidden=!takes.length||blocked;
+ el("takeReview").hidden=!takes.length||(blocked&&!editJob);
  for(const [id,key] of [["saveWet","wet"],["saveDry","dry"],["saveVideo","video"],["reampTake","dry"]])el(id).disabled=blocked||!t?.[key];
  el("saveVideo").hidden=!t?.video;el("deleteTake").disabled=blocked||!t||libraryBusy;el("takeName").disabled=blocked||!t||libraryBusy;el("renameTake").disabled=blocked||!t||libraryBusy;el("persistTake").disabled=blocked||!t||t.saved||!libraryReady||libraryBusy;el("persistTake").textContent=t?.saved?"Saved on this device":"Save to this device";el("takeSelect").disabled=blocked;el("takeVersion").disabled=blocked;
- if(blocked&&takeURL)unloadPreview();else if(!blocked&&t&&!takeURL)previewTake();
+ if(blocked&&takeURL)unloadPreview();else if(!blocked&&t&&!takeURL)previewTake(false);editUI();
  if(g)g.liveCaptureBusy=!!liveRec;
  if(el("takeStudio").dataset)el("takeStudio").dataset.recording=String(!!liveRec&&!liveRec.stopping);cameraUI();
 }
@@ -269,6 +269,78 @@ el("reampTake").addEventListener("click",async()=>{
 el("deleteTake").addEventListener("click",async()=>{const t=currentTake();if(!t||el("deleteTake").disabled||!window.confirm("Delete this take"+(t.saved?" from your device library":" from this tab")+"? Downloaded files are unaffected."))return;libraryBusy=true;ui();try{if(t.saved)await dbOperation("readwrite",store=>store.delete(t.id));unloadPreview();takes=takes.filter(x=>x!==t);selectedTake=null;renderTakes();takeStatus("Take deleted.");if(libraryReady)libraryText(librarySummary())}catch(e){libraryText("Could not delete: "+e.message)}finally{libraryBusy=false;ui()}});
 window.addEventListener("pagehide",unloadPreview);
 window.addEventListener("beforeunload",e=>{if(unsavedCount()||liveRec||libraryBusy||editJob){e.preventDefault();e.returnValue=""}});
+
+// Non-destructive recording editor. Audio is rendered locally as PCM;
+// video is captured through a muted, isolated playback graph in real time.
+function editUI(){
+ const t=currentTake(),key=el("takeVersion").value,blocked=!t?.[key]||!!editJob||busy||!!rec||!!liveRec||mode==="mic";
+ for(const id of ["editStart","editEnd","editFadeIn","editFadeOut","editFromPlayhead","editToPlayhead","editRender"])el(id).disabled=blocked;
+ el("editNormalize").disabled=blocked||key==="video";
+ el("editCancel").disabled=!editJob;
+}
+function editDuration(){
+ const t=currentTake(),player=el("takeVersion").value==="video"?videoPreview:takePreview;
+ return Number.isFinite(player.duration)&&player.duration>0?player.duration:(t?.seconds||0);
+}
+function resetEditor(){if(editJob)return;el("editStart").value="0";el("editEnd").value=String(Math.round(editDuration()*100)/100);el("editFadeIn").value=el("editFadeOut").value="0";el("editNormalize").checked=false;el("editStatus").textContent="Set the trim range or use the preview playhead. Original files stay unchanged.";editUI()}
+for(const player of [takePreview,videoPreview])player.addEventListener("loadedmetadata",()=>{if(!editJob&&currentTake()){const end=el("editEnd");if(Number(end.value)===0||Math.abs(Number(end.value)-currentTake().seconds)<.1)end.value=String(Math.floor(editDuration()*100)/100)}});
+for(const [id,target] of [["editFromPlayhead","editStart"],["editToPlayhead","editEnd"]])el(id).addEventListener("click",()=>{const player=el("takeVersion").value==="video"?videoPreview:takePreview;if(Number.isFinite(player.currentTime))el(target).value=String(Math.floor(player.currentTime*100)/100)});
+function editOptions(duration){
+ const start=Number(el("editStart").value),end=Math.min(duration,Number(el("editEnd").value)),fi=Number(el("editFadeIn").value),fo=Number(el("editFadeOut").value);
+ if(![start,end,fi,fo].every(Number.isFinite)||start<0||end-start<.1||fi<0||fo<0||fi>10||fo>10||fi+fo>end-start)throw Error("Choose a valid range of at least 0.1 seconds; fades must fit within it.");
+ return {start,end,fi,fo,normalize:on("editNormalize")};
+}
+function checkEdit(job){if(editJob!==job||job.cancelled||document.hidden)throw Error("Edit cancelled.")}
+function waitEvent(target,event,ms=10000){return new Promise((resolve,reject)=>{let timer;const clean=()=>{clearTimeout(timer);target.removeEventListener(event,ok);target.removeEventListener("error",fail)};const ok=()=>{clean();resolve()};const fail=()=>{clean();reject(Error("Media could not be prepared."))};target.addEventListener(event,ok,{once:true});target.addEventListener("error",fail,{once:true});timer=setTimeout(fail,ms)})}
+async function editAudio(job,blob){
+ if(blob.size>80000000)throw Error("Audio edits are limited to 80 MB.");
+ build();const decoded=await ctx.decodeAudioData(await blob.arrayBuffer());checkEdit(job);
+ if(decoded.duration>600||decoded.numberOfChannels>2)throw Error("Choose mono or stereo audio under 10 minutes.");
+ const o=editOptions(decoded.duration),rate=decoded.sampleRate,start=Math.floor(o.start*rate),length=Math.min(decoded.length-start,Math.floor((o.end-o.start)*rate)),channels=decoded.numberOfChannels;
+ const target=ctx.createBuffer(channels,length,rate);let peak=0;
+ for(let ch=0;ch<channels;ch++){const from=decoded.getChannelData(ch),to=target.getChannelData(ch);for(let i=0;i<length;i++){const factor=Math.min(1,o.fi?i/(o.fi*rate):1,o.fo?(length-1-i)/(o.fo*rate):1);const v=from[start+i]*Math.max(0,factor);to[i]=v;peak=Math.max(peak,Math.abs(v))}}
+ const gain=o.normalize&&peak>1e-7?Math.min(4,Math.pow(10,-1/20)/peak):1;
+ if(gain!==1)for(let ch=0;ch<channels;ch++){const a=target.getChannelData(ch);for(let i=0;i<a.length;i++)a[i]*=gain}
+ checkEdit(job);return encodeWav(target,16);
+}
+async function editVideo(job,blob,seconds){
+ if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream)throw Error("This browser cannot trim video. Use the original download.");
+ if(blob.size>80000000)throw Error("Video edits are limited to 80 MB.");
+ const AC=window.AudioContext||window.webkitAudioContext,ac=new AC({sampleRate:48000});job.ac=ac;const activated=ac.resume().then(()=>null,e=>e);
+ const v=document.createElement("video");job.player=v;v.playsInline=true;v.preload="auto";job.url=URL.createObjectURL(blob);v.src=job.url;
+ if(v.readyState<2)await waitEvent(v,"loadeddata");checkEdit(job);
+ const duration=Number.isFinite(v.duration)&&v.duration>0?v.duration:seconds,o=editOptions(duration);
+ if(o.end-o.start>120)throw Error("Video edits are limited to two minutes.");
+ if(o.start>.01){const sought=waitEvent(v,"seeked");v.currentTime=o.start;await sought}checkEdit(job);
+ const err=await Promise.race([activated,new Promise(resolve=>setTimeout(()=>resolve(Error("Audio engine did not start.")),5000))]);if(err)throw err;
+ const scale=Math.min(1,1280/v.videoWidth,720/v.videoHeight),canvas=document.createElement("canvas");canvas.width=Math.max(2,Math.floor(v.videoWidth*scale/2)*2);canvas.height=Math.max(2,Math.floor(v.videoHeight*scale/2)*2);
+ const p=canvas.getContext("2d");p.drawImage(v,0,0,canvas.width,canvas.height);
+ const source=ac.createMediaElementSource(v),gain=ac.createGain(),destination=ac.createMediaStreamDestination();source.connect(gain);gain.connect(destination);gain.gain.value=o.fi?0:1;
+ const visuals=canvas.captureStream(24);job.visuals=visuals;job.destination=destination;
+ const mime=format(true);if(!mime)throw Error("No supported video output format.");
+ const recorder=new MediaRecorder(new MediaStream([...visuals.getVideoTracks(),...destination.stream.getAudioTracks()]),{mimeType:mime,videoBitsPerSecond:1500000,audioBitsPerSecond:128000});job.recorder=recorder;
+ const chunks=[];let failed=false;
+ const done=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onerror=()=>{failed=true;reject(Error("Video encoding failed."))};recorder.onstop=()=>{if(failed||job.cancelled||!chunks.length)reject(Error(job.cancelled?"Edit cancelled.":"Video encoding returned no data."));else resolve(new Blob(chunks,{type:recorder.mimeType||mime}))}});
+ done.catch(()=>{});recorder.start(250);
+ function stop(){v.pause();if(recorder.state!=="inactive")recorder.stop()}
+ job.stop=stop;
+ await v.play();checkEdit(job);
+ function frame(){if(job.cancelled||document.hidden||v.ended||v.currentTime>=o.end){stop();return}const t=Math.max(0,v.currentTime-o.start),factor=Math.min(1,o.fi?t/o.fi:1,o.fo?(o.end-v.currentTime)/o.fo:1);gain.gain.setTargetAtTime(Math.max(0,factor),ac.currentTime,.01);p.drawImage(v,0,0,canvas.width,canvas.height);el("editStatus").textContent="Rendering video "+takeTime(t)+" / "+takeTime(o.end-o.start)+"…";job.frame=requestAnimationFrame(frame)}
+ job.timer=setTimeout(()=>{job.cancelled=true;stop()},(o.end-o.start+15)*1000);frame();return await done;
+}
+function cleanupEdit(job){clearTimeout(job.timer);if(job.frame)cancelAnimationFrame(job.frame);if(job.recorder&&job.recorder.state!=="inactive")try{job.recorder.stop()}catch{}if(job.player){job.player.pause();job.player.removeAttribute("src");job.player.load()}if(job.url)URL.revokeObjectURL(job.url);job.visuals?.getTracks().forEach(t=>t.stop());job.destination?.stream.getTracks().forEach(t=>t.stop());job.ac?.close().catch(()=>{})}
+function cancelEdit(){if(!editJob)return;editJob.cancelled=true;try{editJob.stop?.()}catch{}el("editStatus").textContent="Cancelling edit…"}
+el("editCancel").addEventListener("click",cancelEdit);
+document.addEventListener("visibilitychange",()=>{if(document.hidden)cancelEdit()});window.addEventListener("pagehide",()=>{cancelEdit();if(editJob)cleanupEdit(editJob)});
+el("editRender").addEventListener("click",async()=>{
+ const t=currentTake(),key=el("takeVersion").value,blob=t?.[key];if(!blob||editJob||busy||rec||liveRec||mode==="mic")return;
+ // Capture the user's current range before UI resets or preview unload.
+ const job={cancelled:false};editJob=job;busy=true;pauseTakePreview();ui();el("editStatus").textContent="Preparing edited copy…";
+ try{const output=key==="video"?await editVideo(job,blob,t.seconds):await editAudio(job,blob);checkEdit(job);download(output,"guitar-edited-"+key+"."+takeExt(output));el("editStatus").textContent="Edited copy downloaded. Original unchanged."}
+ catch(e){el("editStatus").textContent=e.message||"Editing failed."}
+ finally{cleanupEdit(job);editJob=null;busy=false;ui()}
+});
+
 el("calibrate").addEventListener("click",()=>{if(mode!=="mic"||calibration)return;const samples=[],a=new Float32Array(g.analyser.fftSize),started=performance.now();status("Play normally for three seconds to calibrate input gain.");const job={timer:0};calibration=job;ui();
  const sample=()=>{if(calibration!==job||mode!=="mic")return;g.analyser.getFloatTimeDomainData(a);let sum=0,peak=0;for(const x of a){sum+=x*x;peak=Math.max(peak,Math.abs(x))}const rms=20*Math.log10(Math.max(1e-8,Math.sqrt(sum/a.length)));if(rms>-65)samples.push({rms,peak});if(performance.now()-started<3000){job.timer=setTimeout(sample,60);return}calibration=null;if(samples.length<5){status("Input too quiet. Move microphone closer and try again.")}else{samples.sort((a,b)=>a.rms-b.rms);const typical=samples[Math.floor(samples.length*.75)].rms,peak=Math.max(...samples.map(x=>x.peak));const delta=Math.min(6,-26-typical,20*Math.log10(.7/Math.max(.001,peak)));el("input").value=Math.max(0,Math.min(24,Math.round(n("input")+delta)));showValues();apply();status("Calibration complete. Input gain "+n("input")+" dB. Repeat if needed.")}ui()};sample()});
 // Custom user-supplied speaker IR, with filtered cabinet path retained as fallback.
