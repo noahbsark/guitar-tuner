@@ -255,7 +255,7 @@ el("takeSelect").addEventListener("change",()=>{selectedTake=el("takeSelect").va
 el("takeVersion").addEventListener("change",previewTake);
 for(const player of [takePreview,videoPreview])player.addEventListener("play",()=>{if(mode==="mic"||busy||rec||liveRec){player.pause();return}media.pause();(player===takePreview?videoPreview:takePreview).pause()});
 media.addEventListener("play",pauseTakePreview);
-for(const id of ["mic","demo","export","file","wavExport","metroStart"])el(id).addEventListener(id==="file"?"change":"click",pauseTakePreview,true);
+for(const id of ["mic","demo","export","file","wavExport","metroStart"])el(id).addEventListener(id==="file"?"change":"click",()=>{pauseTakePreview();if(id==="mic")stopMetro()},true);
 for(const [id,key,suffix] of [["saveWet","wet","amplified"],["saveDry","dry","original"],["saveVideo","video","performance"]])el(id).addEventListener("click",()=>{const t=currentTake(),blob=t?.[key];if(blob&&!el(id).disabled)download(blob,"guitar-take-"+t.id+"-"+suffix+"."+takeExt(blob))});
 el("reampTake").addEventListener("click",async()=>{
  const t=currentTake();if(!t?.dry||el("reampTake").disabled)return;
