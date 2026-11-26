@@ -26,7 +26,7 @@ function cancelReference(reference,mic,rate=16000){
 function synthetic(){
  const rate=16000,n=rate*5,reference=new Float32Array(n),mic=new Float32Array(n),desired=new Float32Array(n);let seed=9631;
  for(let i=0;i<n;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;reference[i]=(seed/4294967296*2-1)*.18}
- const lag=320;for(let i=0;i<n;i++){const x=j=>j>=0?reference[j]:0;desired[i]=i>=rate*2?.065*Math.sin(2*Math.PI*220*i/rate)+.025*Math.sin(2*Math.PI*440*i/rate):0;mic[i]=desired[i]+.55*x(i-lag)+.18*x(i-lag-34)-.07*x(i-lag-122)}
+ const lag=320;let noiseSeed=7261;for(let i=0;i<n;i++){noiseSeed=(Math.imul(noiseSeed,1664525)+1013904223)>>>0;const x=j=>j>=0?reference[j]:0;desired[i]=i>=rate*2?.065*Math.sin(2*Math.PI*220*i/rate)+.025*Math.sin(2*Math.PI*440*i/rate):0;mic[i]=desired[i]+.55*x(i-lag)+.18*x(i-lag-34)-.07*x(i-lag-122)+(noiseSeed/4294967296*2-1)*.001}
  const result=cancelReference(reference,mic,rate);let residual=0,raw=0;for(let i=rate*2;i<n;i++){residual+=(result.output[i]-desired[i])**2;raw+=(mic[i]-desired[i])**2}
  return {...result,reference,mic,desired,knownEchoReduction:10*Math.log10(raw/Math.max(1e-12,residual))};
 }
