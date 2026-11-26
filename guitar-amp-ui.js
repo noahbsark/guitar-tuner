@@ -10,7 +10,7 @@ function view(name,scroll=false){
  for(const panel of panels)panel.classList.toggle("workspace-off",panel.id!=="studio-input"&&panel.dataset.workspace!==name);
  if(name==="gear")$("real-gear").hidden=false;
  for(const a of nav){const active=a.dataset.view===name;a.classList.toggle("active",active);if(active)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")}
- if(scroll){const target=name==="studio"?$("studio-input"):panels.find(x=>x.dataset.workspace===name);target?.scrollIntoView({block:"start",behavior:"auto"})}
+ if(scroll){const target=name==="studio"?$("studio-input"):panels.find(x=>x.dataset.workspace===name);target?.scrollIntoView({block:"start",behavior:"auto"});sync()}
 }
 for(const a of links)a.addEventListener("click",e=>{if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;e.preventDefault();view(a.dataset.view,true)});
 $("showGear").addEventListener("click",()=>view("gear",true));
@@ -39,8 +39,9 @@ function sync(){
  for(const [dial,input] of dials){const f=Math.max(0,Math.min(1,(Number(input.value)-Number(input.min))/(Number(input.max)-Number(input.min)||1)));dial.style.setProperty("--dial-angle",f*270+"deg");dial.style.setProperty("--dial-rotation",f*270-135+"deg")}
  const silent=$("micMode").value==="silent",label=$("headphones").closest("label");
  // The checkbox is also used by the metronome. Keep it accessible from the input area.
- label.classList.toggle("headphone-optional",silent);
- $("micHint").textContent=silent?"No headphones needed. Record first, then stop and listen. Headphones are still required for the metronome.":"Wear headphones and start at a low volume before enabling live monitoring.";
+ label.hidden=silent&&workspace!=="practice";if(label.lastChild?.nodeType===3)label.lastChild.textContent=silent?" I am wearing headphones for the metronome":" I am wearing headphones";
+ $("micHint").textContent=silent?"No headphones needed. Start the mic, record, then stop and listen.":"Wear headphones and start at a low volume before enabling live monitoring.";
+ $("mic").textContent=silent?"Start recording setup":"Start live microphone";
  document.querySelector(".transport-status").dataset.live=String($("stop").disabled===false||$("recordLive").disabled===false);
 }
 $("quickBypass").addEventListener("click",()=>{$("bypass").checked=!$("bypass").checked;$("bypass").dispatchEvent(new Event("change",{bubbles:true}));sync()});
