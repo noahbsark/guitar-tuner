@@ -1,0 +1,61 @@
+name: Guitar studio browser and accessibility
+on:
+  pull_request:
+    paths:
+      - 'guitar-amp*'
+      - 'guitar-echo-lab.html'
+      - 'guitar-echo-filter.js'
+      - 'guitar-nam-lab*'
+      - 'scripts/prepare-nam-engine.cjs'
+      - 'scripts/audit-nam-runtime.cjs'
+      - 'vendor/nam-runtime/**'
+      - 'vendor/nam-models/**'
+      - '.github/studio-tests/**'
+      - '.github/workflows/guitar-studio-browser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browsers:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .github/studio-tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: npx --no-install playwright install --with-deps chromium firefox webkit
+      - run: node scripts/prepare-nam-engine.cjs
+        working-directory: .
+      - name: Collect exact runtime provenance
+        run: node scripts/audit-nam-runtime.cjs
+        working-directory: .
+      - name: Install virtual audio dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pulseaudio pulseaudio-utils
+      - name: Prepare virtual audio output for headless browsers
+        run: |
+          pulseaudio --check || pulseaudio --start --exit-idle-time=-1
+          pactl info
+          if ! pactl list short sinks | grep -q studio_ci; then
+            pactl load-module module-null-sink sink_name=studio_ci sink_properties=device.description=StudioCI
+          fi
+          pactl set-default-sink studio_ci
+          pactl list short sinks
+          pactl list short sources
+      - run: npm test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: guitar-studio-browser-report
+          path: |
+            .github/studio-tests/playwright-report
+            .github/studio-tests/test-results
+            vendor/nam-runtime/build-info.json
+            vendor/nam-runtime/PACKAGE-LICENSE.txt
+            vendor/nam-runtime/provenance.json
+          if-no-files-found: warn

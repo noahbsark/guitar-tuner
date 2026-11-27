@@ -1,0 +1,33 @@
+name: Guitar amp smoke checks
+on:
+  pull_request:
+    paths:
+      - guitar-amp.html
+      - guitar-amp-extras.js
+      - guitar-amp-ui.js
+      - guitar-amp-ui.css
+      - guitar-echo-lab.html
+      - guitar-echo-filter.js
+      - guitar-amp-nam.js
+      - guitar-nam-lab.js
+      - guitar-nam-lab.html
+      - scripts/prepare-nam-engine.cjs
+      - scripts/guitar-amp-smoke.cjs
+      - .github/workflows/guitar-amp-check.yml
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check guitar-amp-ui.js
+      - run: node --check guitar-amp-nam.js
+      - run: node --check guitar-nam-lab.js
+      - run: node --check guitar-amp-extras.js
+      - run: node --check guitar-echo-filter.js
+      - run: node scripts/guitar-amp-smoke.cjs
+      - run: node -e "const r=require('./guitar-echo-filter.js').synthetic();if(Math.abs(r.delayMs-20)>0.25||r.knownEchoReduction<18)process.exit(1);console.log('Synthetic echo reduction',r.knownEchoReduction.toFixed(1),'dB')"
