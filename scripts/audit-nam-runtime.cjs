@@ -26,11 +26,25 @@ try{
   const source=inspect('https://github.com/tone-3000/neural-amp-modeler-wasm.git',pkg.gitHead,path.join(tmp,'engine'),['LICENSE','.gitmodules','core','wasm/CMakeLists.txt']);
   report.sourceTree=source;
   const coreSha=source.tree.match(/^160000 commit ([a-f0-9]{40})\tcore$/m)?.[1];
-  if(coreSha){report.core=inspect('https://github.com/sdatkinson/NeuralAmpModelerCore.git',coreSha,path.join(tmp,'core'),['LICENSE','.gitmodules','Dependencies','Dependencies/eigen','Dependencies/AudioDSPTools','Dependencies/nlohmann']);}
+  if(coreSha){
+   report.core=inspect('https://github.com/sdatkinson/NeuralAmpModelerCore.git',coreSha,path.join(tmp,'core'),['LICENSE','.gitmodules','Dependencies/eigen','Dependencies/AudioDSPTools','Dependencies/nlohmann/json.hpp']);
+   const links=Object.fromEntries([...report.core.tree.matchAll(/^160000 commit ([a-f0-9]{40})\t(.+)$/gm)].map(m=>[m[2],m[1]]));
+   report.dependencyRevisions=links;
+   const eigenSha=links['Dependencies/eigen'];
+   if(eigenSha){
+    try{report.eigen=inspect('https://gitlab.com/libeigen/eigen.git',eigenSha,path.join(tmp,'eigen'),['COPYING.MPL2','COPYING.BSD','COPYING.MINPACK','COPYING.README','COPYING.LGPL','COPYING.GPL','COPYING.APACHE']);}
+    catch(e){report.notes.push('Exact Eigen source could not be fetched: '+String(e.message).slice(0,500))}
+   }else report.notes.push('Eigen revision not identified.');
+   const audioSha=links['Dependencies/AudioDSPTools'];
+   if(audioSha){try{report.audioDSPTools=inspect('https://github.com/sdatkinson/AudioDSPTools.git',audioSha,path.join(tmp,'audiodsp'),['LICENSE','.gitmodules']);}catch(e){report.notes.push('AudioDSPTools provenance unavailable: '+String(e.message).slice(0,500))}}
+   // Preserve the JSON header's exact Git blob identity and SPDX declaration.
+   const json=run('git',['show',coreSha+':Dependencies/nlohmann/json.hpp'],path.join(tmp,'core'));
+   report.json={version:json.match(/version (\d+\.\d+\.\d+)/)?.[1]||null,header:json.split('\n').slice(0,10).join('\n')};
+  }
   else report.notes.push('Core submodule revision not identified.');
  }else report.notes.push('Registry has no usable gitHead; obtain exact build revision from upstream.');
 }catch(e){report.notes.push('Provenance collection incomplete: '+String(e.message).slice(0,1000))}
 finally{fs.rmSync(tmp,{recursive:true,force:true})}
 report.notes.push('Registry source metadata is not a reproducible-build attestation. Audit Eigen source availability, JSON and toolchain notices, and exact compiled dependency versions before public distribution. This report does not grant release clearance.');
 fs.writeFileSync(path.join(dest,'provenance.json'),JSON.stringify(report,null,2)+'\n');
-console.log('NAM provenance:',JSON.stringify({metadata:report.metadata,sourceRevision:report.sourceTree?.sha,coreRevision:report.core?.sha,notes:report.notes}));
+console.log('NAM provenance:',JSON.stringify({metadata:report.metadata,sourceRevision:report.sourceTree?.sha,coreRevision:report.core?.sha,dependencyRevisions:report.dependencyRevisions,jsonVersion:report.json?.version,eigenNoticeFiles:Object.keys(report.eigen?.files||{}),notes:report.notes}));
