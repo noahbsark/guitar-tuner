@@ -35,6 +35,7 @@ const dials=[];for(const label of document.querySelectorAll("#ampKnobs .knob")){
  const end=e=>{if(!drag||e.pointerId!==drag.id)return;drag=null;dial.classList.remove("dragging");input.dispatchEvent(new Event("change",{bubbles:true}))};dial.addEventListener("pointerup",end);dial.addEventListener("pointercancel",end);dial.addEventListener("lostpointercapture",end);
 }
 function sync(){
+ $("heroDemo").disabled=$("demo").disabled;
  for(const b of tiles.querySelectorAll("button"))b.setAttribute("aria-pressed",String(b.dataset.preset===preset.value));
  const bypass=$("bypass").checked;const quick=$("quickBypass");quick.textContent=bypass?"Hear processed":"Hear original";quick.setAttribute("aria-pressed",String(bypass));
  $("ampName").textContent=g?.namActive?"Neural capture":($("amp").selectedOptions[0]?.textContent||"Amplifier");
@@ -48,6 +49,8 @@ function sync(){
  $("mic").textContent=silent?"Start recording setup":"Start live microphone";
  document.querySelector(".transport-status").dataset.live=String($("stop").disabled===false||$("recordLive").disabled===false);
 }
+$("heroDemo").addEventListener("click",()=>{if($("demo").disabled)return;view("studio");$("demo").click();sync()});
+$("heroTone").addEventListener("click",e=>{if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;e.preventDefault();view("studio");$("tone-controls").scrollIntoView({block:"start",behavior:"auto"});sync()});
 $("quickBypass").addEventListener("click",()=>{$("bypass").checked=!$("bypass").checked;$("bypass").dispatchEvent(new Event("change",{bubbles:true}));sync()});
 document.addEventListener("input",sync);document.addEventListener("change",sync);
 document.addEventListener("click",()=>requestAnimationFrame(sync));
