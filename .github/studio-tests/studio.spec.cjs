@@ -307,3 +307,23 @@ test('responsive studio controls fit 360, 390, 768 and 1440 pixels',async({page}
   await page.screenshot({path:testInfo.outputPath('responsive-'+width+'.png'),fullPage:true});
  }
 });
+
+test('emergency stop rejects late microphone permission and releases acquired tracks',async({page})=>{
+ await page.addInitScript(()=>{
+  if(!navigator.mediaDevices)return;
+  navigator.mediaDevices.getUserMedia=()=>new Promise(resolve=>{window.__grantMic=()=>{
+   const C=window.AudioContext||window.webkitAudioContext,ac=window.__lateContext=new C();
+   const dest=ac.createMediaStreamDestination();window.__lateTrack=dest.stream.getAudioTracks()[0];resolve(dest.stream);
+  }});
+ });
+ await page.goto('/guitar-amp.html');
+ test.skip(!(await page.evaluate(()=>!!navigator.mediaDevices&&!!(window.AudioContext||window.webkitAudioContext))),'Capture unavailable');
+ await page.locator('#mic').click();await expect.poll(()=>page.evaluate(()=>typeof window.__grantMic)).toBe('function');
+ await expect(page.locator('#panicAudio')).toBeEnabled();await page.locator('#panicAudio').click();
+ await page.evaluate(()=>window.__grantMic());
+ await expect.poll(()=>page.evaluate(()=>window.__lateTrack?.readyState)).toBe('ended');
+ await expect(page.locator('#recordLive')).toBeDisabled();
+ await expect(page.locator('#mic')).toBeEnabled();
+ expect(await page.evaluate(()=>mode)).not.toBe('mic');
+ await page.evaluate(()=>window.__lateContext?.close());
+});
