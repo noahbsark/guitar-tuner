@@ -213,6 +213,7 @@ test('bundled MIT neural captures load without uploads and switch back safely',a
 });
 
 test('camera permission is optional and a performance video contains processed audio',async({page},testInfo)=>{
+ test.setTimeout(75000);
  await page.addInitScript(()=>{
   if(!navigator.mediaDevices)return;
   window.__cameraRequests=[];window.__rejectCamera=true;
@@ -261,6 +262,27 @@ test('camera permission is optional and a performance video contains processed a
  expect(await file.failure()).toBeNull();expect(require('node:fs').statSync(await file.path()).size).toBeGreaterThan(1000);
  await expect(page.locator('#saveWet')).toBeEnabled();await expect(page.locator('#saveDry')).toBeEnabled();
  await page.screenshot({path:testInfo.outputPath('performance-video.png'),fullPage:true});
+ // Render a short excerpt of the real encoded performance. Validate container
+ // bytes, preserve the original, and verify decoded video dimensions.
+ await page.locator('#takeEditor summary').click();
+ await page.locator('#editStart').fill('0');
+ await page.locator('#editEnd').fill('0.7');
+ await page.locator('#editFadeIn').fill('0.05');
+ await page.locator('#editFadeOut').fill('0.05');
+ const editedDownload=page.waitForEvent('download');
+ await page.locator('#editRender').click();
+ const edited=await editedDownload;
+ expect(edited.suggestedFilename()).toMatch(/guitar-edited-video\.(mp4|webm)$/);
+ expect(await edited.failure()).toBeNull();
+ const editedBytes=require('node:fs').readFileSync(await edited.path());
+ expect(editedBytes.length).toBeGreaterThan(1000);
+ await expect(page.locator('#editStatus')).toContainText('Original unchanged');
+ await expect(page.locator('#saveVideo')).toBeEnabled();
+ const dims=await page.evaluate(async({base64,mime})=>{
+  const data=Uint8Array.from(atob(base64),c=>c.charCodeAt(0)),url=URL.createObjectURL(new Blob([data],{type:mime})),v=document.createElement('video');
+  try{await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(Error('Edited video metadata timeout')),8000);v.onloadedmetadata=()=>{clearTimeout(timeout);resolve()};v.onerror=()=>{clearTimeout(timeout);reject(Error('Edited video decode failed'))};v.src=url;v.load()});return [v.videoWidth,v.videoHeight]}finally{v.removeAttribute('src');v.load();URL.revokeObjectURL(url)}
+ },{base64:editedBytes.toString('base64'),mime:edited.suggestedFilename().endsWith('.mp4')?'video/mp4':'video/webm'});
+ expect(dims[0]).toBeGreaterThan(0);expect(dims[1]).toBeGreaterThan(0);
  await page.evaluate(()=>{clearInterval(window.__cameraTimer);window.__testCaptureContext?.close()});
 });
 
@@ -308,26 +330,27 @@ test('responsive studio controls fit 360, 390, 768 and 1440 pixels',async({page}
  }
 });
 
-test('emergency stop rejects late microphone permission and releases acquired tracks',async({page},testInfo)=>{
- await page.goto('/guitar-amp.html');
- test.skip(!(await page.evaluate(()=>!!(window.AudioContext||window.webkitAudioContext))),'Web Audio unavailable');
- // Install after page initialization: WebKit may expose MediaDevices only after
- // document setup. Use a simulated late grant even when physical capture is unavailable.
- const installed=await page.evaluate(()=>{
-  const request=()=>new Promise(resolve=>{window.__grantMic=()=>{
+test('emergency stop rejects late microphone permission and releases acquired tracks',async({page})=>{
+ // Replace only the device acquisition boundary in the served HTML fixture.
+ // WebKit may expose different MediaDevices wrappers across JS worlds; mutating
+ // navigator in page.evaluate was intermittent. Everything after the grant
+ // still runs through the actual studio's permission and cancellation logic.
+ await page.route('**/guitar-amp.html',async route=>{
+  const response=await route.fetch(),html=await response.text();
+  const needle='await navigator.mediaDevices.getUserMedia({audio:';
+  expect(html).toContain(needle);
+  await route.fulfill({response,body:html.replace(needle,'await window.__requestTestMic({audio:').replace('if(!navigator.mediaDevices?.getUserMedia)throw Error','if(!window.__requestTestMic)throw Error')});
+ });
+ await page.addInitScript(()=>{
+  window.__requestTestMic=()=>new Promise(resolve=>{window.__grantMic=()=>{
    const C=window.AudioContext||window.webkitAudioContext,ac=window.__lateContext=new C();
    const dest=ac.createMediaStreamDestination();window.__lateTrack=dest.stream.getAudioTracks()[0];resolve(dest.stream);
   }});
-  try{
-   const devices=navigator.mediaDevices;
-   if(devices)Object.defineProperty(devices,'getUserMedia',{value:request,configurable:true,writable:true});
-   else Object.defineProperty(navigator,'mediaDevices',{value:{getUserMedia:request},configurable:true});
-   return navigator.mediaDevices.getUserMedia===request;
-  }catch(e){throw Error('Late-permission test fixture: '+e.message)}
  });
- expect(installed).toBe(true);
+ await page.goto('/guitar-amp.html');
+ test.skip(!(await page.evaluate(()=>!!(window.AudioContext||window.webkitAudioContext))),'Web Audio unavailable');
  await page.locator('#mic').click();
- try{await expect.poll(()=>page.evaluate(()=>typeof window.__grantMic),{timeout:10000}).toBe('function')}catch(e){console.log('LATE_PERMISSION_DIAGNOSTICS '+JSON.stringify(await page.evaluate(()=>({status:document.querySelector('#status')?.textContent,hasCapture:!!navigator.mediaDevices?.getUserMedia,context:typeof ctx!=='undefined'?ctx?.state:null,hidden:document.hidden}))));throw e}
+ await expect.poll(()=>page.evaluate(()=>typeof window.__grantMic),{timeout:10000}).toBe('function');
  await expect(page.locator('#panicAudio')).toBeEnabled();await page.locator('#panicAudio').click();
  await page.evaluate(()=>window.__grantMic());
  await expect.poll(()=>page.evaluate(()=>window.__lateTrack?.readyState)).toBe('ended');
