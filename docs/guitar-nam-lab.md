@@ -36,3 +36,18 @@ With the runtime staged, open /guitar-amp.html and expand **Neural amp capture (
 ## Starter captures
 
 Four one-click choices appear below the built-in tone presets. The real full-rig choices are RiffSmith Clean and RiffSmith Distorted. Both are full-rig 48 kHz captures authored by Matt Hartman, explicitly released under MIT in the RiffSmith README. All four original files and their applicable MIT licenses are retained under vendor/nam-models. The app selects the smaller RiffSmith slimmable submodel by default to reduce CPU cost. ToneTinkerer Crunch and Lead are original, 48 kHz amp-only virtual circuit models (not captures of physical amplifiers) with the built-in cabinet enabled. This is a usability/CPU choice, not proof of listening quality. See vendor/nam-models/NOTICE.md. No external request to the capture provider is needed at runtime. Model loading and real guitar sound still require validation. The runtime remains generated, not committed.
+
+## Runtime provenance and distribution audit
+
+The tested package remains `neural-amp-modeler-wasm@3.0.7`. The current upstream main branch is newer; do not use its dependency revisions as proof of what is compiled into 3.0.7.
+
+Run the following locally to collect evidence (Node.js/npm and Git required for the second step):
+
+```sh
+node scripts/prepare-nam-engine.cjs
+node scripts/audit-nam-runtime.cjs
+```
+
+Preparation now hashes the actual downloaded tarball before extraction, requires the packaged license and writes SHA-256 hashes for every staged engine file and the package license in `vendor/nam-runtime/build-info.json`. The audit records version-specific npm metadata, attempts to retrieve the exact registry gitHead and its NAM Core submodule revision without running upstream source, and records unresolved issues in `provenance.json`. GitHub browser CI includes those reports and the package license in its test-report artifact. A missing source revision is an unresolved finding, not a successful license audit. Registry metadata alone does not attest to binary reproducibility.
+
+Upstream source inspection identifies Eigen, nlohmann JSON and the Emscripten runtime/toolchain as dependencies requiring review. NAM Core also references AudioDSPTools; establish whether it actually contributes code to the staged engine. Verify exact versions, applicable notices, and source-availability obligations from the pinned build, not current main. Review the engine's JavaScript dependency closure as well. Model notices remain separate. Public distribution clearance remains pending. The development-only setup and noindex policy are unchanged.
