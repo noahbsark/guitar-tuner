@@ -32,3 +32,10 @@ This branch is a private-development candidate, not a release. Production deploy
 ## Private owner test
 
 See [local evaluation instructions](guitar-studio-private-test.md). The development server is loopback-only; do not expose it or change the production deployment.
+
+## November 27 follow-up
+
+- Browser run [46040555996](https://github.com/noahbsark/guitar-tuner/actions/runs/46040555996) completed 58 passes, zero failures, five skips. The previous run had one intermittent WebKit permission-mock failure. The newer test replaces only the capture request in its served test fixture, retaining the real application cancellation handler; the replacement has yet to be verified in completed CI. Video edit output verification was also added.
+- Downloaded the actual browser artifact and inspected desktop and 360 px screenshots. Mobile navigation was clipped and demo access required substantial scrolling. Added hero demo/tone shortcuts and a two-row phone navigation; verify the updated responsive screenshot and CI.
+- Exact upstream source revisions and three MIT notices are preserved in [runtime notices](../vendor/nam-runtime/notices/NOTICE.md). Eigen and toolchain source/notice obligations remain open; this is not legal clearance.
+- Physical-device testing and genuine guitar listening remain the owner-assisted gate. Do not deploy, index or monetize.
