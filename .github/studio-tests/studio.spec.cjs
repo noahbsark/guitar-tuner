@@ -272,8 +272,8 @@ test('saved recording survives reload and non-destructive editor creates valid t
   const rate=16000,frames=rate*4,ab=new ArrayBuffer(44+frames*2),d=new DataView(ab);
   const str=(i,s)=>{for(let j=0;j<s.length;j++)d.setUint8(i+j,s.charCodeAt(j))};str(0,'RIFF');d.setUint32(4,ab.byteLength-8,true);str(8,'WAVEfmt ');d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,1,true);d.setUint32(24,rate,true);d.setUint32(28,rate*2,true);d.setUint16(32,2,true);d.setUint16(34,16,true);str(36,'data');d.setUint32(40,frames*2,true);
   for(let i=0;i<frames;i++)d.setInt16(44+i*2,Math.round(Math.sin(i*2*Math.PI*220/rate)*5000),true);
-  const blob=new Blob([ab],{type:'audio/wav'});
-  await new Promise((resolve,reject)=>{const open=indexedDB.open('ogt-guitar-recordings',1);open.onerror=()=>reject(open.error);open.onsuccess=()=>{const db=open.result,tx=db.transaction('takes','readwrite');tx.objectStore('takes').put({id:'test-persisted-take',name:'Library fixture',seconds:4,saved:true,wet:blob,dry:blob,video:null});tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>reject(tx.error)}});
+  const part={bytes:ab,type:'audio/wav'};
+  await new Promise((resolve,reject)=>{const open=indexedDB.open('ogt-guitar-recordings',1);open.onerror=()=>reject(Error('Fixture open: '+(open.error?.message||'unknown')));open.onsuccess=()=>{const db=open.result,tx=db.transaction('takes','readwrite');const req=tx.objectStore('takes').put({id:'test-persisted-take',name:'Library fixture',seconds:4,saved:true,storageVersion:2,wet:part,dry:part,video:null});let detail;req.onerror=()=>{detail=req.error};tx.oncomplete=()=>{db.close();resolve()};tx.onerror=tx.onabort=()=>{db.close();reject(Error('Fixture write: '+(tx.error?.message||detail?.message||'unknown')))}}});
  });
  await page.reload();await expect(page.locator('#takeSelect')).toContainText('Library fixture');await expect(page.locator('#persistTake')).toHaveText('Saved on this device');
  await page.locator('#takeName').fill('Edited test take');await page.locator('#renameTake').click();await expect(page.locator('#takeSelect')).toContainText('Edited test take');
@@ -308,17 +308,26 @@ test('responsive studio controls fit 360, 390, 768 and 1440 pixels',async({page}
  }
 });
 
-test('emergency stop rejects late microphone permission and releases acquired tracks',async({page})=>{
- await page.addInitScript(()=>{
-  if(!navigator.mediaDevices)return;
-  navigator.mediaDevices.getUserMedia=()=>new Promise(resolve=>{window.__grantMic=()=>{
+test('emergency stop rejects late microphone permission and releases acquired tracks',async({page},testInfo)=>{
+ await page.goto('/guitar-amp.html');
+ test.skip(!(await page.evaluate(()=>!!(window.AudioContext||window.webkitAudioContext))),'Web Audio unavailable');
+ // Install after page initialization: WebKit may expose MediaDevices only after
+ // document setup. Use a simulated late grant even when physical capture is unavailable.
+ const installed=await page.evaluate(()=>{
+  const request=()=>new Promise(resolve=>{window.__grantMic=()=>{
    const C=window.AudioContext||window.webkitAudioContext,ac=window.__lateContext=new C();
    const dest=ac.createMediaStreamDestination();window.__lateTrack=dest.stream.getAudioTracks()[0];resolve(dest.stream);
   }});
+  try{
+   const devices=navigator.mediaDevices;
+   if(devices)Object.defineProperty(devices,'getUserMedia',{value:request,configurable:true,writable:true});
+   else Object.defineProperty(navigator,'mediaDevices',{value:{getUserMedia:request},configurable:true});
+   return navigator.mediaDevices.getUserMedia===request;
+  }catch(e){throw Error('Late-permission test fixture: '+e.message)}
  });
- await page.goto('/guitar-amp.html');
- test.skip(!(await page.evaluate(()=>!!navigator.mediaDevices&&!!(window.AudioContext||window.webkitAudioContext))),'Capture unavailable');
- await page.locator('#mic').click();await expect.poll(()=>page.evaluate(()=>typeof window.__grantMic)).toBe('function');
+ expect(installed).toBe(true);
+ await page.locator('#mic').click();
+ try{await expect.poll(()=>page.evaluate(()=>typeof window.__grantMic),{timeout:10000}).toBe('function')}catch(e){console.log('LATE_PERMISSION_DIAGNOSTICS '+JSON.stringify(await page.evaluate(()=>({status:document.querySelector('#status')?.textContent,hasCapture:!!navigator.mediaDevices?.getUserMedia,context:typeof ctx!=='undefined'?ctx?.state:null,hidden:document.hidden}))));throw e}
  await expect(page.locator('#panicAudio')).toBeEnabled();await page.locator('#panicAudio').click();
  await page.evaluate(()=>window.__grantMic());
  await expect.poll(()=>page.evaluate(()=>window.__lateTrack?.readyState)).toBe('ended');
