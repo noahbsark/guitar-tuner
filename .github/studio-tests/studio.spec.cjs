@@ -325,7 +325,9 @@ test('responsive studio controls fit 360, 390, 768 and 1440 pixels',async({page}
  for(const width of [360,390,768,1440]){
   await page.setViewportSize({width,height:900});
   await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
-  await expect(page.locator('#mic')).toBeVisible();await expect(page.locator('#panicAudio')).toBeVisible();
+  await expect(page.locator('#mic')).toBeVisible();await expect(page.locator('#panicAudio')).toBeVisible();await expect(page.locator('#heroDemo')).toBeVisible();
+  expect(await page.locator('.workspace-nav').evaluate(nav=>nav.scrollWidth<=nav.clientWidth+1)).toBe(true);
+  await page.locator('#heroTone').click();await expect(page.locator('#tone-controls .section-heading')).toBeInViewport();
   await page.screenshot({path:testInfo.outputPath('responsive-'+width+'.png'),fullPage:true});
  }
 });
