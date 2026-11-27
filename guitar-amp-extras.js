@@ -200,7 +200,7 @@ function takeUI(){
  const t=currentTake(),blocked=mode==="mic"||busy||!!rec||!!liveRec||!!editJob;
  el("takeReview").hidden=!takes.length||(blocked&&!editJob);
  for(const [id,key] of [["saveWet","wet"],["saveDry","dry"],["saveVideo","video"],["reampTake","dry"]])el(id).disabled=blocked||!t?.[key];
- el("saveVideo").hidden=!t?.video;el("deleteTake").disabled=blocked||!t||libraryBusy;el("takeName").disabled=blocked||!t||libraryBusy;el("renameTake").disabled=blocked||!t||libraryBusy;el("persistTake").disabled=blocked||!t||t.saved||!libraryReady||libraryBusy;el("persistTake").textContent=t?.saved?"Saved on this device":"Save to this device";el("takeSelect").disabled=blocked;el("takeVersion").disabled=blocked;
+ el("saveVideo").hidden=!t?.video;el("deleteTake").disabled=blocked||!t||libraryBusy;el("takeName").disabled=blocked||!t||libraryBusy;el("renameTake").disabled=blocked||!t||libraryBusy;el("persistTake").disabled=blocked||!t||t.saved||!libraryReady||libraryBusy;el("persistTake").textContent=t?.saved?"Saved on this device":"Save to this device";el("takeSelect").disabled=blocked||libraryBusy;el("takeVersion").disabled=blocked||libraryBusy;
  if(blocked&&takeURL)unloadPreview();else if(!blocked&&t&&!takeURL)previewTake(false);editUI();
  if(g)g.liveCaptureBusy=!!liveRec;
  if(el("takeStudio").dataset)el("takeStudio").dataset.recording=String(!!liveRec&&!liveRec.stopping);cameraUI();
@@ -210,10 +210,12 @@ const previousDisconnect=disconnect;disconnect=function(){if(liveRec)stopLive();
 function stopLive(){
  const job=liveRec;if(!job||job.stopping)return;job.stopping=true;clearTimeout(job.timer);clearInterval(job.clock);job.seconds=(performance.now()-job.started)/1000;el("takeTimer").textContent=takeTime(job.seconds);takeStatus("Finishing take…");
  for(const part of job.parts){if(part.recorder.state!=="inactive"){try{part.recorder.stop()}catch{part.failed=true;part.done=true}}else if(!part.started){part.done=true}}
+ // A recorder that never emits stop must not lock the studio. Preserve completed tracks.
+ job.finalizeTimer=setTimeout(()=>{if(liveRec!==job)return;for(const part of job.parts)if(!part.done){part.failed=true;part.done=true;try{if(part.recorder.state!=="inactive")part.recorder.stop()}catch{}}finalizeTake(job)},8000);
  finalizeTake(job);ui();
 }
 function finalizeTake(job){
- if(liveRec!==job||!job.parts.every(p=>p.done))return;clearTimeout(job.timer);clearInterval(job.clock);liveRec=null;
+ if(liveRec!==job||!job.parts.every(p=>p.done))return;clearTimeout(job.timer);clearTimeout(job.finalizeTimer);clearInterval(job.clock);liveRec=null;
  const dry=takeBlob(job.parts.find(p=>p.kind==="dry")),wet=takeBlob(job.parts.find(p=>p.kind==="wet")),video=takeBlob(job.parts.find(p=>p.kind==="video"));
  if(dry||wet||video){const t={id:window.crypto?.randomUUID?.()||("take-"+Date.now()+"-"+(++takeSeq)),name:"Take "+(takes.length+1),saved:false,seconds:job.seconds??(performance.now()-job.started)/1000,dry,wet,video,settings:job.settings};takes.push(t);selectedTake=t.id;el("takeVersion").value=video?"video":wet?"wet":"dry";renderTakes();takeStatus(video&&dry&&wet?"Take ready. Preview the performance video or download either audio version.":dry&&wet?(job.wantedVideo?"Take ready. Video unavailable; both audio versions were saved.":"Take ready. Preview, download either version, or try a different tone."):"Take ready. Some versions are unavailable; download the available recording.");status("Recording finished. Review your take below.")}
  else{takeStatus("Recording failed. Check microphone permissions and try again.");status("Recording unavailable.")}
@@ -243,12 +245,12 @@ el("recordLive").addEventListener("click",()=>{
    part.recorder.ondataavailable=e=>{if(e.data.size)part.chunks.push(e.data)};
    part.recorder.onerror=()=>{part.failed=true;stopLive();if(mode==="mic")disconnect()};
    part.recorder.onstop=()=>{part.done=true;if(!job.stopping){stopLive();if(mode==="mic")disconnect()}finalizeTake(job)};
-   part.recorder.start(500);part.started=true;
+   try{part.recorder.start(500);part.started=true}catch(e){if(part.kind!=="video")throw e;part.failed=true;part.done=true;closeCamera("Video encoder failed to start. Recording audio only.")}
   }
   el("takeTimer").textContent="00:00";job.clock=setInterval(()=>{if(liveRec===job)el("takeTimer").textContent=takeTime((performance.now()-job.started)/1000)},250);
-  job.timer=setTimeout(()=>{stopLive();if(mode==="mic")disconnect()},parts.some(p=>p.kind==="video")?120000:600000);
-  takeStatus(parts.some(p=>p.kind==="video")?"Recording video, original and amplified audio. Finish the take when ready (2-minute limit).":"Recording original and amplified audio. Finish the take when ready (10-minute limit).");status("Recording a take…");ui();
- }catch(e){if(job){for(const p of job.parts)if(!p.started)p.done=true;stopLive()}takeStatus("Recording failed: "+e.message);ui()}
+  job.timer=setTimeout(()=>{stopLive();if(mode==="mic")disconnect()},parts.some(p=>p.kind==="video"&&p.started)?120000:600000);
+  takeStatus(parts.some(p=>p.kind==="video"&&p.started)?"Recording video, original and amplified audio. Finish the take when ready (2-minute limit).":"Recording original and amplified audio. Finish the take when ready (10-minute limit).");status("Recording a take…");ui();
+ }catch(e){if(job){for(const p of job.parts)if(!p.started){p.done=true;p.failed=true}stopLive()}if(mode==="mic")disconnect();takeStatus("Recording failed: "+e.message);ui()}
 });
 el("stopLive").addEventListener("click",()=>{stopLive();if(mode==="mic")disconnect()});
 el("takeSelect").addEventListener("change",()=>{selectedTake=el("takeSelect").value;renderTakes();takeUI()});
