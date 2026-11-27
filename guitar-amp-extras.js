@@ -124,13 +124,23 @@ const takeBytes=t=>["dry","wet","video"].reduce((sum,k)=>sum+(t[k]?.size||0),0);
 const unsavedCount=()=>takes.filter(t=>!t.saved).length;
 const libraryText=message=>el("libraryStatus").textContent=message;
 function librarySummary(){const saved=takes.filter(t=>t.saved);return saved.length+" of "+LIB_COUNT+" saved · "+(saved.reduce((sum,t)=>sum+takeBytes(t),0)/1048576).toFixed(1)+" MB on this device. Browser storage may be cleared; download important recordings."}
-function dbOperation(mode,fn){return new Promise((resolve,reject)=>{const tx=libraryDB.transaction("takes",mode),store=tx.objectStore("takes");let result;tx.oncomplete=()=>resolve(result);tx.onerror=tx.onabort=()=>reject(tx.error||Error("Storage operation failed."));try{const req=fn(store);req.onsuccess=()=>{result=req.result}}catch(e){tx.abort();reject(e)}})}
+function dbOperation(mode,fn){return new Promise((resolve,reject)=>{const tx=libraryDB.transaction("takes",mode),store=tx.objectStore("takes");let result,requestError;tx.oncomplete=()=>resolve(result);tx.onerror=tx.onabort=()=>reject(tx.error||requestError||Error("Storage operation failed."));try{const req=fn(store);req.onsuccess=()=>{result=req.result};req.onerror=()=>{requestError=req.error||Error("Recording storage request failed.")}}catch(e){try{tx.abort()}catch{}reject(e)}})}
+async function packTake(t){
+ const row={...t,saved:true,storageVersion:2};
+ for(const key of ["dry","wet","video"]){const blob=t[key];row[key]=blob instanceof Blob?{bytes:await blob.arrayBuffer(),type:blob.type}:null}
+ return row;
+}
+function unpackTake(row){
+ const t={...row,saved:true};
+ for(const key of ["dry","wet","video"]){const part=row[key];t[key]=part instanceof Blob?part:part?.bytes instanceof ArrayBuffer&&part.bytes.byteLength>0?new Blob([part.bytes],{type:typeof part.type==="string"?part.type:"application/octet-stream"}):null}
+ return t;
+}
 async function openLibrary(){
  if(!window.indexedDB){libraryText("Local library is unavailable. Download takes before leaving.");return}
  libraryBusy=true;ui();
  try{
-  libraryDB=await new Promise((resolve,reject)=>{const req=window.indexedDB.open("ogt-guitar-recordings",1);req.onupgradeneeded=()=>req.result.createObjectStore("takes",{keyPath:"id"});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);req.onblocked=()=>reject(Error("Close other studio tabs and retry."))});
-  const records=await dbOperation("readonly",store=>store.getAll());const existing=new Set(takes.map(t=>t.id));for(const t of records){if(!existing.has(t.id)&&typeof t.id==="string"&&typeof t.name==="string"&&Number.isFinite(t.seconds)&&["dry","wet","video"].some(k=>t[k] instanceof Blob))takes.push({...t,saved:true})}
+  libraryDB=await new Promise((resolve,reject)=>{const req=window.indexedDB.open("ogt-guitar-recordings",1);req.onupgradeneeded=()=>req.result.createObjectStore("takes",{keyPath:"id"});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||Error("Local database could not be opened."));req.onblocked=()=>reject(Error("Close other studio tabs and retry."))});
+  const records=await dbOperation("readonly",store=>store.getAll());const existing=new Set(takes.map(t=>t.id));for(const row of records){if(!row||typeof row.id!=="string"||existing.has(row.id)||typeof row.name!=="string"||!Number.isFinite(row.seconds))continue;const t=unpackTake(row);if(t.dry||t.wet||t.video)takes.push(t)}
   libraryReady=true;libraryText(librarySummary());if(takes.length)renderTakes();
  }catch(e){libraryDB=null;libraryText("Local library unavailable: "+e.message+". Downloads still work.")}
  finally{libraryBusy=false;ui()}
@@ -139,14 +149,14 @@ async function persistSelected(){
  const t=currentTake();if(!t||t.saved||!libraryReady||libraryBusy||el("persistTake").disabled)return;
  const saved=takes.filter(x=>x.saved);if(saved.length>=LIB_COUNT||saved.reduce((sum,x)=>sum+takeBytes(x),0)+takeBytes(t)>LIB_LIMIT){libraryText("Library limit reached (10 takes or 150 MB). Download or delete a saved take first.");return}
  libraryBusy=true;ui();
- try{await dbOperation("readwrite",store=>store.put({...t,saved:true}));t.saved=true;libraryText(librarySummary());renderTakes()}
+ try{const row=await packTake(t);await dbOperation("readwrite",store=>store.put(row));t.saved=true;libraryText(librarySummary());renderTakes()}
  catch(e){libraryText("Could not save locally: "+e.message+". Download the recording instead.")}
  finally{libraryBusy=false;ui()}
 }
 el("persistTake").addEventListener("click",persistSelected);
 el("renameTake").addEventListener("click",async()=>{
  const t=currentTake(),name=el("takeName").value.trim().slice(0,60);if(!t||!name||libraryBusy||el("renameTake").disabled)return;
- libraryBusy=true;ui();try{if(t.saved)await dbOperation("readwrite",store=>store.put({...t,name}));t.name=name;renderTakes();libraryText(t.saved?librarySummary():"Name updated. Save to this device to keep it between visits.")}
+ libraryBusy=true;ui();try{if(t.saved){await new Promise((resolve,reject)=>{const tx=libraryDB.transaction("takes","readwrite"),store=tx.objectStore("takes");let detail;tx.oncomplete=resolve;tx.onerror=tx.onabort=()=>reject(tx.error||detail||Error("Could not rename saved recording."));const req=store.get(t.id);req.onerror=()=>{detail=req.error};req.onsuccess=()=>{if(!req.result){detail=Error("Recording no longer exists in storage.");tx.abort();return}const put=store.put({...req.result,name});put.onerror=()=>{detail=put.error}}})}t.name=name;renderTakes();libraryText(t.saved?librarySummary():"Name updated. Save to this device to keep it between visits.")}
  catch(e){libraryText("Could not rename: "+e.message)}finally{libraryBusy=false;ui()}
 });
 const takePreview=el("takePreview"),videoPreview=el("takeVideoPreview"),cameraPreview=el("cameraPreview"),takeStatus=message=>el("takeStatus").textContent=message;
