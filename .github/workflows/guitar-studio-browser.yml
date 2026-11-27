@@ -7,6 +7,7 @@ on:
       - 'guitar-echo-filter.js'
       - 'guitar-nam-lab*'
       - 'scripts/prepare-nam-engine.cjs'
+      - 'scripts/audit-nam-runtime.cjs'
       - 'vendor/nam-runtime/**'
       - 'vendor/nam-models/**'
       - '.github/studio-tests/**'
@@ -28,6 +29,9 @@ jobs:
       - run: npm install --ignore-scripts --no-audit --no-fund
       - run: npx --no-install playwright install --with-deps chromium firefox webkit
       - run: node scripts/prepare-nam-engine.cjs
+        working-directory: .
+      - name: Collect exact runtime provenance
+        run: node scripts/audit-nam-runtime.cjs
         working-directory: .
       - name: Install virtual audio dependencies
         run: |
@@ -51,4 +55,7 @@ jobs:
           path: |
             .github/studio-tests/playwright-report
             .github/studio-tests/test-results
+            vendor/nam-runtime/build-info.json
+            vendor/nam-runtime/PACKAGE-LICENSE.txt
+            vendor/nam-runtime/provenance.json
           if-no-files-found: warn
