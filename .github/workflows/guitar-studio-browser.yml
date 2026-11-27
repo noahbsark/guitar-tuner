@@ -29,13 +29,20 @@ jobs:
       - run: npx --no-install playwright install --with-deps chromium firefox webkit
       - run: node scripts/prepare-nam-engine.cjs
         working-directory: .
+      - name: Install virtual audio dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pulseaudio pulseaudio-utils
       - name: Prepare virtual audio output for headless browsers
         run: |
           pulseaudio --check || pulseaudio --start --exit-idle-time=-1
           pactl info
-          pactl load-module module-null-sink sink_name=studio_ci sink_properties=device.description=StudioCI
+          if ! pactl list short sinks | grep -q studio_ci; then
+            pactl load-module module-null-sink sink_name=studio_ci sink_properties=device.description=StudioCI
+          fi
           pactl set-default-sink studio_ci
           pactl list short sinks
+          pactl list short sources
       - run: npm test
       - uses: actions/upload-artifact@v4
         if: always()
